@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Momentum - Daily Planner</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { 
+            background: #f8f9fb;
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e8eaed;
+            transition: all 0.2s ease;
+        }
+        .card:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
+        .completed { 
+            text-decoration: line-through; 
+            opacity: 0.4; 
+        }
+        .check-circle {
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+        .check-circle:hover {
+            transform: scale(1.1);
+        }
+        .pomo-dot {
+            transition: all 0.15s ease;
+            cursor: pointer;
+            font-size: 0;
+        }
+        .pomo-dot:hover {
+            transform: scale(1.15);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .task-item:hover .task-actions { opacity: 1; }
+        .task-actions { opacity: 0; transition: opacity 0.15s ease; }
+        .treat-item { 
+            transition: all 0.15s ease; 
+            cursor: pointer;
+        }
+        .treat-item.affordable:hover { 
+            background: #f0f9ff; 
+            border-color: #7c3aed;
+        }
+        .treat-item.unaffordable { 
+            opacity: 0.35; 
+            cursor: not-allowed; 
+        }
+        .calendar-day { 
+            transition: all 0.15s ease; 
+            cursor: pointer; 
+        }
+        .calendar-day:hover { 
+            background: #f3f4f6; 
+        }
+        .calendar-day.selected { 
+            background: #7c3aed; 
+            color: white;
+            font-weight: 600;
+        }
+        .calendar-day.today:not(.selected) {
+            border: 2px solid #7c3aed;
+            color: #7c3aed;
+            font-weight: 600;
+        }
+        .calendar-day.has-points::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: #7c3aed;
+            border-radius: 50%;
+        }
+        .calendar-day.selected.has-points::after { 
+            background: white; 
+        }
+        .stat-bar { 
+            transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-radius: 4px 4px 0 0;
+        }
+        .btn-icon { 
+            transition: all 0.15s ease; 
+        }
+        .btn-icon:hover { 
+            background: #f3f4f6;
+        }
+        input:focus, textarea:focus { 
+            outline: none; 
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+        .modal-overlay {
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
+        }
+        .tooltip {
+            position: fixed;
+            background: #1f2937;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            z-index: 1000;
+            pointer-events: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .item-row { 
+            transition: background 0.15s ease; 
+            border-radius: 10px;
+        }
+        .item-row:hover { 
+            background: #f9fafb; 
+        }
+        [draggable="true"] { cursor: grab; }
+        [draggable="true"]:active { cursor: grabbing; }
+        .drag-over { 
+            border: 2px dashed #7c3aed !important; 
+            background: #faf5ff !important;
+        }
+        .dragging { opacity: 0.5; }
+        .accent-gradient {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+        }
+        .points-ring {
+            background: conic-gradient(#7c3aed var(--progress), #e5e7eb var(--progress));
+        }
+        .nav-btn {
+            transition: all 0.15s ease;
+        }
+        .nav-btn:hover {
+            background: #f3f4f6;
+        }
+        .add-btn {
+            transition: all 0.15s ease;
+        }
+        .add-btn:hover {
+            background: #7c3aed;
+            color: white;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 accent-gradient rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-900">Momentum</h1>
+            </div>
+            <div class="flex items-center gap-2 bg-white rounded-full px-2 py-1 border border-gray-200">
+                <button id="prevDay" class="nav-btn p-2 rounded-full">
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <span id="currentDate" class="text-sm font-semibold text-gray-800 px-3 min-w-48 text-center"></span>
+                <button id="nextDay" class="nav-btn p-2 rounded-full">
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Bento Grid -->
+        <div class="grid grid-cols-12 gap-5">
+            <!-- Left Column -->
+            <div class="col-span-3 flex flex-col gap-5">
+                <!-- Calendar Card -->
+                <div class="card p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-900 text-sm">Calendar</h3>
+                        <div class="flex items-center gap-1">
+                            <button id="prevMonth" class="btn-icon p-1.5 rounded-lg">
+                                <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <span id="calendarMonth" class="text-xs font-medium text-gray-600 w-20 text-center"></span>
+                            <button id="nextMonth" class="btn-icon p-1.5 rounded-lg">
+                                <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 text-center text-xs mb-2">
+                        <span class="text-gray-400 font-medium">M</span>
+                        <span class="text-gray-400 font-medium">T</span>
+                        <span class="text-gray-400 font-medium">W</span>
+                        <span class="text-gray-400 font-medium">T</span>
+                        <span class="text-gray-400 font-medium">F</span>
+                        <span class="text-gray-400 font-medium">S</span>
+                        <span class="text-gray-400 font-medium">S</span>
+                    </div>
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
+                </div>
+
+                <!-- Habits Card -->
+                <div class="card p-5 flex-1">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-900 text-sm">Daily Habits</h3>
+                        <button id="editHabits" class="btn-icon p-1.5 rounded-lg text-gray-400 hover:text-violet-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="habitsList" class="space-y-1"></div>
+                    <button id="addHabit" class="add-btn mt-4 w-full py-2 text-sm text-gray-500 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Add Habit
+                    </button>
+                </div>
+            </div>
+
+            <!-- Center Column -->
+            <div class="col-span-5 flex flex-col gap-5">
+                <!-- Pomodoros Card -->
+                <div class="card p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-900 text-sm">Focus Sessions</h3>
+                        <button id="editPomodoros" class="btn-icon p-1.5 rounded-lg text-gray-400 hover:text-violet-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="pomodorosList" class="space-y-4"></div>
+                    <button id="addPomoCategory" class="add-btn mt-4 w-full py-2 text-sm text-gray-500 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Add Category
+                    </button>
+                </div>
+
+                <!-- Tasks Card -->
+                <div class="card p-5 flex-1">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-900 text-sm">Today's Tasks</h3>
+                        <span class="text-xs font-medium px-2 py-1 rounded-full bg-violet-50 text-violet-600" id="taskPoints">0 pts</span>
+                    </div>
+                    <div id="tasksList" class="space-y-1 mb-4 max-h-64 overflow-y-auto"></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="newTaskInput" placeholder="Add a new task..." class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white">
+                        <input type="number" id="newTaskPoints" placeholder="Pts" class="w-16 px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-center bg-gray-50 focus:bg-white" value="5">
+                        <button id="addTask" class="px-4 py-2.5 accent-gradient text-white rounded-xl hover:opacity-90 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-span-4 flex flex-col gap-5">
+                <!-- Points Card -->
+                <div class="card p-6 accent-gradient text-white relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                    <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-medium text-white/80 text-sm">Available Points</h3>
+                            <div class="flex items-center gap-1 text-xs text-white/60">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span id="pointsTrend">+0 today</span>
+                            </div>
+                        </div>
+                        <div class="text-5xl font-bold mb-3" id="totalPoints">0</div>
+                        <div class="flex gap-4 text-sm text-white/70">
+                            <span><span id="totalEarned" class="font-semibold text-white">0</span> earned</span>
+                            <span><span id="totalSpent" class="font-semibold text-white">0</span> spent</span>
+                        </div>
+                        <div class="flex gap-4 text-xs text-white/50 mt-2 pt-2 border-t border-white/20">
+                            <span>Today: <span id="habitsCompleted" class="font-medium text-white/70">0</span> habits</span>
+                            <span><span id="pomosCompleted" class="font-medium text-white/70">0</span> sessions</span>
+                            <span><span id="tasksCompleted" class="font-medium text-white/70">0</span> tasks</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Treats Card -->
+                <div class="card p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-semibold text-gray-900 text-sm">Rewards</h3>
+                            <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-rose-50 text-rose-500" id="treatsSpent">0 spent</span>
+                        </div>
+                        <button id="editTreats" class="btn-icon p-1.5 rounded-lg text-gray-400 hover:text-violet-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="treatsList" class="space-y-2"></div>
+                    <button id="addTreat" class="add-btn mt-4 w-full py-2 text-sm text-gray-500 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Add Reward
+                    </button>
+                </div>
+
+                <!-- Statistics Card -->
+                <div class="card p-5 flex-1">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-900 text-sm">Weekly Overview</h3>
+                        <span class="text-xs text-gray-400">Last 7 days</span>
+                    </div>
+                    <div id="statsChart" class="flex items-stretch justify-between h-32 gap-2 mb-4"></div>
+                    <div class="flex justify-center gap-6 text-xs">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                            <span class="text-gray-500">Habits</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-violet-400"></span>
+                            <span class="text-gray-500">Sessions</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                            <span class="text-gray-500">Tasks</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+            <div class="flex justify-between items-center mb-5">
+                <h3 id="modalTitle" class="text-lg font-bold text-gray-900">Edit Items</h3>
+                <button id="closeModal" class="btn-icon p-2 rounded-lg text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div id="modalContent" class="space-y-2 max-h-80 overflow-y-auto pr-2"></div>
+            <button id="modalSave" class="mt-5 w-full py-3 accent-gradient text-white rounded-xl font-medium hover:opacity-90 transition">
+                Save Changes
+            </button>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip hidden"></div>
+
+    <script>
+        // State Management
+        // Initialize to today's date in GMT+3 timezone
+        function getTodayGMT3() {
+            const now = new Date();
+            // Get UTC time and add 3 hours for GMT+3
+            const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const gmt3Time = new Date(utcTime + (3 * 60 * 60 * 1000));
+            gmt3Time.setHours(0, 0, 0, 0);
+            return gmt3Time;
+        }
+        
+        let currentDate = getTodayGMT3();
+        let calendarDate = getTodayGMT3();
+        let editMode = null;
+        
+        // Default data
+        const defaultHabits = [
+            { id: 1, name: 'Morning meditation', points: 10, color: '#10b981' },
+            { id: 2, name: 'Exercise', points: 15, color: '#f59e0b' },
+            { id: 3, name: 'Read 30 mins', points: 10, color: '#3b82f6' },
+            { id: 4, name: 'Drink 8 glasses water', points: 5, color: '#06b6d4' }
+        ];
+
+        const defaultPomoCategories = [
+            { id: 1, name: 'Deep Work', color: '#7c3aed', count: 4, pointsEach: 10 },
+            { id: 2, name: 'Learning', color: '#ec4899', count: 3, pointsEach: 8 },
+            { id: 3, name: 'Admin', color: '#6b7280', count: 2, pointsEach: 5 }
+        ];
+
+        const defaultTreats = [
+            { id: 1, name: 'Coffee break', cost: 15, emoji: '☕' },
+            { id: 2, name: 'Netflix episode', cost: 30, emoji: '📺' },
+            { id: 3, name: 'Snack', cost: 10, emoji: '🍪' },
+            { id: 4, name: 'Gaming hour', cost: 50, emoji: '🎮' }
+        ];
+
+        // Utility functions
+        function getDateKey(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function loadGlobalData() {
+            return {
+                habits: JSON.parse(localStorage.getItem('habits')) || [...defaultHabits],
+                pomoCategories: JSON.parse(localStorage.getItem('pomoCategories')) || [...defaultPomoCategories],
+                treats: JSON.parse(localStorage.getItem('treats')) || [...defaultTreats]
+            };
+        }
+
+        function saveGlobalData(data) {
+            localStorage.setItem('habits', JSON.stringify(data.habits));
+            localStorage.setItem('pomoCategories', JSON.stringify(data.pomoCategories));
+            localStorage.setItem('treats', JSON.stringify(data.treats));
+        }
+
+        function loadDayData(date) {
+            const key = getDateKey(date);
+            const saved = localStorage.getItem(`day_${key}`);
+            if (saved) return JSON.parse(saved);
+            
+            const global = loadGlobalData();
+            return {
+                habitsCompleted: [],
+                pomosCompleted: global.pomoCategories.map(c => ({ id: c.id, completed: [] })),
+                tasks: [],
+                treatsUsed: global.treats.map(t => ({ id: t.id, count: 0 }))
+            };
+        }
+
+        function saveDayData(date, data) {
+            const key = getDateKey(date);
+            localStorage.setItem(`day_${key}`, JSON.stringify(data));
+        }
+
+        function formatDate(date) {
+            const today = getTodayGMT3();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            if (getDateKey(date) === getDateKey(today)) return 'Today';
+            if (getDateKey(date) === getDateKey(yesterday)) return 'Yesterday';
+            if (getDateKey(date) === getDateKey(tomorrow)) return 'Tomorrow';
+            
+            return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+        }
+
+        // Render functions
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const monthLabel = document.getElementById('calendarMonth');
+            const today = getTodayGMT3();
+            
+            monthLabel.textContent = calendarDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            
+            const firstDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
+            const lastDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0);
+            // Convert Sunday (0) to 6, and Mon-Sat (1-6) to 0-5 for Monday start
+            const startDay = (firstDay.getDay() + 6) % 7;
+            
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < startDay; i++) {
+                grid.innerHTML += '<div class="h-8"></div>';
+            }
+            
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const date = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), day);
+                const dayKey = getDateKey(date);
+                const isSelected = getDateKey(currentDate) === dayKey;
+                const isToday = getDateKey(today) === dayKey;
+                const hasData = localStorage.getItem(`day_${dayKey}`);
+                const points = hasData ? calculateDayPoints(date) : 0;
+                
+                grid.innerHTML += `
+                    <div class="calendar-day h-8 w-8 flex items-center justify-center text-xs rounded-lg relative
+                        ${isSelected ? 'selected' : ''} ${isToday && !isSelected ? 'today' : ''} ${points > 0 ? 'has-points' : ''}"
+                        data-date="${dayKey}">
+                        ${day}
+                    </div>
+                `;
+            }
+            
+            grid.querySelectorAll('.calendar-day').forEach(el => {
+                el.addEventListener('click', () => {
+                    currentDate = new Date(el.dataset.date);
+                    render();
+                });
+            });
+        }
+
+        function renderHabits() {
+            const container = document.getElementById('habitsList');
+            const global = loadGlobalData();
+            const dayData = loadDayData(currentDate);
+            
+            container.innerHTML = global.habits.map(habit => {
+                const isCompleted = dayData.habitsCompleted.includes(habit.id);
+                return `
+                    <div class="item-row flex items-center gap-3 p-2.5 ${isCompleted ? 'completed' : ''}" 
+                         draggable="true" data-id="${habit.id}" data-type="habit">
+                        <div class="check-circle w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+                             style="border-color: ${habit.color}; ${isCompleted ? `background: ${habit.color}` : ''}"
+                             data-id="${habit.id}">
+                            ${isCompleted ? '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>' : ''}
+                        </div>
+                        <span class="flex-1 text-sm text-gray-700">${habit.name}</span>
+                        <span class="text-xs font-medium text-gray-400">${habit.points}</span>
+                    </div>
+                `;
+            }).join('');
+            
+            container.querySelectorAll('.check-circle').forEach(el => {
+                el.addEventListener('click', () => toggleHabit(parseInt(el.dataset.id)));
+            });
+            
+            setupDragDrop(container, 'habits');
+        }
+
+        function renderPomodoros() {
+            const container = document.getElementById('pomodorosList');
+            const global = loadGlobalData();
+            const dayData = loadDayData(currentDate);
+            
+            container.innerHTML = global.pomoCategories.map(cat => {
+                const catData = dayData.pomosCompleted.find(p => p.id === cat.id) || { completed: [] };
+                const completedCount = catData.completed.length;
+                return `
+                    <div class="flex items-center gap-4" data-id="${cat.id}" data-type="pomo">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 rounded-full" style="background: ${cat.color}"></div>
+                                    <span class="text-sm font-medium text-gray-800">${cat.name}</span>
+                                </div>
+                                <span class="text-xs text-gray-400">${completedCount}/${cat.count} • ${cat.pointsEach} pts each</span>
+                            </div>
+                            <div class="flex gap-2">
+                                ${Array(cat.count).fill(0).map((_, i) => {
+                                    const isCompleted = catData.completed.includes(i);
+                                    return `
+                                        <div class="pomo-dot w-5 h-5 rounded-xl flex items-center justify-center text-xs font-medium
+                                            ${isCompleted ? 'text-white' : 'text-gray-400 border-2 border-gray-200 bg-gray-50'}"
+                                            style="${isCompleted ? `background: ${cat.color}` : ''}"
+                                            data-cat="${cat.id}" data-idx="${i}">
+                                            ${isCompleted ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>' : (i + 1)}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.querySelectorAll('.pomo-dot').forEach(el => {
+                el.addEventListener('click', () => togglePomo(parseInt(el.dataset.cat), parseInt(el.dataset.idx)));
+            });
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasksList');
+            const dayData = loadDayData(currentDate);
+            
+            if (dayData.tasks.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-400 text-sm">No tasks yet. Add one below!</div>';
+            } else {
+                container.innerHTML = dayData.tasks.map((task, idx) => `
+                    <div class="task-item flex items-center gap-3 p-2.5 rounded-xl group ${task.completed ? 'completed' : ''}" data-idx="${idx}">
+                        <input type="checkbox" class="w-4 h-4 accent-violet-600 rounded" ${task.completed ? 'checked' : ''} data-idx="${idx}">
+                        <span class="flex-1 text-sm text-gray-700">${task.name}</span>
+                        <span class="text-xs font-medium text-gray-400">${task.points}</span>
+                        <div class="task-actions flex gap-0.5">
+                            <button class="edit-task btn-icon p-1.5 rounded-lg" data-idx="${idx}" title="Edit">
+                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                </svg>
+                            </button>
+                            <button class="postpone-task btn-icon p-1.5 rounded-lg" data-idx="${idx}" title="Move to tomorrow">
+                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                </svg>
+                            </button>
+                            <button class="delete-task btn-icon p-1.5 rounded-lg" data-idx="${idx}" title="Delete">
+                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            container.querySelectorAll('input[type="checkbox"]').forEach(el => {
+                el.addEventListener('change', () => toggleTask(parseInt(el.dataset.idx)));
+            });
+            container.querySelectorAll('.edit-task').forEach(el => {
+                el.addEventListener('click', () => editTask(parseInt(el.dataset.idx)));
+            });
+            container.querySelectorAll('.postpone-task').forEach(el => {
+                el.addEventListener('click', () => postponeTask(parseInt(el.dataset.idx)));
+            });
+            container.querySelectorAll('.delete-task').forEach(el => {
+                el.addEventListener('click', () => deleteTask(parseInt(el.dataset.idx)));
+            });
+            
+            const totalTaskPoints = dayData.tasks.filter(t => t.completed).reduce((sum, t) => sum + t.points, 0);
+            document.getElementById('taskPoints').textContent = `${totalTaskPoints} pts`;
+        }
+
+        function renderTreats() {
+            const container = document.getElementById('treatsList');
+            const global = loadGlobalData();
+            const dayData = loadDayData(currentDate);
+            const allTimePoints = calculateAllTimePoints();
+            const availablePoints = allTimePoints.available;
+            const todaySpent = calculateSpentPoints(currentDate);
+            
+            document.getElementById('treatsSpent').textContent = `${allTimePoints.spent} total spent`;
+            
+            container.innerHTML = global.treats.map(treat => {
+                const treatData = dayData.treatsUsed.find(t => t.id === treat.id) || { count: 0 };
+                const canAfford = availablePoints >= treat.cost;
+                return `
+                    <div class="treat-item flex items-center gap-3 p-3 rounded-xl border border-gray-100 ${canAfford ? 'affordable' : 'unaffordable'}" 
+                         data-id="${treat.id}">
+                        <span class="text-2xl">${treat.emoji}</span>
+                        <div class="flex-1">
+                            <span class="text-sm font-medium text-gray-800">${treat.name}</span>
+                            <span class="text-xs text-rose-400 ml-2">-${treat.cost} pts</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="treat-dec w-6 h-6 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 flex items-center justify-center text-sm font-bold ${treatData.count === 0 ? 'invisible' : ''}" data-id="${treat.id}">−</button>
+                            <span class="treat-count text-sm font-semibold w-6 text-center cursor-pointer" data-id="${treat.id}">${treatData.count}</span>
+                            <button class="treat-inc w-6 h-6 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 flex items-center justify-center text-sm font-bold ${canAfford ? '' : 'invisible'}" data-id="${treat.id}">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.querySelectorAll('.treat-inc').forEach(el => {
+                el.addEventListener('click', () => changeTreat(parseInt(el.dataset.id), 1));
+            });
+            container.querySelectorAll('.treat-dec').forEach(el => {
+                el.addEventListener('click', () => changeTreat(parseInt(el.dataset.id), -1));
+            });
+            container.querySelectorAll('.treat-count').forEach(el => {
+                el.addEventListener('click', () => editTreatCount(parseInt(el.dataset.id)));
+            });
+        }
+
+        function renderStats() {
+            const container = document.getElementById('statsChart');
+            const days = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(currentDate);
+                date.setDate(date.getDate() - i);
+                days.push(date);
+            }
+            
+            let maxHabits = 1, maxPomos = 1, maxTasks = 1;
+            const global = loadGlobalData();
+            
+            days.forEach(date => {
+                const dayData = loadDayData(date);
+                maxHabits = Math.max(maxHabits, global.habits.length);
+                maxPomos = Math.max(maxPomos, global.pomoCategories.reduce((sum, c) => sum + c.count, 0));
+                maxTasks = Math.max(maxTasks, dayData.tasks.length || 1);
+            });
+            
+            container.innerHTML = days.map(date => {
+                const dayData = loadDayData(date);
+                const habitsCompleted = dayData.habitsCompleted.length;
+                const pomosCompleted = dayData.pomosCompleted.reduce((sum, p) => sum + p.completed.length, 0);
+                const tasksCompleted = dayData.tasks.filter(t => t.completed).length;
+                
+                const hHeight = (habitsCompleted / maxHabits) * 100;
+                const pHeight = (pomosCompleted / maxPomos) * 100;
+                const tHeight = (tasksCompleted / maxTasks) * 100;
+                
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+                const isToday = getDateKey(date) === getDateKey(currentDate);
+                
+                return `
+                    <div class="flex-1 flex flex-col items-center stat-group cursor-pointer" 
+                         data-habits="${habitsCompleted}" data-pomos="${pomosCompleted}" data-tasks="${tasksCompleted}"
+                         data-date="${date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}">
+                        <div class="flex-1 w-full flex items-end justify-center gap-0.5 pb-2">
+                            <div class="stat-bar w-2 bg-emerald-400" style="height: ${Math.max(hHeight, 4)}%"></div>
+                            <div class="stat-bar w-2 bg-violet-400" style="height: ${Math.max(pHeight, 4)}%"></div>
+                            <div class="stat-bar w-2 bg-amber-400" style="height: ${Math.max(tHeight, 4)}%"></div>
+                        </div>
+                        <span class="text-xs font-medium ${isToday ? 'text-violet-600' : 'text-gray-400'}">${dayName}</span>
+                    </div>
+                `;
+            }).join('');
+            
+            container.querySelectorAll('.stat-group').forEach(el => {
+                el.addEventListener('mouseenter', (e) => {
+                    const tooltip = document.getElementById('tooltip');
+                    tooltip.innerHTML = `
+                        <div class="font-semibold mb-1">${el.dataset.date}</div>
+                        <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Habits: ${el.dataset.habits}</div>
+                        <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-violet-400"></span>Sessions: ${el.dataset.pomos}</div>
+                        <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Tasks: ${el.dataset.tasks}</div>
+                    `;
+                    tooltip.classList.remove('hidden');
+                    const rect = el.getBoundingClientRect();
+                    tooltip.style.left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2 + 'px';
+                    tooltip.style.top = rect.top - tooltip.offsetHeight - 10 + 'px';
+                });
+                el.addEventListener('mouseleave', () => {
+                    document.getElementById('tooltip').classList.add('hidden');
+                });
+            });
+        }
+
+        function renderPoints() {
+            const allTimePoints = calculateAllTimePoints();
+            const todayEarned = calculateTodayEarned(currentDate);
+            const dayData = loadDayData(currentDate);
+            
+            document.getElementById('totalPoints').textContent = allTimePoints.available;
+            document.getElementById('totalEarned').textContent = allTimePoints.earned;
+            document.getElementById('totalSpent').textContent = allTimePoints.spent;
+            document.getElementById('habitsCompleted').textContent = dayData.habitsCompleted.length;
+            document.getElementById('pomosCompleted').textContent = dayData.pomosCompleted.reduce((sum, p) => sum + p.completed.length, 0);
+            document.getElementById('tasksCompleted').textContent = dayData.tasks.filter(t => t.completed).length;
+            
+            // Show today's earned points
+            document.getElementById('pointsTrend').textContent = `+${todayEarned} today`;
+        }
+
+        function calculateDayPoints(date) {
+            const global = loadGlobalData();
+            const dayData = loadDayData(date);
+            
+            let points = 0;
+            
+            dayData.habitsCompleted.forEach(id => {
+                const habit = global.habits.find(h => h.id === id);
+                if (habit) points += habit.points;
+            });
+            
+            dayData.pomosCompleted.forEach(pomo => {
+                const cat = global.pomoCategories.find(c => c.id === pomo.id);
+                if (cat) points += pomo.completed.length * cat.pointsEach;
+            });
+            
+            dayData.tasks.forEach(task => {
+                if (task.completed) points += task.points;
+            });
+            
+            points -= calculateSpentPoints(date);
+            
+            return points;
+        }
+
+        function calculateSpentPoints(date) {
+            const global = loadGlobalData();
+            const dayData = loadDayData(date);
+            let spent = 0;
+            
+            dayData.treatsUsed.forEach(t => {
+                const treat = global.treats.find(tr => tr.id === t.id);
+                if (treat) spent += t.count * treat.cost;
+            });
+            
+            return spent;
+        }
+
+        function calculateAllTimePoints() {
+            const global = loadGlobalData();
+            let totalEarned = 0;
+            let totalSpent = 0;
+            
+            // Iterate through all saved day data in localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('day_')) {
+                    const dateStr = key.replace('day_', '');
+                    const date = new Date(dateStr);
+                    const dayData = JSON.parse(localStorage.getItem(key));
+                    
+                    // Calculate earned points for this day
+                    dayData.habitsCompleted?.forEach(id => {
+                        const habit = global.habits.find(h => h.id === id);
+                        if (habit) totalEarned += habit.points;
+                    });
+                    
+                    dayData.pomosCompleted?.forEach(pomo => {
+                        const cat = global.pomoCategories.find(c => c.id === pomo.id);
+                        if (cat) totalEarned += pomo.completed.length * cat.pointsEach;
+                    });
+                    
+                    dayData.tasks?.forEach(task => {
+                        if (task.completed) totalEarned += task.points;
+                    });
+                    
+                    // Calculate spent points for this day
+                    dayData.treatsUsed?.forEach(t => {
+                        const treat = global.treats.find(tr => tr.id === t.id);
+                        if (treat) totalSpent += t.count * treat.cost;
+                    });
+                }
+            }
+            
+            return { earned: totalEarned, spent: totalSpent, available: totalEarned - totalSpent };
+        }
+
+        function calculateTodayEarned(date) {
+            const global = loadGlobalData();
+            const dayData = loadDayData(date);
+            let points = 0;
+            
+            dayData.habitsCompleted.forEach(id => {
+                const habit = global.habits.find(h => h.id === id);
+                if (habit) points += habit.points;
+            });
+            
+            dayData.pomosCompleted.forEach(pomo => {
+                const cat = global.pomoCategories.find(c => c.id === pomo.id);
+                if (cat) points += pomo.completed.length * cat.pointsEach;
+            });
+            
+            dayData.tasks.forEach(task => {
+                if (task.completed) points += task.points;
+            });
+            
+            return points;
+        }
+
+        // Action handlers
+        function toggleHabit(id) {
+            const dayData = loadDayData(currentDate);
+            const idx = dayData.habitsCompleted.indexOf(id);
+            if (idx >= 0) {
+                dayData.habitsCompleted.splice(idx, 1);
+            } else {
+                dayData.habitsCompleted.push(id);
+            }
+            saveDayData(currentDate, dayData);
+            render();
+        }
+
+        function togglePomo(catId, idx) {
+            const dayData = loadDayData(currentDate);
+            let catData = dayData.pomosCompleted.find(p => p.id === catId);
+            if (!catData) {
+                catData = { id: catId, completed: [] };
+                dayData.pomosCompleted.push(catData);
+            }
+            
+            const completedIdx = catData.completed.indexOf(idx);
+            if (completedIdx >= 0) {
+                catData.completed.splice(completedIdx, 1);
+            } else {
+                catData.completed.push(idx);
+            }
+            saveDayData(currentDate, dayData);
+            render();
+        }
+
+        function toggleTask(idx) {
+            const dayData = loadDayData(currentDate);
+            dayData.tasks[idx].completed = !dayData.tasks[idx].completed;
+            saveDayData(currentDate, dayData);
+            render();
+        }
+
+        function addTask() {
+            const input = document.getElementById('newTaskInput');
+            const pointsInput = document.getElementById('newTaskPoints');
+            if (!input.value.trim()) return;
+            
+            const dayData = loadDayData(currentDate);
+            dayData.tasks.push({
+                name: input.value.trim(),
+                points: parseInt(pointsInput.value) || 5,
+                completed: false
+            });
+            saveDayData(currentDate, dayData);
+            input.value = '';
+            render();
+        }
+
+        function editTask(idx) {
+            const dayData = loadDayData(currentDate);
+            const task = dayData.tasks[idx];
+            const newName = prompt('Task name:', task.name);
+            if (newName === null) return;
+            const newPoints = prompt('Points:', task.points);
+            if (newPoints === null) return;
+            
+            task.name = newName || task.name;
+            task.points = parseInt(newPoints) || task.points;
+            saveDayData(currentDate, dayData);
+            render();
+        }
+
+        function postponeTask(idx) {
+            const dayData = loadDayData(currentDate);
+            const task = dayData.tasks.splice(idx, 1)[0];
+            task.completed = false;
+            
+            const nextDay = new Date(currentDate);
+            nextDay.setDate(nextDay.getDate() + 1);
+            const nextDayData = loadDayData(nextDay);
+            nextDayData.tasks.push(task);
+            
+            saveDayData(currentDate, dayData);
+            saveDayData(nextDay, nextDayData);
+            render();
+        }
+
+        function deleteTask(idx) {
+            if (!confirm('Delete this task?')) return;
+            const dayData = loadDayData(currentDate);
+            dayData.tasks.splice(idx, 1);
+            saveDayData(currentDate, dayData);
+            render();
+        }
+
+        function changeTreat(id, delta) {
+            const dayData = loadDayData(currentDate);
+            const global = loadGlobalData();
+            const treat = global.treats.find(t => t.id === id);
+            
+            let treatData = dayData.treatsUsed.find(t => t.id === id);
+            if (!treatData) {
+                treatData = { id, count: 0 };
+                dayData.treatsUsed.push(treatData);
+            }
+            
+            // Use cumulative available points to check affordability
+            const allTimePoints = calculateAllTimePoints();
+            if (delta > 0 && allTimePoints.available < treat.cost) return;
+            
+            treatData.count = Math.max(0, treatData.count + delta);
+            saveDayData(currentDate, dayData);
+            render();
+        }
+
+        function editTreatCount(id) {
+            const dayData = loadDayData(currentDate);
+            let treatData = dayData.treatsUsed.find(t => t.id === id);
+            if (!treatData) {
+                treatData = { id, count: 0 };
+                dayData.treatsUsed.push(treatData);
+            }
+            
+            const newCount = prompt('Number of treats:', treatData.count);
+            if (newCount === null) return;
+            treatData.count = Math.max(0, parseInt(newCount) || 0);
+            saveDayData(currentDate, dayData);
+            render();
+        }
+
+        // Modal functions
+        function openEditModal(type) {
+            editMode = type;
+            const modal = document.getElementById('editModal');
+            const title = document.getElementById('modalTitle');
+            const content = document.getElementById('modalContent');
+            const global = loadGlobalData();
+            
+            let items, fields;
+            switch(type) {
+                case 'habits':
+                    title.textContent = 'Edit Habits';
+                    items = global.habits;
+                    fields = ['name', 'points', 'color'];
+                    break;
+                case 'pomodoros':
+                    title.textContent = 'Edit Focus Categories';
+                    items = global.pomoCategories;
+                    fields = ['name', 'count', 'pointsEach', 'color'];
+                    break;
+                case 'treats':
+                    title.textContent = 'Edit Rewards';
+                    items = global.treats;
+                    fields = ['emoji', 'name', 'cost'];
+                    break;
+            }
+            
+            content.innerHTML = items.map((item, idx) => `
+                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl" draggable="true" data-idx="${idx}">
+                    <div class="flex flex-col gap-0.5">
+                        <button class="move-up text-gray-300 hover:text-gray-500 text-xs" data-idx="${idx}">▲</button>
+                        <button class="move-down text-gray-300 hover:text-gray-500 text-xs" data-idx="${idx}">▼</button>
+                    </div>
+                    <div class="flex-1 flex gap-2 items-center">
+                        ${fields.map(f => {
+                            if (f === 'color') {
+                                return `<input type="color" class="w-8 h-8 rounded-lg cursor-pointer border-0" data-field="${f}" value="${item[f]}">`;
+                            }
+                            if (f === 'emoji') {
+                                return `<input type="text" class="w-12 px-2 py-1.5 border border-gray-200 rounded-lg text-center text-lg" data-field="${f}" value="${item[f]}">`;
+                            }
+                            return `<input type="${f === 'points' || f === 'cost' || f === 'count' || f === 'pointsEach' ? 'number' : 'text'}" 
+                                class="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm" data-field="${f}" value="${item[f]}" placeholder="${f}">`;
+                        }).join('')}
+                    </div>
+                    <button class="delete-item text-gray-300 hover:text-rose-500 transition" data-idx="${idx}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('') + `
+                <button id="addNewItem" class="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-violet-400 hover:text-violet-500 transition font-medium">
+                    + Add New
+                </button>
+            `;
+            
+            content.querySelectorAll('.move-up').forEach(el => {
+                el.addEventListener('click', () => moveItem(parseInt(el.dataset.idx), -1));
+            });
+            content.querySelectorAll('.move-down').forEach(el => {
+                el.addEventListener('click', () => moveItem(parseInt(el.dataset.idx), 1));
+            });
+            content.querySelectorAll('.delete-item').forEach(el => {
+                el.addEventListener('click', () => deleteItem(parseInt(el.dataset.idx)));
+            });
+            document.getElementById('addNewItem').addEventListener('click', addNewItem);
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            document.getElementById('editModal').classList.remove('flex');
+        }
+
+        function saveModalChanges() {
+            const content = document.getElementById('modalContent');
+            const global = loadGlobalData();
+            const items = [];
+            
+            content.querySelectorAll('[draggable="true"]').forEach((row, idx) => {
+                const item = { id: idx + 1 };
+                row.querySelectorAll('input').forEach(input => {
+                    const field = input.dataset.field;
+                    let value = input.value;
+                    if (input.type === 'number') value = parseInt(value) || 0;
+                    item[field] = value;
+                });
+                items.push(item);
+            });
+            
+            switch(editMode) {
+                case 'habits': global.habits = items; break;
+                case 'pomodoros': global.pomoCategories = items; break;
+                case 'treats': global.treats = items; break;
+            }
+            
+            saveGlobalData(global);
+            closeEditModal();
+            render();
+        }
+
+        function moveItem(idx, direction) {
+            const content = document.getElementById('modalContent');
+            const rows = content.querySelectorAll('[draggable="true"]');
+            const newIdx = idx + direction;
+            
+            if (newIdx < 0 || newIdx >= rows.length) return;
+            
+            const parent = rows[0].parentNode;
+            if (direction < 0) {
+                parent.insertBefore(rows[idx], rows[newIdx]);
+            } else {
+                parent.insertBefore(rows[newIdx], rows[idx]);
+            }
+            
+            content.querySelectorAll('[draggable="true"]').forEach((row, i) => {
+                row.dataset.idx = i;
+                row.querySelectorAll('[data-idx]').forEach(el => el.dataset.idx = i);
+            });
+        }
+
+        function deleteItem(idx) {
+            const content = document.getElementById('modalContent');
+            const rows = content.querySelectorAll('[draggable="true"]');
+            rows[idx].remove();
+        }
+
+        function addNewItem() {
+            const content = document.getElementById('modalContent');
+            const addBtn = document.getElementById('addNewItem');
+            
+            let newItem, fields;
+            switch(editMode) {
+                case 'habits':
+                    newItem = { name: 'New Habit', points: 10, color: '#7c3aed' };
+                    fields = ['name', 'points', 'color'];
+                    break;
+                case 'pomodoros':
+                    newItem = { name: 'New Category', count: 4, pointsEach: 10, color: '#7c3aed' };
+                    fields = ['name', 'count', 'pointsEach', 'color'];
+                    break;
+                case 'treats':
+                    newItem = { emoji: '🎁', name: 'New Reward', cost: 20 };
+                    fields = ['emoji', 'name', 'cost'];
+                    break;
+            }
+            
+            const idx = content.querySelectorAll('[draggable="true"]').length;
+            const newRow = document.createElement('div');
+            newRow.className = 'flex items-center gap-3 p-3 bg-gray-50 rounded-xl';
+            newRow.draggable = true;
+            newRow.dataset.idx = idx;
+            newRow.innerHTML = `
+                <div class="flex flex-col gap-0.5">
+                    <button class="move-up text-gray-300 hover:text-gray-500 text-xs" data-idx="${idx}">▲</button>
+                    <button class="move-down text-gray-300 hover:text-gray-500 text-xs" data-idx="${idx}">▼</button>
+                </div>
+                <div class="flex-1 flex gap-2 items-center">
+                    ${fields.map(f => {
+                        if (f === 'color') {
+                            return `<input type="color" class="w-8 h-8 rounded-lg cursor-pointer border-0" data-field="${f}" value="${newItem[f]}">`;
+                        }
+                        if (f === 'emoji') {
+                            return `<input type="text" class="w-12 px-2 py-1.5 border border-gray-200 rounded-lg text-center text-lg" data-field="${f}" value="${newItem[f]}">`;
+                        }
+                        return `<input type="${f === 'points' || f === 'cost' || f === 'count' || f === 'pointsEach' ? 'number' : 'text'}" 
+                            class="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm" data-field="${f}" value="${newItem[f]}" placeholder="${f}">`;
+                    }).join('')}
+                </div>
+                <button class="delete-item text-gray-300 hover:text-rose-500 transition" data-idx="${idx}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+            `;
+            
+            content.insertBefore(newRow, addBtn);
+            
+            newRow.querySelector('.move-up').addEventListener('click', () => moveItem(idx, -1));
+            newRow.querySelector('.move-down').addEventListener('click', () => moveItem(idx, 1));
+            newRow.querySelector('.delete-item').addEventListener('click', () => deleteItem(idx));
+        }
+
+        function setupDragDrop(container, type) {
+            container.querySelectorAll('[draggable="true"]').forEach(el => {
+                el.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', el.dataset.id);
+                    el.classList.add('dragging');
+                });
+                el.addEventListener('dragend', () => {
+                    el.classList.remove('dragging');
+                });
+                el.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    el.classList.add('drag-over');
+                });
+                el.addEventListener('dragleave', () => {
+                    el.classList.remove('drag-over');
+                });
+                el.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    el.classList.remove('drag-over');
+                    const draggedId = parseInt(e.dataTransfer.getData('text/plain'));
+                    const targetId = parseInt(el.dataset.id);
+                    if (draggedId !== targetId) {
+                        reorderItems(type, draggedId, targetId);
+                    }
+                });
+            });
+        }
+
+        function reorderItems(type, fromId, toId) {
+            const global = loadGlobalData();
+            let items;
+            switch(type) {
+                case 'habits': items = global.habits; break;
+                case 'pomodoros': items = global.pomoCategories; break;
+                case 'treats': items = global.treats; break;
+            }
+            
+            const fromIdx = items.findIndex(i => i.id === fromId);
+            const toIdx = items.findIndex(i => i.id === toId);
+            const [item] = items.splice(fromIdx, 1);
+            items.splice(toIdx, 0, item);
+            
+            saveGlobalData(global);
+            render();
+        }
+
+        // Main render
+        function render() {
+            document.getElementById('currentDate').textContent = formatDate(currentDate);
+            renderCalendar();
+            renderHabits();
+            renderPomodoros();
+            renderTasks();
+            renderTreats();
+            renderPoints();
+            renderStats();
+        }
+
+        // Event listeners
+        document.getElementById('prevDay').addEventListener('click', () => {
+            currentDate.setDate(currentDate.getDate() - 1);
+            render();
+        });
+
+        document.getElementById('nextDay').addEventListener('click', () => {
+            currentDate.setDate(currentDate.getDate() + 1);
+            render();
+        });
+
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            calendarDate.setMonth(calendarDate.getMonth() - 1);
+            renderCalendar();
+        });
+
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            calendarDate.setMonth(calendarDate.getMonth() + 1);
+            renderCalendar();
+        });
+
+        document.getElementById('addTask').addEventListener('click', addTask);
+        document.getElementById('newTaskInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+
+        document.getElementById('editHabits').addEventListener('click', () => openEditModal('habits'));
+        document.getElementById('editPomodoros').addEventListener('click', () => openEditModal('pomodoros'));
+        document.getElementById('editTreats').addEventListener('click', () => openEditModal('treats'));
+
+        document.getElementById('addHabit').addEventListener('click', () => {
+            openEditModal('habits');
+            setTimeout(addNewItem, 100);
+        });
+        document.getElementById('addPomoCategory').addEventListener('click', () => {
+            openEditModal('pomodoros');
+            setTimeout(addNewItem, 100);
+        });
+        document.getElementById('addTreat').addEventListener('click', () => {
+            openEditModal('treats');
+            setTimeout(addNewItem, 100);
+        });
+
+        document.getElementById('closeModal').addEventListener('click', closeEditModal);
+        document.getElementById('modalSave').addEventListener('click', saveModalChanges);
+        document.getElementById('editModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('editModal')) closeEditModal();
+        });
+
+        // Initialize
+        render();
+    </script>
+</body>
+</html>
