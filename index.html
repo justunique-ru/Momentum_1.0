@@ -11,6 +11,7 @@
         body { 
             background: #f8f9fb;
             min-height: 100vh;
+            margin: 0;
         }
         .card {
             background: white;
@@ -168,20 +169,142 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #9ca3af;
         }
+        .sidebar-menu {
+            transition: all 0.3s ease;
+        }
+        .menu-item {
+            transition: all 0.2s ease;
+        }
+        .menu-item:hover {
+            background: #f3f4f6;
+        }
+        .menu-item.active {
+            background: #7c3aed;
+            color: white;
+        }
+        .menu-item.active:hover {
+            background: #6d28d9;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .goal-card {
+            transition: all 0.2s ease;
+        }
+        .goal-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .milestone-item, .goal-task-item {
+            transition: all 0.15s ease;
+        }
+        .milestone-item:hover, .goal-task-item:hover {
+            background: #f9fafb;
+        }
+        .inline-add-form {
+            animation: slideDown 0.2s ease;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .milestone-points-badge {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        }
+        .milestone-block {
+            border-left: 3px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+        .milestone-block:hover {
+            border-left-color: #7c3aed;
+        }
+        .milestone-block.completed {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+        .milestone-header {
+            cursor: pointer;
+        }
+        .milestone-tasks {
+            transition: all 0.3s ease;
+        }
+        .subtask-item {
+            transition: all 0.15s ease;
+        }
+        .subtask-item:hover {
+            background: #f9fafb;
+        }
+        .subtasks-container {
+            border-left: 2px solid #e5e7eb;
+            margin-left: 8px;
+            padding-left: 12px;
+        }
+        .task-expandable {
+            cursor: pointer;
+        }
+        .task-expand-icon {
+            transition: transform 0.2s ease;
+        }
+        .task-expand-icon.expanded {
+            transform: rotate(90deg);
+        }
     </style>
 </head>
-<body class="p-8">
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <header class="flex justify-between items-center mb-8">
-            <div class="flex items-center gap-3">
+<body class="bg-gray-50">
+    <div class="flex min-h-screen">
+        <!-- Sidebar Menu -->
+        <aside class="w-64 bg-white border-r border-gray-200 flex flex-col p-6 sidebar-menu">
+            <div class="flex items-center gap-3 mb-8">
                 <div class="w-10 h-10 accent-gradient rounded-xl flex items-center justify-center">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
                 </div>
-                <h1 class="text-2xl font-bold text-gray-900">Momentum</h1>
+                <h1 class="text-xl font-bold text-gray-900">Momentum</h1>
             </div>
+            <nav class="flex-1 space-y-1">
+                <button data-page="planner" class="menu-item active w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    Planner
+                </button>
+                <button data-page="goals" class="menu-item w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Goals
+                </button>
+                <a href="#wishlist" class="menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                    Wishlist
+                </a>
+                <a href="#money" class="menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Money
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8">
+            <div class="max-w-7xl mx-auto">
+        <!-- Planner Page -->
+        <div id="planner-page" class="page active">
+        <!-- Header -->
+        <header class="flex justify-end items-center mb-8">
             <div class="flex items-center gap-2 bg-white rounded-full px-2 py-1 border border-gray-200">
                 <button id="prevDay" class="nav-btn p-2 rounded-full">
                     <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -369,6 +492,28 @@
                 </div>
             </div>
         </div>
+        </div>
+        
+        <!-- Goals Page -->
+        <div id="goals-page" class="page">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Goals</h2>
+                <p class="text-gray-500">Manage your goals, milestones, and tasks</p>
+            </div>
+            
+            <!-- Add Goal Button -->
+            <button id="addGoalBtn" class="mb-6 px-6 py-3 accent-gradient text-white rounded-xl font-medium hover:opacity-90 transition flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Add New Goal
+            </button>
+            
+            <!-- Goals List -->
+            <div id="goalsList" class="space-y-6"></div>
+        </div>
+            </div>
+        </main>
     </div>
 
     <!-- Edit Modal -->
@@ -391,6 +536,66 @@
 
     <!-- Tooltip -->
     <div id="tooltip" class="tooltip hidden"></div>
+
+    <!-- Goal Form Modal -->
+    <div id="goalFormModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+            <div class="flex justify-between items-center mb-5">
+                <h3 id="goalFormTitle" class="text-lg font-bold text-gray-900">Add New Goal</h3>
+                <button id="closeGoalFormModal" class="btn-icon p-2 rounded-lg text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="goalForm" class="space-y-4">
+                <div>
+                    <label for="goalNameInput" class="block text-sm font-medium text-gray-700 mb-2">Goal Name *</label>
+                    <input type="text" id="goalNameInput" required class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white" placeholder="Enter goal name">
+                </div>
+                <div>
+                    <label for="goalDescriptionInput" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="goalDescriptionInput" rows="3" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white resize-none" placeholder="Enter goal description (optional)"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" id="cancelGoalForm" class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 accent-gradient text-white rounded-xl font-medium hover:opacity-90 transition">Save Goal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Task to Planner Modal -->
+    <div id="addTaskModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-lg font-bold text-gray-900">Add Task to Planner</h3>
+                <button id="closeAddTaskModal" class="btn-icon p-2 rounded-lg text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Task Name</label>
+                    <input type="text" id="taskNameInput" class="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Points</label>
+                    <input type="number" id="taskPointsInput" class="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white" min="1" value="5">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Date</label>
+                    <input type="date" id="taskDateInput" class="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button id="cancelAddTask" class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition">Cancel</button>
+                <button id="confirmAddTask" class="flex-1 px-4 py-2.5 accent-gradient text-white rounded-xl font-medium hover:opacity-90 transition">Add to Planner</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // State Management
@@ -806,6 +1011,54 @@
             return spent;
         }
 
+        function calculateMilestonePoints() {
+            const goals = loadGoals();
+            let points = 0;
+            
+            // First, collect all subtask IDs that are in the planner to avoid double counting
+            const plannerSubtaskIds = new Set();
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('day_')) {
+                    const dayData = JSON.parse(localStorage.getItem(key));
+                    if (dayData.tasks) {
+                        dayData.tasks.forEach(task => {
+                            if (task.subtaskId) {
+                                plannerSubtaskIds.add(`${task.goalId}-${task.milestoneId}-${task.goalTaskId}-${task.subtaskId}`);
+                            }
+                        });
+                    }
+                }
+            }
+            
+            goals.forEach(goal => {
+                if (goal.milestones) {
+                    goal.milestones.forEach(m => {
+                        // Add milestone completion reward
+                        if (m.completed) {
+                            points += m.points || 10; // Default 10 pts if not set
+                        }
+                        // Add completed subtask points only if not in planner (to avoid double counting)
+                        if (m.tasks) {
+                            m.tasks.forEach(t => {
+                                if (t.subtasks) {
+                                    t.subtasks.forEach(s => {
+                                        const subtaskKey = `${goal.id}-${m.id}-${t.id}-${s.id}`;
+                                        // Only count if completed AND not in planner
+                                        if (s.completed && !plannerSubtaskIds.has(subtaskKey)) {
+                                            points += s.points || 2; // Default 2 pts for subtasks
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            
+            return points;
+        }
+
         function calculateAllTimePoints() {
             const global = loadGlobalData();
             let totalEarned = 0;
@@ -841,6 +1094,9 @@
                     });
                 }
             }
+            
+            // Add milestone points
+            totalEarned += calculateMilestonePoints();
             
             return { earned: totalEarned, spent: totalSpent, available: totalEarned - totalSpent };
         }
@@ -900,8 +1156,39 @@
 
         function toggleTask(idx) {
             const dayData = loadDayData(currentDate);
-            dayData.tasks[idx].completed = !dayData.tasks[idx].completed;
+            const task = dayData.tasks[idx];
+            task.completed = !task.completed;
             saveDayData(currentDate, dayData);
+            
+            // Sync with Goals if this task came from a goal
+            if (task.goalId && task.milestoneId) {
+                const goals = loadGoals();
+                const goal = goals.find(g => g.id === task.goalId);
+                if (goal && goal.milestones) {
+                    const milestone = goal.milestones.find(m => m.id === task.milestoneId);
+                    if (milestone && milestone.tasks) {
+                        // Check if this is a subtask
+                        if (task.subtaskId) {
+                            const goalTask = milestone.tasks.find(t => t.id === task.goalTaskId);
+                            if (goalTask && goalTask.subtasks) {
+                                const subtask = goalTask.subtasks.find(s => s.id === task.subtaskId);
+                                if (subtask) {
+                                    subtask.completed = task.completed;
+                                    saveGoals(goals);
+                                }
+                            }
+                        } else if (task.goalTaskId) {
+                            // Regular task
+                            const goalTask = milestone.tasks.find(t => t.id === task.goalTaskId);
+                            if (goalTask) {
+                                goalTask.completed = task.completed;
+                                saveGoals(goals);
+                            }
+                        }
+                    }
+                }
+            }
+            
             render();
         }
 
@@ -1286,8 +1573,1048 @@
             if (e.target === document.getElementById('editModal')) closeEditModal();
         });
 
+        // Page Navigation
+        let currentPage = 'planner';
+        
+        function switchPage(page) {
+            currentPage = page;
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            
+            document.getElementById(`${page}-page`).classList.add('active');
+            document.querySelector(`[data-page="${page}"]`).classList.add('active');
+            
+            if (page === 'goals') {
+                renderGoals();
+            } else if (page === 'planner') {
+                render();
+            }
+        }
+        
+        document.querySelectorAll('[data-page]').forEach(btn => {
+            btn.addEventListener('click', () => switchPage(btn.dataset.page));
+        });
+
+        // Goals Management
+        function loadGoals() {
+            const saved = localStorage.getItem('goals');
+            return saved ? JSON.parse(saved) : [];
+        }
+        
+        function saveGoals(goals) {
+            localStorage.setItem('goals', JSON.stringify(goals));
+        }
+        
+        // Sync goal task completion status to all planner tasks that reference it
+        function syncGoalTaskToPlanner(goalId, milestoneId, goalTaskId, completed, subtaskId = null) {
+            // Iterate through all saved day data in localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('day_')) {
+                    const dayData = JSON.parse(localStorage.getItem(key));
+                    let updated = false;
+                    
+                    if (dayData.tasks) {
+                        dayData.tasks.forEach(task => {
+                            if (subtaskId) {
+                                // Syncing a subtask
+                                if (task.goalId === goalId && task.milestoneId === milestoneId && 
+                                    task.goalTaskId === goalTaskId && task.subtaskId === subtaskId) {
+                                    task.completed = completed;
+                                    updated = true;
+                                }
+                            } else {
+                                // Syncing a regular task (not subtask)
+                                if (task.goalId === goalId && task.milestoneId === milestoneId && 
+                                    task.goalTaskId === goalTaskId && !task.subtaskId) {
+                                    task.completed = completed;
+                                    updated = true;
+                                }
+                            }
+                        });
+                    }
+                    
+                    if (updated) {
+                        localStorage.setItem(key, JSON.stringify(dayData));
+                    }
+                }
+            }
+        }
+        
+        // Track which inline forms are open
+        let openMilestoneForm = null;
+        let openTaskForm = null;
+        let openSubtaskForm = null;
+        
+        function renderGoals() {
+            const container = document.getElementById('goalsList');
+            const goals = loadGoals();
+            
+            if (goals.length === 0) {
+                container.innerHTML = `
+                    <div class="card p-12 text-center">
+                        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <p class="text-gray-500 mb-4">No goals yet. Create your first goal!</p>
+                    </div>
+                `;
+                attachGoalsEventListeners();
+                return;
+            }
+            
+            container.innerHTML = goals.map(goal => {
+                // Calculate milestone rewards earned
+                const milestonePointsEarned = goal.milestones ? 
+                    goal.milestones.filter(m => m.completed).reduce((sum, m) => sum + (m.points || 10), 0) : 0;
+                const totalMilestonePoints = goal.milestones ? 
+                    goal.milestones.reduce((sum, m) => sum + (m.points || 10), 0) : 0;
+                
+                // Calculate total tasks progress
+                let totalTasks = 0;
+                let completedTasks = 0;
+                if (goal.milestones) {
+                    goal.milestones.forEach(m => {
+                        if (m.tasks) {
+                            totalTasks += m.tasks.length;
+                            completedTasks += m.tasks.filter(t => t.completed).length;
+                        }
+                    });
+                }
+                
+                return `
+                <div class="goal-card card p-6" data-goal-id="${goal.id}">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold text-gray-900 mb-1">${goal.name}</h3>
+                            ${goal.description ? `<p class="text-sm text-gray-500">${goal.description}</p>` : ''}
+                            <div class="flex gap-3 mt-2">
+                                ${totalMilestonePoints > 0 ? `
+                                    <span class="text-xs font-medium px-2 py-0.5 rounded-full milestone-points-badge text-white">
+                                        ${milestonePointsEarned}/${totalMilestonePoints} milestone pts
+                                    </span>
+                                ` : ''}
+                                ${totalTasks > 0 ? `
+                                    <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-100 text-violet-600">
+                                        ${completedTasks}/${totalTasks} tasks
+                                    </span>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="edit-goal btn-icon p-2 rounded-lg text-gray-400 hover:text-violet-600" data-goal-id="${goal.id}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                </svg>
+                            </button>
+                            <button class="delete-goal btn-icon p-2 rounded-lg text-gray-400 hover:text-rose-600" data-goal-id="${goal.id}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Milestones Section -->
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-sm font-semibold text-gray-700">Milestones & Tasks</h4>
+                            <button class="add-milestone text-xs text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1" data-goal-id="${goal.id}">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Add Milestone
+                            </button>
+                        </div>
+                        
+                        <!-- Inline Milestone Form -->
+                        <div class="milestone-form-container mb-4" data-goal-id="${goal.id}"></div>
+                        
+                        <div class="milestones-list space-y-4" data-goal-id="${goal.id}">
+                            ${goal.milestones && goal.milestones.length > 0 ? goal.milestones.map(m => {
+                                const taskCount = m.tasks ? m.tasks.length : 0;
+                                const completedTaskCount = m.tasks ? m.tasks.filter(t => t.completed).length : 0;
+                                const allTasksCompleted = taskCount > 0 && completedTaskCount === taskCount;
+                                
+                                return `
+                                <div class="milestone-block pl-4 py-3 rounded-r-lg ${m.completed ? 'completed' : 'bg-gray-50'}" 
+                                     data-goal-id="${goal.id}" data-milestone-id="${m.id}">
+                                    <!-- Milestone Header -->
+                                    <div class="milestone-header flex items-center gap-3 mb-3">
+                                        <input type="checkbox" class="milestone-checkbox w-5 h-5 accent-emerald-600 rounded" ${m.completed ? 'checked' : ''} 
+                                               data-goal-id="${goal.id}" data-milestone-id="${m.id}">
+                                        <div class="flex-1">
+                                            <span class="font-medium ${m.completed ? 'line-through text-gray-400' : 'text-gray-800'}">${m.name}</span>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <span class="text-xs font-medium px-2 py-0.5 rounded-full ${m.completed ? 'bg-emerald-100 text-emerald-600' : 'bg-violet-100 text-violet-600'}">
+                                                    +${m.points || 10} pts
+                                                </span>
+                                                ${taskCount > 0 ? `
+                                                    <span class="text-xs text-gray-400">${completedTaskCount}/${taskCount} tasks</span>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                        <button class="add-milestone-task text-xs text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-violet-50 transition" 
+                                                data-goal-id="${goal.id}" data-milestone-id="${m.id}">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                            </svg>
+                                            Task
+                                        </button>
+                                        <button class="delete-milestone text-gray-300 hover:text-rose-600 transition p-1" 
+                                                data-goal-id="${goal.id}" data-milestone-id="${m.id}">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Milestone Tasks -->
+                                    <div class="milestone-tasks ml-8 space-y-2">
+                                        <!-- Inline Task Form for this milestone -->
+                                        <div class="task-form-container" data-goal-id="${goal.id}" data-milestone-id="${m.id}"></div>
+                                        
+                                        ${m.tasks && m.tasks.length > 0 ? m.tasks.map(t => {
+                                            const subtaskCount = t.subtasks ? t.subtasks.length : 0;
+                                            const completedSubtaskCount = t.subtasks ? t.subtasks.filter(s => s.completed).length : 0;
+                                            const hasSubtasks = subtaskCount > 0;
+                                            
+                                            return `
+                                            <div class="goal-task-wrapper" data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}">
+                                                <div class="goal-task-item flex items-center gap-3 p-2.5 bg-white rounded-lg border border-gray-100 group">
+                                                    ${hasSubtasks ? `
+                                                        <button class="task-expand-btn p-0.5 hover:bg-gray-100 rounded transition" 
+                                                                data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}">
+                                                            <svg class="task-expand-icon w-4 h-4 text-gray-400 ${t.expanded ? 'expanded' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                                            </svg>
+                                                        </button>
+                                                    ` : '<div class="w-5"></div>'}
+                                                    <input type="checkbox" class="goal-task-checkbox w-4 h-4 accent-violet-600 rounded" ${t.completed ? 'checked' : ''} 
+                                                           data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}">
+                                                    <span class="flex-1 text-sm ${t.completed ? 'line-through text-gray-400' : 'text-gray-700'}">${t.name}</span>
+                                                    ${hasSubtasks ? `
+                                                        <span class="text-xs text-gray-400">${completedSubtaskCount}/${subtaskCount}</span>
+                                                    ` : ''}
+                                                    <span class="text-xs text-gray-400">${t.points || 5} pts</span>
+                                                    <button class="add-subtask text-xs text-emerald-600 hover:text-emerald-700 font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}">
+                                                        + Sub
+                                                    </button>
+                                                    <button class="add-task-to-planner text-xs text-violet-600 hover:text-violet-700 font-medium opacity-0 group-hover:opacity-100 transition-opacity" 
+                                                            data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-task-name="${t.name}" data-task-points="${t.points || 5}">
+                                                        → Planner
+                                                    </button>
+                                                    <button class="delete-goal-task text-gray-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity" 
+                                                            data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <!-- Subtasks -->
+                                                <div class="subtasks-container mt-1 ${hasSubtasks && t.expanded ? '' : 'hidden'}" data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}">
+                                                    <!-- Inline Subtask Form -->
+                                                    <div class="subtask-form-container" data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}"></div>
+                                                    ${t.subtasks && t.subtasks.length > 0 ? t.subtasks.map(s => `
+                                                        <div class="subtask-item flex items-center gap-2 py-1.5 px-2 rounded group">
+                                                            <input type="checkbox" class="subtask-checkbox w-3.5 h-3.5 accent-emerald-600 rounded" ${s.completed ? 'checked' : ''}
+                                                                   data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-subtask-id="${s.id}">
+                                                            <span class="flex-1 text-xs ${s.completed ? 'line-through text-gray-400' : 'text-gray-600'}">${s.name}</span>
+                                                            <span class="text-xs text-gray-400">${s.points || 2} pts</span>
+                                                            <button class="add-subtask-to-planner text-xs text-emerald-600 hover:text-emerald-700 font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-subtask-id="${s.id}" 
+                                                                    data-subtask-name="${s.name}" data-subtask-points="${s.points || 2}">
+                                                                → Plan
+                                                            </button>
+                                                            <button class="delete-subtask text-gray-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-subtask-id="${s.id}">
+                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    `).join('') : ''}
+                                                </div>
+                                            </div>
+                                        `}).join('') : ''}
+                                    </div>
+                                </div>
+                            `}).join('') : `
+                                <div class="text-center py-8 text-gray-400">
+                                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                                    </svg>
+                                    <p class="text-sm">No milestones yet. Add your first milestone to start organizing tasks!</p>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+            
+            // Attach event listeners
+            attachGoalsEventListeners();
+        }
+        
+        function showMilestoneForm(goalId) {
+            // Close any open forms first
+            closeMilestoneForm();
+            closeTaskForm();
+            closeSubtaskForm();
+            
+            const container = document.querySelector(`.milestone-form-container[data-goal-id="${goalId}"]`);
+            if (!container) return;
+            
+            openMilestoneForm = goalId;
+            
+            container.innerHTML = `
+                <div class="inline-add-form p-3 bg-violet-50 rounded-lg border border-violet-200">
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" class="milestone-name-input flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:bg-white" 
+                               placeholder="Enter milestone name..." autofocus>
+                        <input type="number" class="milestone-points-input w-20 px-3 py-2 border border-gray-200 rounded-lg text-sm text-center bg-white focus:bg-white" 
+                               placeholder="Pts" value="10" min="1">
+                    </div>
+                    <div class="flex gap-2 justify-end">
+                        <button class="cancel-milestone-btn px-3 py-1.5 text-gray-500 hover:text-gray-700 text-sm transition">
+                            Cancel
+                        </button>
+                        <button class="save-milestone-btn px-4 py-1.5 accent-gradient text-white rounded-lg text-sm font-medium hover:opacity-90 transition" data-goal-id="${goalId}">
+                            Add Milestone
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            const nameInput = container.querySelector('.milestone-name-input');
+            const pointsInput = container.querySelector('.milestone-points-input');
+            nameInput.focus();
+            
+            // Handle Enter key
+            nameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveMilestone(goalId, nameInput.value, pointsInput.value);
+                }
+            });
+            
+            pointsInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveMilestone(goalId, nameInput.value, pointsInput.value);
+                }
+            });
+            
+            // Handle Escape key
+            nameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeMilestoneForm();
+                }
+            });
+            
+            pointsInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeMilestoneForm();
+                }
+            });
+            
+            // Save button
+            container.querySelector('.save-milestone-btn').addEventListener('click', () => {
+                saveMilestone(goalId, nameInput.value, pointsInput.value);
+            });
+            
+            // Cancel button
+            container.querySelector('.cancel-milestone-btn').addEventListener('click', () => {
+                closeMilestoneForm();
+            });
+        }
+        
+        function closeMilestoneForm() {
+            if (openMilestoneForm !== null) {
+                const container = document.querySelector(`.milestone-form-container[data-goal-id="${openMilestoneForm}"]`);
+                if (container) container.innerHTML = '';
+                openMilestoneForm = null;
+            }
+        }
+        
+        function saveMilestone(goalId, name, points) {
+            if (!name || !name.trim()) return;
+            
+            const goals = loadGoals();
+            const goal = goals.find(g => g.id === goalId);
+            if (!goal.milestones) goal.milestones = [];
+            goal.milestones.push({
+                id: Date.now(),
+                name: name.trim(),
+                points: parseInt(points) || 10,
+                completed: false
+            });
+            saveGoals(goals);
+            renderGoals();
+        }
+        
+        function showTaskForm(goalId, milestoneId) {
+            // Close any open forms first
+            closeMilestoneForm();
+            closeTaskForm();
+            closeSubtaskForm();
+            
+            const container = document.querySelector(`.task-form-container[data-goal-id="${goalId}"][data-milestone-id="${milestoneId}"]`);
+            if (!container) return;
+            
+            openTaskForm = { goalId, milestoneId };
+            
+            container.innerHTML = `
+                <div class="inline-add-form p-3 bg-violet-50 rounded-lg border border-violet-200 mb-2">
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" class="task-name-input flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:bg-white" 
+                               placeholder="Enter task name..." autofocus>
+                        <input type="number" class="task-points-input w-20 px-3 py-2 border border-gray-200 rounded-lg text-sm text-center bg-white focus:bg-white" 
+                               placeholder="Pts" value="5" min="1">
+                    </div>
+                    <div class="flex gap-2 justify-end">
+                        <button class="cancel-task-btn px-3 py-1.5 text-gray-500 hover:text-gray-700 text-sm transition">
+                            Cancel
+                        </button>
+                        <button class="save-task-btn px-4 py-1.5 accent-gradient text-white rounded-lg text-sm font-medium hover:opacity-90 transition">
+                            Add Task
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            const nameInput = container.querySelector('.task-name-input');
+            const pointsInput = container.querySelector('.task-points-input');
+            nameInput.focus();
+            
+            // Handle Enter key
+            nameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveTask(goalId, milestoneId, nameInput.value, pointsInput.value);
+                }
+            });
+            
+            pointsInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveTask(goalId, milestoneId, nameInput.value, pointsInput.value);
+                }
+            });
+            
+            // Handle Escape key
+            nameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeTaskForm();
+                }
+            });
+            
+            pointsInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeTaskForm();
+                }
+            });
+            
+            // Save button
+            container.querySelector('.save-task-btn').addEventListener('click', () => {
+                saveTask(goalId, milestoneId, nameInput.value, pointsInput.value);
+            });
+            
+            // Cancel button
+            container.querySelector('.cancel-task-btn').addEventListener('click', () => {
+                closeTaskForm();
+            });
+        }
+        
+        function closeTaskForm() {
+            if (openTaskForm !== null) {
+                const container = document.querySelector(`.task-form-container[data-goal-id="${openTaskForm.goalId}"][data-milestone-id="${openTaskForm.milestoneId}"]`);
+                if (container) container.innerHTML = '';
+                openTaskForm = null;
+            }
+        }
+        
+        function saveTask(goalId, milestoneId, name, points) {
+            if (!name || !name.trim()) return;
+            
+            const goals = loadGoals();
+            const goal = goals.find(g => g.id === goalId);
+            const milestone = goal.milestones.find(m => m.id === milestoneId);
+            if (!milestone.tasks) milestone.tasks = [];
+            milestone.tasks.push({
+                id: Date.now(),
+                name: name.trim(),
+                points: parseInt(points) || 5,
+                completed: false,
+                subtasks: [],
+                expanded: false
+            });
+            saveGoals(goals);
+            renderGoals();
+        }
+        
+        function showSubtaskForm(goalId, milestoneId, taskId) {
+            // Close any open forms first
+            closeMilestoneForm();
+            closeTaskForm();
+            closeSubtaskForm();
+            
+            // First expand the task if not expanded
+            const goals = loadGoals();
+            const goal = goals.find(g => g.id === goalId);
+            const milestone = goal.milestones.find(m => m.id === milestoneId);
+            const task = milestone.tasks.find(t => t.id === taskId);
+            if (!task.expanded) {
+                task.expanded = true;
+                saveGoals(goals);
+            }
+            
+            const container = document.querySelector(`.subtask-form-container[data-goal-id="${goalId}"][data-milestone-id="${milestoneId}"][data-task-id="${taskId}"]`);
+            const subtasksContainer = document.querySelector(`.subtasks-container[data-goal-id="${goalId}"][data-milestone-id="${milestoneId}"][data-task-id="${taskId}"]`);
+            
+            if (subtasksContainer) {
+                subtasksContainer.classList.remove('hidden');
+            }
+            
+            if (!container) return;
+            
+            openSubtaskForm = { goalId, milestoneId, taskId };
+            
+            container.innerHTML = `
+                <div class="inline-add-form p-2 bg-emerald-50 rounded-lg border border-emerald-200 mb-2">
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" class="subtask-name-input flex-1 px-2 py-1.5 border border-gray-200 rounded-lg text-xs bg-white focus:bg-white" 
+                               placeholder="Enter subtask..." autofocus>
+                        <input type="number" class="subtask-points-input w-16 px-2 py-1.5 border border-gray-200 rounded-lg text-xs text-center bg-white focus:bg-white" 
+                               placeholder="Pts" value="2" min="1">
+                    </div>
+                    <div class="flex gap-2 justify-end">
+                        <button class="cancel-subtask-btn px-2 py-1 text-gray-500 hover:text-gray-700 text-xs transition">
+                            Cancel
+                        </button>
+                        <button class="save-subtask-btn px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-medium transition">
+                            Add Subtask
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            const nameInput = container.querySelector('.subtask-name-input');
+            const pointsInput = container.querySelector('.subtask-points-input');
+            nameInput.focus();
+            
+            // Handle Enter key
+            nameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveSubtask(goalId, milestoneId, taskId, nameInput.value, pointsInput.value);
+                }
+            });
+            
+            pointsInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveSubtask(goalId, milestoneId, taskId, nameInput.value, pointsInput.value);
+                }
+            });
+            
+            // Handle Escape key
+            nameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeSubtaskForm();
+                }
+            });
+            
+            pointsInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeSubtaskForm();
+                }
+            });
+            
+            // Save button
+            container.querySelector('.save-subtask-btn').addEventListener('click', () => {
+                saveSubtask(goalId, milestoneId, taskId, nameInput.value, pointsInput.value);
+            });
+            
+            // Cancel button
+            container.querySelector('.cancel-subtask-btn').addEventListener('click', () => {
+                closeSubtaskForm();
+            });
+        }
+        
+        function closeSubtaskForm() {
+            if (openSubtaskForm !== null) {
+                const container = document.querySelector(`.subtask-form-container[data-goal-id="${openSubtaskForm.goalId}"][data-milestone-id="${openSubtaskForm.milestoneId}"][data-task-id="${openSubtaskForm.taskId}"]`);
+                if (container) container.innerHTML = '';
+                openSubtaskForm = null;
+            }
+        }
+        
+        function saveSubtask(goalId, milestoneId, taskId, name, points) {
+            if (!name || !name.trim()) return;
+            
+            const goals = loadGoals();
+            const goal = goals.find(g => g.id === goalId);
+            const milestone = goal.milestones.find(m => m.id === milestoneId);
+            const task = milestone.tasks.find(t => t.id === taskId);
+            if (!task.subtasks) task.subtasks = [];
+            task.subtasks.push({
+                id: Date.now(),
+                name: name.trim(),
+                points: parseInt(points) || 2,
+                completed: false
+            });
+            task.expanded = true;
+            saveGoals(goals);
+            renderGoals();
+        }
+        
+        function toggleTaskExpand(goalId, milestoneId, taskId) {
+            const goals = loadGoals();
+            const goal = goals.find(g => g.id === goalId);
+            const milestone = goal.milestones.find(m => m.id === milestoneId);
+            const task = milestone.tasks.find(t => t.id === taskId);
+            task.expanded = !task.expanded;
+            saveGoals(goals);
+            renderGoals();
+        }
+        
+        function toggleSubtask(goalId, milestoneId, taskId, subtaskId) {
+            const goals = loadGoals();
+            const goal = goals.find(g => g.id === goalId);
+            const milestone = goal.milestones.find(m => m.id === milestoneId);
+            const task = milestone.tasks.find(t => t.id === taskId);
+            const subtask = task.subtasks.find(s => s.id === subtaskId);
+            subtask.completed = !subtask.completed;
+            saveGoals(goals);
+            
+            // Sync with any planner tasks that reference this subtask
+            syncGoalTaskToPlanner(goalId, milestoneId, taskId, subtask.completed, subtaskId);
+            
+            renderGoals();
+            // Update planner points display
+            render();
+        }
+        
+        function deleteSubtask(goalId, milestoneId, taskId, subtaskId) {
+            const goals = loadGoals();
+            const goal = goals.find(g => g.id === goalId);
+            const milestone = goal.milestones.find(m => m.id === milestoneId);
+            const task = milestone.tasks.find(t => t.id === taskId);
+            task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
+            saveGoals(goals);
+            renderGoals();
+        }
+        
+        // Goal Form Management
+        let currentEditingGoalId = null;
+        
+        function openGoalForm(goalId = null) {
+            const modal = document.getElementById('goalFormModal');
+            const form = document.getElementById('goalForm');
+            const title = document.getElementById('goalFormTitle');
+            const nameInput = document.getElementById('goalNameInput');
+            const descInput = document.getElementById('goalDescriptionInput');
+            
+            currentEditingGoalId = goalId;
+            
+            if (goalId) {
+                // Edit mode
+                const goals = loadGoals();
+                const goal = goals.find(g => g.id === goalId);
+                if (goal) {
+                    title.textContent = 'Edit Goal';
+                    nameInput.value = goal.name;
+                    descInput.value = goal.description || '';
+                }
+            } else {
+                // Add mode
+                title.textContent = 'Add New Goal';
+                form.reset();
+            }
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => nameInput.focus(), 100);
+        }
+        
+        function closeGoalForm() {
+            const modal = document.getElementById('goalFormModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            currentEditingGoalId = null;
+        }
+        
+        // Add Goal button handler (attach once)
+        let addGoalHandlerAttached = false;
+        function attachAddGoalHandler() {
+            if (addGoalHandlerAttached) return;
+            const addGoalBtn = document.getElementById('addGoalBtn');
+            if (addGoalBtn) {
+                addGoalBtn.addEventListener('click', () => openGoalForm());
+                addGoalHandlerAttached = true;
+            }
+        }
+        
+        // Goal Form Submit Handler
+        const goalForm = document.getElementById('goalForm');
+        if (goalForm) {
+            goalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const nameInput = document.getElementById('goalNameInput');
+                const descInput = document.getElementById('goalDescriptionInput');
+                
+                const name = nameInput.value.trim();
+                if (!name) return;
+                
+                const goals = loadGoals();
+                
+                if (currentEditingGoalId) {
+                    // Edit existing goal
+                    const goal = goals.find(g => g.id === currentEditingGoalId);
+                    if (goal) {
+                        goal.name = name;
+                        goal.description = descInput.value.trim();
+                    }
+                } else {
+                    // Add new goal
+                    goals.push({
+                        id: Date.now(),
+                        name: name,
+                        description: descInput.value.trim(),
+                        milestones: [],
+                        tasks: []
+                    });
+                }
+                
+                saveGoals(goals);
+                closeGoalForm();
+                renderGoals();
+            });
+        }
+        
+        // Close Goal Form handlers
+        const closeGoalFormModal = document.getElementById('closeGoalFormModal');
+        const cancelGoalForm = document.getElementById('cancelGoalForm');
+        const goalFormModal = document.getElementById('goalFormModal');
+        
+        if (closeGoalFormModal) {
+            closeGoalFormModal.addEventListener('click', closeGoalForm);
+        }
+        
+        if (cancelGoalForm) {
+            cancelGoalForm.addEventListener('click', closeGoalForm);
+        }
+        
+        if (goalFormModal) {
+            goalFormModal.addEventListener('click', (e) => {
+                if (e.target === goalFormModal) {
+                    closeGoalForm();
+                }
+            });
+        }
+        
+        // Event delegation for goals (attach once)
+        let goalsEventDelegationAttached = false;
+        function attachGoalsEventListeners() {
+            attachAddGoalHandler();
+            
+            if (goalsEventDelegationAttached) return;
+            const goalsContainer = document.getElementById('goalsList');
+            if (!goalsContainer) return;
+            
+            goalsContainer.addEventListener('click', (e) => {
+                // Edit Goal
+                if (e.target.closest('.edit-goal')) {
+                    const btn = e.target.closest('.edit-goal');
+                    const goalId = parseInt(btn.dataset.goalId);
+                    openGoalForm(goalId);
+                    return;
+                }
+                
+                // Delete Goal
+                if (e.target.closest('.delete-goal')) {
+                    const btn = e.target.closest('.delete-goal');
+                    if (!confirm('Delete this goal?')) return;
+                    const goalId = parseInt(btn.dataset.goalId);
+                    const goals = loadGoals().filter(g => g.id !== goalId);
+                    saveGoals(goals);
+                    renderGoals();
+                    return;
+                }
+                
+                // Add Milestone - Show inline form
+                if (e.target.closest('.add-milestone')) {
+                    const btn = e.target.closest('.add-milestone');
+                    const goalId = parseInt(btn.dataset.goalId);
+                    showMilestoneForm(goalId);
+                    return;
+                }
+                
+                // Toggle Milestone
+                if (e.target.matches('.milestone-checkbox')) {
+                    const cb = e.target;
+                    const goalId = parseInt(cb.dataset.goalId);
+                    const milestoneId = parseInt(cb.dataset.milestoneId);
+                    const goals = loadGoals();
+                    const goal = goals.find(g => g.id === goalId);
+                    const milestone = goal.milestones.find(m => m.id === milestoneId);
+                    milestone.completed = cb.checked;
+                    saveGoals(goals);
+                    renderGoals();
+                    // Also update points display on planner if visible
+                    render();
+                    return;
+                }
+                
+                // Delete Milestone
+                if (e.target.closest('.delete-milestone')) {
+                    const btn = e.target.closest('.delete-milestone');
+                    const goalId = parseInt(btn.dataset.goalId);
+                    const milestoneId = parseInt(btn.dataset.milestoneId);
+                    const goals = loadGoals();
+                    const goal = goals.find(g => g.id === goalId);
+                    goal.milestones = goal.milestones.filter(m => m.id !== milestoneId);
+                    saveGoals(goals);
+                    renderGoals();
+                    return;
+                }
+                
+                // Add Task to Milestone - Show inline form
+                if (e.target.closest('.add-milestone-task')) {
+                    const btn = e.target.closest('.add-milestone-task');
+                    const goalId = parseInt(btn.dataset.goalId);
+                    const milestoneId = parseInt(btn.dataset.milestoneId);
+                    showTaskForm(goalId, milestoneId);
+                    return;
+                }
+                
+                // Toggle Task
+                if (e.target.matches('.goal-task-checkbox')) {
+                    const cb = e.target;
+                    const goalId = parseInt(cb.dataset.goalId);
+                    const milestoneId = parseInt(cb.dataset.milestoneId);
+                    const taskId = parseInt(cb.dataset.taskId);
+                    const goals = loadGoals();
+                    const goal = goals.find(g => g.id === goalId);
+                    const milestone = goal.milestones.find(m => m.id === milestoneId);
+                    const task = milestone.tasks.find(t => t.id === taskId);
+                    task.completed = cb.checked;
+                    saveGoals(goals);
+                    
+                    // Sync with any planner tasks that reference this goal task
+                    syncGoalTaskToPlanner(goalId, milestoneId, taskId, cb.checked);
+                    
+                    renderGoals();
+                    return;
+                }
+                
+                // Add Task to Planner
+                if (e.target.closest('.add-task-to-planner')) {
+                    const btn = e.target.closest('.add-task-to-planner');
+                    const goalId = parseInt(btn.dataset.goalId);
+                    const milestoneId = parseInt(btn.dataset.milestoneId);
+                    const taskId = parseInt(btn.dataset.taskId);
+                    const taskName = btn.dataset.taskName;
+                    const taskPoints = parseInt(btn.dataset.taskPoints);
+                    
+                    document.getElementById('taskNameInput').value = taskName;
+                    document.getElementById('taskPointsInput').value = taskPoints;
+                    
+                    // Format date for input in GMT+3
+                    const today = getTodayGMT3();
+                    const year = today.getFullYear();
+                    const month = String(today.getMonth() + 1).padStart(2, '0');
+                    const day = String(today.getDate()).padStart(2, '0');
+                    document.getElementById('taskDateInput').value = `${year}-${month}-${day}`;
+                    
+                    const modal = document.getElementById('addTaskModal');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    modal.dataset.goalId = goalId;
+                    modal.dataset.milestoneId = milestoneId;
+                    modal.dataset.taskId = taskId;
+                    return;
+                }
+                
+                // Delete Task
+                if (e.target.closest('.delete-goal-task')) {
+                    const btn = e.target.closest('.delete-goal-task');
+                    const goalId = parseInt(btn.dataset.goalId);
+                    const milestoneId = parseInt(btn.dataset.milestoneId);
+                    const taskId = parseInt(btn.dataset.taskId);
+                    const goals = loadGoals();
+                    const goal = goals.find(g => g.id === goalId);
+                    const milestone = goal.milestones.find(m => m.id === milestoneId);
+                    milestone.tasks = milestone.tasks.filter(t => t.id !== taskId);
+                    saveGoals(goals);
+                    renderGoals();
+                    return;
+                }
+                
+                // Expand/Collapse Task Subtasks
+                if (e.target.closest('.task-expand-btn')) {
+                    const btn = e.target.closest('.task-expand-btn');
+                    const goalId = parseInt(btn.dataset.goalId);
+                    const milestoneId = parseInt(btn.dataset.milestoneId);
+                    const taskId = parseInt(btn.dataset.taskId);
+                    toggleTaskExpand(goalId, milestoneId, taskId);
+                    return;
+                }
+                
+                // Add Subtask - Show inline form
+                if (e.target.closest('.add-subtask')) {
+                    const btn = e.target.closest('.add-subtask');
+                    const goalId = parseInt(btn.dataset.goalId);
+                    const milestoneId = parseInt(btn.dataset.milestoneId);
+                    const taskId = parseInt(btn.dataset.taskId);
+                    showSubtaskForm(goalId, milestoneId, taskId);
+                    return;
+                }
+                
+                // Toggle Subtask
+                if (e.target.matches('.subtask-checkbox')) {
+                    const cb = e.target;
+                    const goalId = parseInt(cb.dataset.goalId);
+                    const milestoneId = parseInt(cb.dataset.milestoneId);
+                    const taskId = parseInt(cb.dataset.taskId);
+                    const subtaskId = parseInt(cb.dataset.subtaskId);
+                    toggleSubtask(goalId, milestoneId, taskId, subtaskId);
+                    return;
+                }
+                
+                // Delete Subtask
+                if (e.target.closest('.delete-subtask')) {
+                    const btn = e.target.closest('.delete-subtask');
+                    const goalId = parseInt(btn.dataset.goalId);
+                    const milestoneId = parseInt(btn.dataset.milestoneId);
+                    const taskId = parseInt(btn.dataset.taskId);
+                    const subtaskId = parseInt(btn.dataset.subtaskId);
+                    deleteSubtask(goalId, milestoneId, taskId, subtaskId);
+                    return;
+                }
+                
+                // Add Subtask to Planner
+                if (e.target.closest('.add-subtask-to-planner')) {
+                    const btn = e.target.closest('.add-subtask-to-planner');
+                    const goalId = parseInt(btn.dataset.goalId);
+                    const milestoneId = parseInt(btn.dataset.milestoneId);
+                    const taskId = parseInt(btn.dataset.taskId);
+                    const subtaskId = parseInt(btn.dataset.subtaskId);
+                    const subtaskName = btn.dataset.subtaskName;
+                    const subtaskPoints = parseInt(btn.dataset.subtaskPoints);
+                    
+                    document.getElementById('taskNameInput').value = subtaskName;
+                    document.getElementById('taskPointsInput').value = subtaskPoints;
+                    
+                    // Format date for input in GMT+3
+                    const today = getTodayGMT3();
+                    const year = today.getFullYear();
+                    const month = String(today.getMonth() + 1).padStart(2, '0');
+                    const day = String(today.getDate()).padStart(2, '0');
+                    document.getElementById('taskDateInput').value = `${year}-${month}-${day}`;
+                    
+                    const modal = document.getElementById('addTaskModal');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    modal.dataset.goalId = goalId;
+                    modal.dataset.milestoneId = milestoneId;
+                    modal.dataset.taskId = taskId;
+                    modal.dataset.subtaskId = subtaskId;
+                    modal.dataset.isSubtask = 'true';
+                    return;
+                }
+            });
+            
+            goalsEventDelegationAttached = true;
+        }
+        
+        // Add Task to Planner Modal handlers (attach once on init)
+        const closeAddTaskModal = document.getElementById('closeAddTaskModal');
+        const cancelAddTask = document.getElementById('cancelAddTask');
+        const confirmAddTask = document.getElementById('confirmAddTask');
+        const addTaskModal = document.getElementById('addTaskModal');
+        
+        if (closeAddTaskModal) {
+            closeAddTaskModal.addEventListener('click', () => {
+                addTaskModal.classList.add('hidden');
+                addTaskModal.classList.remove('flex');
+            });
+        }
+        
+        if (cancelAddTask) {
+            cancelAddTask.addEventListener('click', () => {
+                addTaskModal.classList.add('hidden');
+                addTaskModal.classList.remove('flex');
+            });
+        }
+        
+        if (confirmAddTask) {
+            confirmAddTask.addEventListener('click', () => {
+            const modal = document.getElementById('addTaskModal');
+            const taskName = document.getElementById('taskNameInput').value;
+            const taskPoints = parseInt(document.getElementById('taskPointsInput').value) || 5;
+            const dateInputValue = document.getElementById('taskDateInput').value;
+            const goalId = parseInt(modal.dataset.goalId);
+            const milestoneId = parseInt(modal.dataset.milestoneId);
+            const goalTaskId = parseInt(modal.dataset.taskId);
+            const subtaskId = modal.dataset.subtaskId ? parseInt(modal.dataset.subtaskId) : null;
+            const isSubtask = modal.dataset.isSubtask === 'true';
+            
+            if (!taskName) return;
+            
+            // Parse date correctly for GMT+3
+            // The input value is YYYY-MM-DD, we need to create a date object for that specific day
+            const [year, month, day] = dateInputValue.split('-').map(Number);
+            const taskDate = new Date(year, month - 1, day);
+            taskDate.setHours(0, 0, 0, 0);
+            
+            // Add task to planner with goal reference
+            const dayData = loadDayData(taskDate);
+            const plannerTask = {
+                name: taskName,
+                points: taskPoints,
+                completed: false,
+                goalId: goalId,
+                milestoneId: milestoneId
+            };
+            
+            if (isSubtask && subtaskId) {
+                plannerTask.goalTaskId = goalTaskId;
+                plannerTask.subtaskId = subtaskId;
+            } else {
+                plannerTask.goalTaskId = goalTaskId;
+            }
+            
+            dayData.tasks.push(plannerTask);
+            saveDayData(taskDate, dayData);
+            
+                // Close modal and reset dataset
+                addTaskModal.classList.add('hidden');
+                addTaskModal.classList.remove('flex');
+                delete modal.dataset.subtaskId;
+                delete modal.dataset.isSubtask;
+                
+                // Switch to planner page if not already there
+                if (currentPage !== 'planner') {
+                    switchPage('planner');
+                    currentDate = taskDate;
+                }
+                render();
+            });
+        }
+        
+        if (addTaskModal) {
+            addTaskModal.addEventListener('click', (e) => {
+                if (e.target === addTaskModal) {
+                    addTaskModal.classList.add('hidden');
+                    addTaskModal.classList.remove('flex');
+                }
+            });
+        }
+
         // Initialize
         render();
+        
+        // Initialize goals event delegation when page loads
+        if (document.getElementById('goalsList')) {
+            attachGoalsEventListeners();
+        }
     </script>
 </body>
 </html>
