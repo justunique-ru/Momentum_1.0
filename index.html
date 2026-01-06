@@ -72,6 +72,14 @@
         .task-expandable:hover { border-left-color: #c4b5fd; }
         .subtask-item { margin-left: 1.5rem; }
         .subtask-points-badge { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); }
+        .wish-item { transition: all 0.2s ease; }
+        .wish-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .wish-link { transition: all 0.2s ease; }
+        .wish-link:hover { color: #7c3aed; }
+        .wish-category { transition: all 0.2s ease; }
+        .wish-category:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .wish-category-header { background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); }
+        .wish-form-inline { animation: slideDown 0.2s ease; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -99,12 +107,12 @@
                     </svg>
                     Goals
                 </button>
-                <a href="#wishlist" class="menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700">
+                <button data-page="wishlist" class="menu-item w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                     </svg>
                     Wishlist
-                </a>
+                </button>
                 <a href="#money" class="menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -327,6 +335,25 @@
                     
                     <!-- Goals List -->
                     <div id="goalsList" class="space-y-6"></div>
+                </div>
+                
+                <!-- Wishlist Page -->
+                <div id="wishlist-page" class="page">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-gray-900 mb-2">Wishlist</h2>
+                        <p class="text-gray-500">Keep track of things you want</p>
+                    </div>
+                    
+                    <!-- Add Category Button -->
+                    <button id="addWishCategoryBtn" class="mb-6 px-6 py-3 accent-gradient text-white rounded-xl font-medium hover:opacity-90 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Add Category
+                    </button>
+                    
+                    <!-- Wishlist Categories -->
+                    <div id="wishlistCategories" class="space-y-6"></div>
                 </div>
             </div>
         </main>
@@ -1372,12 +1399,354 @@
                 renderGoals();
             } else if (page === 'planner') {
                 render();
+            } else if (page === 'wishlist') {
+                renderWishlist();
+                attachWishlistEventListeners();
             }
         }
         
         document.querySelectorAll('[data-page]').forEach(btn => {
             btn.addEventListener('click', () => switchPage(btn.dataset.page));
         });
+        
+        // Wishlist Management with Categories
+        function loadWishlistCategories() {
+            const saved = localStorage.getItem('wishlistCategories');
+            return saved ? JSON.parse(saved) : [];
+        }
+        
+        function saveWishlistCategories(categories) {
+            localStorage.setItem('wishlistCategories', JSON.stringify(categories));
+        }
+        
+        let openWishForm = null;
+        
+        function renderWishlist() {
+            const container = document.getElementById('wishlistCategories');
+            const categories = loadWishlistCategories();
+            
+            if (categories.length === 0) {
+                container.innerHTML = `
+                    <div class="card p-12 text-center">
+                        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                        <p class="text-gray-500">No categories yet. Add a category to start your wishlist!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = categories.map(category => `
+                <div class="wish-category card overflow-hidden" data-category-id="${category.id}">
+                    <!-- Category Header -->
+                    <div class="wish-category-header p-4 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-900">${category.name}</h3>
+                                <span class="text-xs text-gray-500">${category.wishes ? category.wishes.length : 0} wishes</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="edit-category btn-icon p-2 rounded-lg text-gray-400 hover:text-violet-600" data-category-id="${category.id}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                </svg>
+                            </button>
+                            <button class="delete-category btn-icon p-2 rounded-lg text-gray-400 hover:text-rose-600" data-category-id="${category.id}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Wishes List -->
+                    <div class="p-4 pt-2">
+                        <div class="space-y-2 mb-4">
+                            ${category.wishes && category.wishes.length > 0 ? category.wishes.map(wish => `
+                                <div class="wish-item flex items-center gap-3 p-3 bg-gray-50 rounded-lg group" data-wish-id="${wish.id}">
+                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-100 to-pink-100 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-4 h-4 text-rose-500" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="font-medium text-gray-900 text-sm truncate">${wish.title}</h4>
+                                        ${wish.link ? `
+                                            <a href="${wish.link}" target="_blank" rel="noopener noreferrer" class="wish-link text-xs text-gray-500 hover:text-violet-600 flex items-center gap-1 truncate">
+                                                <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                                </svg>
+                                                <span class="truncate">${wish.link}</span>
+                                            </a>
+                                        ` : ''}
+                                    </div>
+                                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button class="edit-wish btn-icon p-1.5 rounded-lg text-gray-400 hover:text-violet-600" 
+                                                data-category-id="${category.id}" data-wish-id="${wish.id}">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                        </button>
+                                        <button class="delete-wish btn-icon p-1.5 rounded-lg text-gray-400 hover:text-rose-600" 
+                                                data-category-id="${category.id}" data-wish-id="${wish.id}">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('') : '<p class="text-xs text-gray-400 italic py-2">No wishes in this category yet</p>'}
+                        </div>
+                        
+                        <!-- Wish Form Container -->
+                        <div class="wish-form-container" data-category-id="${category.id}"></div>
+                        
+                        <!-- Add Wish Button -->
+                        <button class="add-wish-btn w-full py-2.5 text-sm text-rose-500 hover:text-rose-600 font-medium flex items-center justify-center gap-2 border-2 border-dashed border-rose-200 rounded-xl hover:border-rose-400 hover:bg-rose-50 transition" 
+                                data-category-id="${category.id}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Add Wish
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            attachWishlistEventListeners();
+        }
+        
+        function showWishForm(categoryId) {
+            closeWishForm();
+            
+            const container = document.querySelector(`.wish-form-container[data-category-id="${categoryId}"]`);
+            if (!container) return;
+            
+            openWishForm = categoryId;
+            
+            container.innerHTML = `
+                <div class="wish-form-inline p-4 bg-rose-50 rounded-xl border border-rose-200 mb-3">
+                    <div class="space-y-3">
+                        <div>
+                            <input type="text" class="wish-title-input w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:bg-white" 
+                                   placeholder="What do you wish for?" autofocus>
+                        </div>
+                        <div>
+                            <input type="url" class="wish-link-input w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:bg-white" 
+                                   placeholder="Link (optional)">
+                        </div>
+                    </div>
+                    <div class="flex gap-2 justify-end mt-3">
+                        <button class="cancel-wish-btn px-4 py-2 text-gray-500 hover:text-gray-700 text-sm transition">
+                            Cancel
+                        </button>
+                        <button class="save-wish-btn px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-lg text-sm font-medium hover:opacity-90 transition" data-category-id="${categoryId}">
+                            Add Wish
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            const titleInput = container.querySelector('.wish-title-input');
+            const linkInput = container.querySelector('.wish-link-input');
+            titleInput.focus();
+            
+            titleInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    linkInput.focus();
+                }
+            });
+            
+            linkInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveWish(categoryId, titleInput.value, linkInput.value);
+                }
+            });
+            
+            titleInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeWishForm();
+            });
+            
+            linkInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeWishForm();
+            });
+            
+            container.querySelector('.save-wish-btn').addEventListener('click', () => {
+                saveWish(categoryId, titleInput.value, linkInput.value);
+            });
+            
+            container.querySelector('.cancel-wish-btn').addEventListener('click', () => {
+                closeWishForm();
+            });
+        }
+        
+        function closeWishForm() {
+            if (openWishForm !== null) {
+                const container = document.querySelector(`.wish-form-container[data-category-id="${openWishForm}"]`);
+                if (container) container.innerHTML = '';
+                openWishForm = null;
+            }
+        }
+        
+        function saveWish(categoryId, title, link) {
+            if (!title || !title.trim()) return;
+            
+            const categories = loadWishlistCategories();
+            const category = categories.find(c => c.id === categoryId);
+            if (!category.wishes) category.wishes = [];
+            category.wishes.push({
+                id: Date.now(),
+                title: title.trim(),
+                link: link ? link.trim() : '',
+                createdAt: new Date().toISOString()
+            });
+            saveWishlistCategories(categories);
+            renderWishlist();
+        }
+        
+        function addWishCategory() {
+            const name = prompt('Enter category name:');
+            if (!name || !name.trim()) return;
+            
+            const categories = loadWishlistCategories();
+            categories.push({
+                id: Date.now(),
+                name: name.trim(),
+                wishes: []
+            });
+            saveWishlistCategories(categories);
+            renderWishlist();
+        }
+        
+        function editWishCategory(categoryId) {
+            const categories = loadWishlistCategories();
+            const category = categories.find(c => c.id === categoryId);
+            if (!category) return;
+            
+            const newName = prompt('Category name:', category.name);
+            if (newName === null) return;
+            if (!newName.trim()) {
+                alert('Category name is required');
+                return;
+            }
+            
+            category.name = newName.trim();
+            saveWishlistCategories(categories);
+            renderWishlist();
+        }
+        
+        function deleteWishCategory(categoryId) {
+            const categories = loadWishlistCategories();
+            const category = categories.find(c => c.id === categoryId);
+            const wishCount = category && category.wishes ? category.wishes.length : 0;
+            
+            const confirmMsg = wishCount > 0 
+                ? `Delete this category and its ${wishCount} wishes?` 
+                : 'Delete this category?';
+            
+            if (!confirm(confirmMsg)) return;
+            
+            const filtered = categories.filter(c => c.id !== categoryId);
+            saveWishlistCategories(filtered);
+            renderWishlist();
+        }
+        
+        function editWish(categoryId, wishId) {
+            const categories = loadWishlistCategories();
+            const category = categories.find(c => c.id === categoryId);
+            if (!category || !category.wishes) return;
+            
+            const wish = category.wishes.find(w => w.id === wishId);
+            if (!wish) return;
+            
+            const newTitle = prompt('Wish title:', wish.title);
+            if (newTitle === null) return;
+            if (!newTitle.trim()) {
+                alert('Title is required');
+                return;
+            }
+            
+            const newLink = prompt('Link (optional):', wish.link);
+            if (newLink === null) return;
+            
+            wish.title = newTitle.trim();
+            wish.link = newLink.trim();
+            saveWishlistCategories(categories);
+            renderWishlist();
+        }
+        
+        function deleteWish(categoryId, wishId) {
+            const categories = loadWishlistCategories();
+            const category = categories.find(c => c.id === categoryId);
+            if (!category || !category.wishes) return;
+            
+            category.wishes = category.wishes.filter(w => w.id !== wishId);
+            saveWishlistCategories(categories);
+            renderWishlist();
+        }
+        
+        let wishlistEventDelegationAttached = false;
+        
+        function attachWishlistEventListeners() {
+            // Add Category button
+            const addCategoryBtn = document.getElementById('addWishCategoryBtn');
+            if (addCategoryBtn && !addCategoryBtn.dataset.attached) {
+                addCategoryBtn.addEventListener('click', addWishCategory);
+                addCategoryBtn.dataset.attached = 'true';
+            }
+            
+            if (wishlistEventDelegationAttached) return;
+            
+            const container = document.getElementById('wishlistCategories');
+            if (!container) return;
+            
+            container.addEventListener('click', (e) => {
+                // Edit Category
+                if (e.target.closest('.edit-category')) {
+                    const btn = e.target.closest('.edit-category');
+                    editWishCategory(parseInt(btn.dataset.categoryId));
+                    return;
+                }
+                
+                // Delete Category
+                if (e.target.closest('.delete-category')) {
+                    const btn = e.target.closest('.delete-category');
+                    deleteWishCategory(parseInt(btn.dataset.categoryId));
+                    return;
+                }
+                
+                // Add Wish Button
+                if (e.target.closest('.add-wish-btn')) {
+                    const btn = e.target.closest('.add-wish-btn');
+                    showWishForm(parseInt(btn.dataset.categoryId));
+                    return;
+                }
+                
+                // Edit Wish
+                if (e.target.closest('.edit-wish')) {
+                    const btn = e.target.closest('.edit-wish');
+                    editWish(parseInt(btn.dataset.categoryId), parseInt(btn.dataset.wishId));
+                    return;
+                }
+                
+                // Delete Wish
+                if (e.target.closest('.delete-wish')) {
+                    const btn = e.target.closest('.delete-wish');
+                    deleteWish(parseInt(btn.dataset.categoryId), parseInt(btn.dataset.wishId));
+                    return;
+                }
+            });
+            
+            wishlistEventDelegationAttached = true;
+        }
 
         // Goals Management
         function loadGoals() {
