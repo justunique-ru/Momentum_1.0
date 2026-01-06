@@ -8,254 +8,70 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { 
-            background: #f8f9fb;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .card {
-            background: white;
-            border-radius: 16px;
-            border: 1px solid #e8eaed;
-            transition: all 0.2s ease;
-        }
-        .card:hover {
-            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-        }
-        .completed { 
-            text-decoration: line-through; 
-            opacity: 0.4; 
-        }
-        .check-circle {
-            transition: all 0.5s ease;
-            cursor: pointer;
-        }
-        .check-circle:hover {
-            transform: scale(1.1);
-        }
-        .pomo-dot {
-            transition: all 0.5s ease;
-            cursor: pointer;
-            font-size: 0;
-        }
-        .pomo-dot:hover {
-            transform: scale(1.15);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
+        body { background: #f8f9fb; min-height: 100vh; margin: 0; }
+        .card { background: white; border-radius: 16px; border: 1px solid #e8eaed; transition: all 0.2s ease; }
+        .card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
+        .completed { text-decoration: line-through; opacity: 0.4; }
+        .check-circle { transition: all 0.5s ease; cursor: pointer; }
+        .check-circle:hover { transform: scale(1.1); }
+        .pomo-dot { transition: all 0.5s ease; cursor: pointer; font-size: 0; }
+        .pomo-dot:hover { transform: scale(1.15); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
         .task-item:hover .task-actions { opacity: 1; }
         .task-actions { opacity: 0; transition: opacity 0.15s ease; }
-        .treat-item { 
-            transition: all 0.5s ease; 
-            cursor: pointer;
-        }
-        .treat-item.affordable:hover { 
-            background: #f0f9ff; 
-            border-color: #7c3aed;
-        }
-        .treat-item.unaffordable { 
-            opacity: 0.35; 
-            cursor: not-allowed; 
-        }
-        .calendar-day { 
-            transition: all 0.5s ease; 
-            cursor: pointer; 
-        }
-        .calendar-day:hover { 
-            background: #f3f4f6; 
-        }
-        .calendar-day.selected { 
-            background: #7c3aed; 
-            color: white;
-            font-weight: 600;
-        }
-        .calendar-day.today:not(.selected) {
-            border: 2px solid #7c3aed;
-            color: #7c3aed;
-            font-weight: 600;
-        }
-        .calendar-day.has-points::after {
-            content: '';
-            position: absolute;
-            bottom: 4px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4px;
-            height: 4px;
-            background: #7c3aed;
-            border-radius: 50%;
-        }
-        .calendar-day.selected.has-points::after { 
-            background: white; 
-        }
-        .stat-bar { 
-            transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
-            border-radius: 4px 4px 0 0;
-        }
-        button {
-            cursor: pointer;
-        }
-        .btn-icon { 
-            transition: all 0.5s ease; 
-        }
-        .btn-icon:hover { 
-            background: #f3f4f6;
-        }
-        input:focus, textarea:focus { 
-            outline: none; 
-            border-color: #7c3aed;
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-        }
-        .modal-overlay {
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(8px);
-        }
-        .tooltip {
-            position: fixed;
-            background: #1f2937;
-            color: white;
-            padding: 10px 14px;
-            border-radius: 10px;
-            font-size: 13px;
-            z-index: 1000;
-            pointer-events: none;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        }
-        .item-row { 
-            transition: background 0.15s ease; 
-            border-radius: 10px;
-        }
-        .item-row:hover { 
-            background: #f9fafb; 
-        }
+        .treat-item { transition: all 0.5s ease; cursor: pointer; }
+        .treat-item.affordable:hover { background: #f0f9ff; border-color: #7c3aed; }
+        .treat-item.unaffordable { opacity: 0.35; cursor: not-allowed; }
+        .calendar-day { transition: all 0.5s ease; cursor: pointer; }
+        .calendar-day:hover { background: #f3f4f6; }
+        .calendar-day.selected { background: #7c3aed; color: white; font-weight: 600; }
+        .calendar-day.today:not(.selected) { border: 2px solid #7c3aed; color: #7c3aed; font-weight: 600; }
+        .calendar-day.has-points::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: #7c3aed; border-radius: 50%; }
+        .calendar-day.selected.has-points::after { background: white; }
+        .stat-bar { transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 4px 4px 0 0; }
+        button { cursor: pointer; }
+        .btn-icon { transition: all 0.5s ease; }
+        .btn-icon:hover { background: #f3f4f6; }
+        input:focus, textarea:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
+        .modal-overlay { background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); }
+        .tooltip { position: fixed; background: #1f2937; color: white; padding: 10px 14px; border-radius: 10px; font-size: 13px; z-index: 1000; pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .item-row { transition: background 0.15s ease; border-radius: 10px; }
+        .item-row:hover { background: #f9fafb; }
         [draggable="true"] { cursor: grab; }
         [draggable="true"]:active { cursor: grabbing; }
-        .drag-over { 
-            border: 2px dashed #7c3aed !important; 
-            background: #faf5ff !important;
-        }
+        .drag-over { border: 2px dashed #7c3aed !important; background: #faf5ff !important; }
         .dragging { opacity: 0.5; }
-        .accent-gradient {
-            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
-        }
-        .points-ring {
-            background: conic-gradient(#7c3aed var(--progress), #e5e7eb var(--progress));
-        }
-        .nav-btn {
-            transition: all 0.5s ease;
-        }
-        .nav-btn:hover {
-            background: #f3f4f6;
-        }
-        .add-btn {
-            transition: all 0.5s ease;
-            cursor: pointer;
-        }
-        .add-btn:hover {
-            background: #7c3aed;
-            color: white;
-            border: 2px solid #7c3aed;
-        }
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #d1d5db;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af;
-        }
-        .sidebar-menu {
-            transition: all 0.3s ease;
-        }
-        .menu-item {
-            transition: all 0.2s ease;
-        }
-        .menu-item:hover {
-            background: #f3f4f6;
-        }
-        .menu-item.active {
-            background: #7c3aed;
-            color: white;
-        }
-        .menu-item.active:hover {
-            background: #6d28d9;
-        }
-        .page {
-            display: none;
-        }
-        .page.active {
-            display: block;
-        }
-        .goal-card {
-            transition: all 0.2s ease;
-        }
-        .goal-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        .milestone-item, .goal-task-item {
-            transition: all 0.15s ease;
-        }
-        .milestone-item:hover, .goal-task-item:hover {
-            background: #f9fafb;
-        }
-        .inline-add-form {
-            animation: slideDown 0.2s ease;
-        }
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .milestone-points-badge {
-            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-        }
-        .milestone-block {
-            border-left: 3px solid #e5e7eb;
-            transition: all 0.2s ease;
-        }
-        .milestone-block:hover {
-            border-left-color: #7c3aed;
-        }
-        .milestone-block.completed {
-            border-left-color: #10b981;
-            background: #f0fdf4;
-        }
-        .milestone-header {
-            cursor: pointer;
-        }
-        .milestone-tasks {
-            transition: all 0.3s ease;
-        }
-        .subtask-item {
-            transition: all 0.15s ease;
-        }
-        .subtask-item:hover {
-            background: #f9fafb;
-        }
-        .subtasks-container {
-            border-left: 2px solid #e5e7eb;
-            margin-left: 8px;
-            padding-left: 12px;
-        }
-        .task-expandable {
-            cursor: pointer;
-        }
-        .task-expand-icon {
-            transition: transform 0.2s ease;
-        }
-        .task-expand-icon.expanded {
-            transform: rotate(90deg);
-        }
+        .accent-gradient { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); }
+        .points-ring { background: conic-gradient(#7c3aed var(--progress), #e5e7eb var(--progress)); }
+        .nav-btn { transition: all 0.5s ease; }
+        .nav-btn:hover { background: #f3f4f6; }
+        .add-btn { transition: all 0.5s ease; cursor: pointer; }
+        .add-btn:hover { background: #7c3aed; color: white; border: 2px solid #7c3aed; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+        .sidebar-menu { transition: all 0.3s ease; }
+        .menu-item { transition: all 0.2s ease; }
+        .menu-item:hover { background: #f3f4f6; }
+        .menu-item.active { background: #7c3aed; color: white; }
+        .menu-item.active:hover { background: #6d28d9; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .goal-card { transition: all 0.2s ease; }
+        .goal-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .milestone-block { transition: all 0.2s ease; }
+        .milestone-block:hover { border-color: #c4b5fd; }
+        .milestone-item, .goal-task-item, .subtask-item { transition: all 0.15s ease; }
+        .milestone-item:hover, .goal-task-item:hover, .subtask-item:hover { background: #f9fafb; }
+        .inline-add-form { animation: slideDown 0.2s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .milestone-points-badge { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); }
+        .milestone-header { background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); }
+        .milestone-header.completed { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
+        .task-expandable { border-left: 2px solid #e5e7eb; }
+        .task-expandable:hover { border-left-color: #c4b5fd; }
+        .subtask-item { margin-left: 1.5rem; }
+        .subtask-points-badge { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -301,217 +117,217 @@
         <!-- Main Content -->
         <main class="flex-1 p-8">
             <div class="max-w-7xl mx-auto">
-        <!-- Planner Page -->
-        <div id="planner-page" class="page active">
-        <!-- Header -->
-        <header class="flex justify-end items-center mb-8">
-            <div class="flex items-center gap-2 bg-white rounded-full px-2 py-1 border border-gray-200">
-                <button id="prevDay" class="nav-btn p-2 rounded-full">
-                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                </button>
-                <span id="currentDate" class="text-sm font-semibold text-gray-800 px-3 min-w-48 text-center"></span>
-                <button id="nextDay" class="nav-btn p-2 rounded-full">
-                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
-                </button>
-            </div>
-        </header>
-
-        <!-- Bento Grid -->
-        <div class="grid grid-cols-12 gap-5">
-            <!-- Left Column -->
-            <div class="col-span-3 flex flex-col gap-5">
-                <!-- Calendar Card -->
-                <div class="card p-5">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-semibold text-gray-900 text-sm">Calendar</h3>
-                        <div class="flex items-center gap-1">
-                            <button id="prevMonth" class="btn-icon p-1.5 rounded-lg">
-                                <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- Planner Page -->
+                <div id="planner-page" class="page active">
+                    <!-- Header -->
+                    <header class="flex justify-end items-center mb-8">
+                        <div class="flex items-center gap-2 bg-white rounded-full px-2 py-1 border border-gray-200">
+                            <button id="prevDay" class="nav-btn p-2 rounded-full">
+                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                                 </svg>
                             </button>
-                            <span id="calendarMonth" class="text-xs font-medium text-gray-600 w-20 text-center"></span>
-                            <button id="nextMonth" class="btn-icon p-1.5 rounded-lg">
-                                <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <span id="currentDate" class="text-sm font-semibold text-gray-800 px-3 min-w-48 text-center"></span>
+                            <button id="nextDay" class="nav-btn p-2 rounded-full">
+                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                 </svg>
                             </button>
                         </div>
-                    </div>
-                    <div class="grid grid-cols-7 gap-1 text-center text-xs mb-2">
-                        <span class="text-gray-400 font-medium">M</span>
-                        <span class="text-gray-400 font-medium">T</span>
-                        <span class="text-gray-400 font-medium">W</span>
-                        <span class="text-gray-400 font-medium">T</span>
-                        <span class="text-gray-400 font-medium">F</span>
-                        <span class="text-gray-400 font-medium">S</span>
-                        <span class="text-gray-400 font-medium">S</span>
-                    </div>
-                    <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
-                </div>
+                    </header>
 
-                <!-- Habits Card -->
-                <div class="card p-5 flex-1">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-semibold text-gray-900 text-sm">Daily Habits</h3>
-                        <button id="editHabits" class="btn-icon p-1.5 rounded-lg text-gray-400 hover:text-violet-600">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div id="habitsList" class="space-y-1"></div>
-                    <button id="addHabit" class="add-btn mt-4 w-full py-2 text-sm text-gray-500 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                        Add Habit
-                    </button>
-                </div>
-            </div>
+                    <!-- Bento Grid -->
+                    <div class="grid grid-cols-12 gap-5">
+                        <!-- Left Column -->
+                        <div class="col-span-3 flex flex-col gap-5">
+                            <!-- Calendar Card -->
+                            <div class="card p-5">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="font-semibold text-gray-900 text-sm">Calendar</h3>
+                                    <div class="flex items-center gap-1">
+                                        <button id="prevMonth" class="btn-icon p-1.5 rounded-lg">
+                                            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                            </svg>
+                                        </button>
+                                        <span id="calendarMonth" class="text-xs font-medium text-gray-600 w-20 text-center"></span>
+                                        <button id="nextMonth" class="btn-icon p-1.5 rounded-lg">
+                                            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-7 gap-1 text-center text-xs mb-2">
+                                    <span class="text-gray-400 font-medium">M</span>
+                                    <span class="text-gray-400 font-medium">T</span>
+                                    <span class="text-gray-400 font-medium">W</span>
+                                    <span class="text-gray-400 font-medium">T</span>
+                                    <span class="text-gray-400 font-medium">F</span>
+                                    <span class="text-gray-400 font-medium">S</span>
+                                    <span class="text-gray-400 font-medium">S</span>
+                                </div>
+                                <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
+                            </div>
 
-            <!-- Center Column -->
-            <div class="col-span-5 flex flex-col gap-5">
-                <!-- Pomodoros Card -->
-                <div class="card p-5">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-semibold text-gray-900 text-sm">Pomodorros</h3>
-                        <button id="editPomodoros" class="btn-icon p-1.5 rounded-lg text-gray-400 hover:text-violet-600">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div id="pomodorosList" class="space-y-4"></div>
-                    <button id="addPomoCategory" class="add-btn mt-4 w-full py-2 text-sm text-gray-500 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                        Add Category
-                    </button>
-                </div>
-
-                <!-- Tasks Card -->
-                <div class="card p-5 flex-1">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-semibold text-gray-900 text-sm">Today's Tasks</h3>
-                        <span class="text-xs font-medium px-2 py-1 rounded-full bg-violet-50 text-violet-600" id="taskPoints">0 pts</span>
-                    </div>
-                    <div id="tasksList" class="space-y-1 mb-4 max-h-64 overflow-y-auto"></div>
-                    <div class="flex gap-2">
-                        <input type="text" id="newTaskInput" placeholder="Add a new task..." class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white">
-                        <input type="number" id="newTaskPoints" placeholder="Pts" class="w-16 px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-center bg-gray-50 focus:bg-white" value="2">
-                        <button id="addTask" class="px-4 py-2.5 accent-gradient text-white rounded-xl hover:opacity-90 transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column -->
-            <div class="col-span-4 flex flex-col gap-5">
-                <!-- Points Card -->
-                <div class="card p-6 accent-gradient text-white relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                    <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-                    <div class="relative">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="font-medium text-white/80 text-sm">Total Points</h3>
-                            <div class="flex items-center gap-1 text-xs text-white/60">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                <span id="pointsTrend">+0 today</span>
+                            <!-- Habits Card -->
+                            <div class="card p-5 flex-1">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="font-semibold text-gray-900 text-sm">Daily Habits</h3>
+                                    <button id="editHabits" class="btn-icon p-1.5 rounded-lg text-gray-400 hover:text-violet-600">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div id="habitsList" class="space-y-1"></div>
+                                <button id="addHabit" class="add-btn mt-4 w-full py-2 text-sm text-gray-500 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    Add Habit
+                                </button>
                             </div>
                         </div>
-                        <div class="text-5xl font-bold mb-3" id="totalPoints">0</div>
-                        <div class="flex gap-4 text-sm text-white/70">
-                            <span><span id="totalEarned" class="font-semibold text-white">0</span> earned</span>
-                            <span><span id="totalSpent" class="font-semibold text-white">0</span> spent</span>
+
+                        <!-- Center Column -->
+                        <div class="col-span-5 flex flex-col gap-5">
+                            <!-- Pomodoros Card -->
+                            <div class="card p-5">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="font-semibold text-gray-900 text-sm">Pomodorros</h3>
+                                    <button id="editPomodoros" class="btn-icon p-1.5 rounded-lg text-gray-400 hover:text-violet-600">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div id="pomodorosList" class="space-y-4"></div>
+                                <button id="addPomoCategory" class="add-btn mt-4 w-full py-2 text-sm text-gray-500 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    Add Category
+                                </button>
+                            </div>
+
+                            <!-- Tasks Card -->
+                            <div class="card p-5 flex-1">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="font-semibold text-gray-900 text-sm">Today's Tasks</h3>
+                                    <span class="text-xs font-medium px-2 py-1 rounded-full bg-violet-50 text-violet-600" id="taskPoints">0 pts</span>
+                                </div>
+                                <div id="tasksList" class="space-y-1 mb-4 max-h-64 overflow-y-auto"></div>
+                                <div class="flex gap-2">
+                                    <input type="text" id="newTaskInput" placeholder="Add a new task..." class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white">
+                                    <input type="number" id="newTaskPoints" placeholder="Pts" class="w-16 px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-center bg-gray-50 focus:bg-white" value="2">
+                                    <button id="addTask" class="px-4 py-2.5 accent-gradient text-white rounded-xl hover:opacity-90 transition">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex gap-4 text-xs text-white/50 mt-2 pt-2 border-t border-white/20">
-                            <span>Today: <span id="habitsCompleted" class="font-medium text-white/70">0</span> habits</span>
-                            <span><span id="pomosCompleted" class="font-medium text-white/70">0</span> sessions</span>
-                            <span><span id="tasksCompleted" class="font-medium text-white/70">0</span> tasks</span>
+
+                        <!-- Right Column -->
+                        <div class="col-span-4 flex flex-col gap-5">
+                            <!-- Points Card -->
+                            <div class="card p-6 accent-gradient text-white relative overflow-hidden">
+                                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                                <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+                                <div class="relative">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h3 class="font-medium text-white/80 text-sm">Total Points</h3>
+                                        <div class="flex items-center gap-1 text-xs text-white/60">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <span id="pointsTrend">+0 today</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-5xl font-bold mb-3" id="totalPoints">0</div>
+                                    <div class="flex gap-4 text-sm text-white/70">
+                                        <span><span id="totalEarned" class="font-semibold text-white">0</span> earned</span>
+                                        <span><span id="totalSpent" class="font-semibold text-white">0</span> spent</span>
+                                    </div>
+                                    <div class="flex gap-4 text-xs text-white/50 mt-2 pt-2 border-t border-white/20">
+                                        <span>Today: <span id="habitsCompleted" class="font-medium text-white/70">0</span> habits</span>
+                                        <span><span id="pomosCompleted" class="font-medium text-white/70">0</span> sessions</span>
+                                        <span><span id="tasksCompleted" class="font-medium text-white/70">0</span> tasks</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Treats Card -->
+                            <div class="card p-5">
+                                <div class="flex justify-between items-center mb-4">
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="font-semibold text-gray-900 text-sm">Rewards</h3>
+                                        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-rose-50 text-rose-500" id="treatsSpent">0 spent</span>
+                                    </div>
+                                    <button id="editTreats" class="btn-icon p-1.5 rounded-lg text-gray-400 hover:text-violet-600">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div id="treatsList" class="space-y-2"></div>
+                                <button id="addTreat" class="add-btn mt-4 w-full py-2 text-sm text-gray-500 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    Add Reward
+                                </button>
+                            </div>
+
+                            <!-- Statistics Card -->
+                            <div class="card p-5 flex-1">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="font-semibold text-gray-900 text-sm">Weekly Overview</h3>
+                                    <span class="text-xs text-gray-400">Last 7 days</span>
+                                </div>
+                                <div id="statsChart" class="flex items-stretch justify-between h-32 gap-2 mb-4"></div>
+                                <div class="flex justify-center gap-6 text-xs">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                                        <span class="text-gray-500">Habits</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-violet-400"></span>
+                                        <span class="text-gray-500">Pomodorros</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                                        <span class="text-gray-500">Tasks</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Treats Card -->
-                <div class="card p-5">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-2">
-                            <h3 class="font-semibold text-gray-900 text-sm">Rewards</h3>
-                            <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-rose-50 text-rose-500" id="treatsSpent">0 spent</span>
-                        </div>
-                        <button id="editTreats" class="btn-icon p-1.5 rounded-lg text-gray-400 hover:text-violet-600">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
-                        </button>
+                
+                <!-- Goals Page -->
+                <div id="goals-page" class="page">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-gray-900 mb-2">Goals</h2>
+                        <p class="text-gray-500">Manage your goals, milestones, and tasks</p>
                     </div>
-                    <div id="treatsList" class="space-y-2"></div>
-                    <button id="addTreat" class="add-btn mt-4 w-full py-2 text-sm text-gray-500 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    
+                    <!-- Add Goal Button -->
+                    <button id="addGoalBtn" class="mb-6 px-6 py-3 accent-gradient text-white rounded-xl font-medium hover:opacity-90 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
-                        Add Reward
+                        Add New Goal
                     </button>
+                    
+                    <!-- Goals List -->
+                    <div id="goalsList" class="space-y-6"></div>
                 </div>
-
-                <!-- Statistics Card -->
-                <div class="card p-5 flex-1">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-semibold text-gray-900 text-sm">Weekly Overview</h3>
-                        <span class="text-xs text-gray-400">Last 7 days</span>
-                    </div>
-                    <div id="statsChart" class="flex items-stretch justify-between h-32 gap-2 mb-4"></div>
-                    <div class="flex justify-center gap-6 text-xs">
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                            <span class="text-gray-500">Habits</span>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-violet-400"></span>
-                            <span class="text-gray-500">Pomodorros</span>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-                            <span class="text-gray-500">Tasks</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        </div>
-        
-        <!-- Goals Page -->
-        <div id="goals-page" class="page">
-            <div class="mb-8">
-                <h2 class="text-3xl font-bold text-gray-900 mb-2">Goals</h2>
-                <p class="text-gray-500">Manage your goals, milestones, and tasks</p>
-            </div>
-            
-            <!-- Add Goal Button -->
-            <button id="addGoalBtn" class="mb-6 px-6 py-3 accent-gradient text-white rounded-xl font-medium hover:opacity-90 transition flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
-                Add New Goal
-            </button>
-            
-            <!-- Goals List -->
-            <div id="goalsList" class="space-y-6"></div>
-        </div>
             </div>
         </main>
     </div>
@@ -569,7 +385,7 @@
     <div id="addTaskModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
         <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div class="flex justify-between items-center mb-5">
-                <h3 class="text-lg font-bold text-gray-900">Add Task to Planner</h3>
+                <h3 class="text-lg font-bold text-gray-900">Add to Planner</h3>
                 <button id="closeAddTaskModal" class="btn-icon p-2 rounded-lg text-gray-400 hover:text-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -599,10 +415,8 @@
 
     <script>
         // State Management
-        // Initialize to today's date in GMT+3 timezone
         function getTodayGMT3() {
             const now = new Date();
-            // Get UTC time and add 3 hours for GMT+3
             const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
             const gmt3Time = new Date(utcTime + (3 * 60 * 60 * 1000));
             gmt3Time.setHours(0, 0, 0, 0);
@@ -696,7 +510,6 @@
             
             const firstDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
             const lastDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0);
-            // Convert Sunday (0) to 6, and Mon-Sat (1-6) to 0-5 for Monday start
             const startDay = (firstDay.getDay() + 6) % 7;
             
             grid.innerHTML = '';
@@ -855,7 +668,6 @@
             const dayData = loadDayData(currentDate);
             const allTimePoints = calculateAllTimePoints();
             const availablePoints = allTimePoints.available;
-            const todaySpent = calculateSpentPoints(currentDate);
             
             document.getElementById('treatsSpent').textContent = `${allTimePoints.spent} total spent`;
             
@@ -969,7 +781,6 @@
             document.getElementById('pomosCompleted').textContent = dayData.pomosCompleted.reduce((sum, p) => sum + p.completed.length, 0);
             document.getElementById('tasksCompleted').textContent = dayData.tasks.filter(t => t.completed).length;
             
-            // Show today's earned points
             document.getElementById('pointsTrend').textContent = `+${todayEarned} today`;
         }
 
@@ -1011,68 +822,16 @@
             return spent;
         }
 
-        function calculateMilestonePoints() {
-            const goals = loadGoals();
-            let points = 0;
-            
-            // First, collect all subtask IDs that are in the planner to avoid double counting
-            const plannerSubtaskIds = new Set();
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key && key.startsWith('day_')) {
-                    const dayData = JSON.parse(localStorage.getItem(key));
-                    if (dayData.tasks) {
-                        dayData.tasks.forEach(task => {
-                            if (task.subtaskId) {
-                                plannerSubtaskIds.add(`${task.goalId}-${task.milestoneId}-${task.goalTaskId}-${task.subtaskId}`);
-                            }
-                        });
-                    }
-                }
-            }
-            
-            goals.forEach(goal => {
-                if (goal.milestones) {
-                    goal.milestones.forEach(m => {
-                        // Add milestone completion reward
-                        if (m.completed) {
-                            points += m.points || 10; // Default 10 pts if not set
-                        }
-                        // Add completed subtask points only if not in planner (to avoid double counting)
-                        if (m.tasks) {
-                            m.tasks.forEach(t => {
-                                if (t.subtasks) {
-                                    t.subtasks.forEach(s => {
-                                        const subtaskKey = `${goal.id}-${m.id}-${t.id}-${s.id}`;
-                                        // Only count if completed AND not in planner
-                                        if (s.completed && !plannerSubtaskIds.has(subtaskKey)) {
-                                            points += s.points || 2; // Default 2 pts for subtasks
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    });
-                }
-            });
-            
-            return points;
-        }
-
         function calculateAllTimePoints() {
             const global = loadGlobalData();
             let totalEarned = 0;
             let totalSpent = 0;
             
-            // Iterate through all saved day data in localStorage
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (key && key.startsWith('day_')) {
-                    const dateStr = key.replace('day_', '');
-                    const date = new Date(dateStr);
                     const dayData = JSON.parse(localStorage.getItem(key));
                     
-                    // Calculate earned points for this day
                     dayData.habitsCompleted?.forEach(id => {
                         const habit = global.habits.find(h => h.id === id);
                         if (habit) totalEarned += habit.points;
@@ -1087,7 +846,6 @@
                         if (task.completed) totalEarned += task.points;
                     });
                     
-                    // Calculate spent points for this day
                     dayData.treatsUsed?.forEach(t => {
                         const treat = global.treats.find(tr => tr.id === t.id);
                         if (treat) totalSpent += t.count * treat.cost;
@@ -1095,8 +853,29 @@
                 }
             }
             
-            // Add milestone points
-            totalEarned += calculateMilestonePoints();
+            // Add milestone and subtask points from goals
+            const goals = loadGoals();
+            goals.forEach(goal => {
+                if (goal.milestones) {
+                    goal.milestones.forEach(m => {
+                        if (m.completed) {
+                            totalEarned += m.points || 10;
+                        }
+                        // Add subtask points
+                        if (m.tasks) {
+                            m.tasks.forEach(t => {
+                                if (t.subtasks) {
+                                    t.subtasks.forEach(st => {
+                                        if (st.completed) {
+                                            totalEarned += st.points || 2;
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
             
             return { earned: totalEarned, spent: totalSpent, available: totalEarned - totalSpent };
         }
@@ -1160,28 +939,34 @@
             task.completed = !task.completed;
             saveDayData(currentDate, dayData);
             
-            // Sync with Goals if this task came from a goal
-            if (task.goalId && task.milestoneId) {
+            // Sync with Goals if this task came from a goal milestone
+            if (task.goalId && task.milestoneId && task.goalTaskId) {
                 const goals = loadGoals();
                 const goal = goals.find(g => g.id === task.goalId);
                 if (goal && goal.milestones) {
                     const milestone = goal.milestones.find(m => m.id === task.milestoneId);
                     if (milestone && milestone.tasks) {
-                        // Check if this is a subtask
-                        if (task.subtaskId) {
-                            const goalTask = milestone.tasks.find(t => t.id === task.goalTaskId);
-                            if (goalTask && goalTask.subtasks) {
-                                const subtask = goalTask.subtasks.find(s => s.id === task.subtaskId);
-                                if (subtask) {
-                                    subtask.completed = task.completed;
-                                    saveGoals(goals);
-                                }
-                            }
-                        } else if (task.goalTaskId) {
-                            // Regular task
-                            const goalTask = milestone.tasks.find(t => t.id === task.goalTaskId);
-                            if (goalTask) {
-                                goalTask.completed = task.completed;
+                        const goalTask = milestone.tasks.find(t => t.id === task.goalTaskId);
+                        if (goalTask) {
+                            goalTask.completed = task.completed;
+                            saveGoals(goals);
+                        }
+                    }
+                }
+            }
+            
+            // Sync with subtask if this is a subtask
+            if (task.goalId && task.milestoneId && task.goalTaskId && task.subtaskId) {
+                const goals = loadGoals();
+                const goal = goals.find(g => g.id === task.goalId);
+                if (goal && goal.milestones) {
+                    const milestone = goal.milestones.find(m => m.id === task.milestoneId);
+                    if (milestone && milestone.tasks) {
+                        const goalTask = milestone.tasks.find(t => t.id === task.goalTaskId);
+                        if (goalTask && goalTask.subtasks) {
+                            const subtask = goalTask.subtasks.find(st => st.id === task.subtaskId);
+                            if (subtask) {
+                                subtask.completed = task.completed;
                                 saveGoals(goals);
                             }
                         }
@@ -1256,7 +1041,6 @@
                 dayData.treatsUsed.push(treatData);
             }
             
-            // Use cumulative available points to check affordability
             const allTimePoints = calculateAllTimePoints();
             if (delta > 0 && allTimePoints.available < treat.cost) return;
             
@@ -1605,9 +1389,7 @@
             localStorage.setItem('goals', JSON.stringify(goals));
         }
         
-        // Sync goal task completion status to all planner tasks that reference it
-        function syncGoalTaskToPlanner(goalId, milestoneId, goalTaskId, completed, subtaskId = null) {
-            // Iterate through all saved day data in localStorage
+        function syncGoalItemToPlanner(goalId, milestoneId, goalTaskId, subtaskId, completed) {
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (key && key.startsWith('day_')) {
@@ -1617,14 +1399,14 @@
                     if (dayData.tasks) {
                         dayData.tasks.forEach(task => {
                             if (subtaskId) {
-                                // Syncing a subtask
+                                // Sync subtask
                                 if (task.goalId === goalId && task.milestoneId === milestoneId && 
                                     task.goalTaskId === goalTaskId && task.subtaskId === subtaskId) {
                                     task.completed = completed;
                                     updated = true;
                                 }
                             } else {
-                                // Syncing a regular task (not subtask)
+                                // Sync task
                                 if (task.goalId === goalId && task.milestoneId === milestoneId && 
                                     task.goalTaskId === goalTaskId && !task.subtaskId) {
                                     task.completed = completed;
@@ -1641,7 +1423,6 @@
             }
         }
         
-        // Track which inline forms are open
         let openMilestoneForm = null;
         let openTaskForm = null;
         let openSubtaskForm = null;
@@ -1663,43 +1444,12 @@
                 return;
             }
             
-            container.innerHTML = goals.map(goal => {
-                // Calculate milestone rewards earned
-                const milestonePointsEarned = goal.milestones ? 
-                    goal.milestones.filter(m => m.completed).reduce((sum, m) => sum + (m.points || 10), 0) : 0;
-                const totalMilestonePoints = goal.milestones ? 
-                    goal.milestones.reduce((sum, m) => sum + (m.points || 10), 0) : 0;
-                
-                // Calculate total tasks progress
-                let totalTasks = 0;
-                let completedTasks = 0;
-                if (goal.milestones) {
-                    goal.milestones.forEach(m => {
-                        if (m.tasks) {
-                            totalTasks += m.tasks.length;
-                            completedTasks += m.tasks.filter(t => t.completed).length;
-                        }
-                    });
-                }
-                
-                return `
+            container.innerHTML = goals.map(goal => `
                 <div class="goal-card card p-6" data-goal-id="${goal.id}">
-                    <div class="flex justify-between items-start mb-4">
+                    <div class="flex justify-between items-start mb-6">
                         <div class="flex-1">
                             <h3 class="text-xl font-bold text-gray-900 mb-1">${goal.name}</h3>
                             ${goal.description ? `<p class="text-sm text-gray-500">${goal.description}</p>` : ''}
-                            <div class="flex gap-3 mt-2">
-                                ${totalMilestonePoints > 0 ? `
-                                    <span class="text-xs font-medium px-2 py-0.5 rounded-full milestone-points-badge text-white">
-                                        ${milestonePointsEarned}/${totalMilestonePoints} milestone pts
-                                    </span>
-                                ` : ''}
-                                ${totalTasks > 0 ? `
-                                    <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-100 text-violet-600">
-                                        ${completedTasks}/${totalTasks} tasks
-                                    </span>
-                                ` : ''}
-                            </div>
                         </div>
                         <div class="flex gap-2">
                             <button class="edit-goal btn-icon p-2 rounded-lg text-gray-400 hover:text-violet-600" data-goal-id="${goal.id}">
@@ -1715,94 +1465,60 @@
                         </div>
                     </div>
                     
-                    <!-- Milestones Section -->
-                    <div>
-                        <div class="flex justify-between items-center mb-4">
-                            <h4 class="text-sm font-semibold text-gray-700">Milestones & Tasks</h4>
-                            <button class="add-milestone text-xs text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1" data-goal-id="${goal.id}">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                </svg>
-                                Add Milestone
-                            </button>
-                        </div>
-                        
-                        <!-- Inline Milestone Form -->
-                        <div class="milestone-form-container mb-4" data-goal-id="${goal.id}"></div>
-                        
-                        <div class="milestones-list space-y-4" data-goal-id="${goal.id}">
-                            ${goal.milestones && goal.milestones.length > 0 ? goal.milestones.map(m => {
-                                const taskCount = m.tasks ? m.tasks.length : 0;
-                                const completedTaskCount = m.tasks ? m.tasks.filter(t => t.completed).length : 0;
-                                const allTasksCompleted = taskCount > 0 && completedTaskCount === taskCount;
-                                
-                                return `
-                                <div class="milestone-block pl-4 py-3 rounded-r-lg ${m.completed ? 'completed' : 'bg-gray-50'}" 
-                                     data-goal-id="${goal.id}" data-milestone-id="${m.id}">
-                                    <!-- Milestone Header -->
-                                    <div class="milestone-header flex items-center gap-3 mb-3">
-                                        <input type="checkbox" class="milestone-checkbox w-5 h-5 accent-emerald-600 rounded" ${m.completed ? 'checked' : ''} 
+                    <!-- Milestones as blocks -->
+                    <div class="space-y-4">
+                        ${goal.milestones && goal.milestones.length > 0 ? goal.milestones.map(m => {
+                            const completedTasks = m.tasks ? m.tasks.filter(t => t.completed).length : 0;
+                            const totalTasks = m.tasks ? m.tasks.length : 0;
+                            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                            
+                            return `
+                            <div class="milestone-block border-2 border-violet-100 rounded-xl overflow-hidden" data-goal-id="${goal.id}" data-milestone-id="${m.id}">
+                                <!-- Milestone Header -->
+                                <div class="milestone-header ${m.completed ? 'completed' : ''} p-4">
+                                    <div class="flex items-center gap-3">
+                                        <input type="checkbox" class="milestone-checkbox w-5 h-5 accent-violet-600 rounded" ${m.completed ? 'checked' : ''} 
                                                data-goal-id="${goal.id}" data-milestone-id="${m.id}">
                                         <div class="flex-1">
-                                            <span class="font-medium ${m.completed ? 'line-through text-gray-400' : 'text-gray-800'}">${m.name}</span>
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <span class="text-xs font-medium px-2 py-0.5 rounded-full ${m.completed ? 'bg-emerald-100 text-emerald-600' : 'bg-violet-100 text-violet-600'}">
-                                                    +${m.points || 10} pts
-                                                </span>
-                                                ${taskCount > 0 ? `
-                                                    <span class="text-xs text-gray-400">${completedTaskCount}/${taskCount} tasks</span>
-                                                ` : ''}
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-semibold ${m.completed ? 'line-through text-gray-400' : 'text-gray-800'}">${m.name}</span>
+                                                <span class="milestone-points-badge text-xs font-medium px-2 py-0.5 rounded-full text-white ${m.completed ? 'opacity-50' : ''}">+${m.points || 10} pts</span>
                                             </div>
+                                            ${totalTasks > 0 ? `
+                                                <div class="flex items-center gap-2 mt-1">
+                                                    <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                                        <div class="h-full bg-violet-500 rounded-full transition-all" style="width: ${progress}%"></div>
+                                                    </div>
+                                                    <span class="text-xs text-gray-500">${completedTasks}/${totalTasks}</span>
+                                                </div>
+                                            ` : ''}
                                         </div>
-                                        <button class="add-milestone-task text-xs text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-violet-50 transition" 
-                                                data-goal-id="${goal.id}" data-milestone-id="${m.id}">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                            </svg>
-                                            Task
-                                        </button>
-                                        <button class="delete-milestone text-gray-300 hover:text-rose-600 transition p-1" 
+                                        <button class="delete-milestone btn-icon p-1.5 rounded-lg text-gray-400 hover:text-rose-600" 
                                                 data-goal-id="${goal.id}" data-milestone-id="${m.id}">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                             </svg>
                                         </button>
                                     </div>
-                                    
-                                    <!-- Milestone Tasks -->
-                                    <div class="milestone-tasks ml-8 space-y-2">
-                                        <!-- Inline Task Form for this milestone -->
-                                        <div class="task-form-container" data-goal-id="${goal.id}" data-milestone-id="${m.id}"></div>
-                                        
+                                </div>
+                                
+                                <!-- Milestone Tasks -->
+                                <div class="p-4 pt-2 bg-white">
+                                    <div class="space-y-3">
                                         ${m.tasks && m.tasks.length > 0 ? m.tasks.map(t => {
-                                            const subtaskCount = t.subtasks ? t.subtasks.length : 0;
-                                            const completedSubtaskCount = t.subtasks ? t.subtasks.filter(s => s.completed).length : 0;
-                                            const hasSubtasks = subtaskCount > 0;
+                                            const completedSubtasks = t.subtasks ? t.subtasks.filter(st => st.completed).length : 0;
+                                            const totalSubtasks = t.subtasks ? t.subtasks.length : 0;
                                             
                                             return `
-                                            <div class="goal-task-wrapper" data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}">
-                                                <div class="goal-task-item flex items-center gap-3 p-2.5 bg-white rounded-lg border border-gray-100 group">
-                                                    ${hasSubtasks ? `
-                                                        <button class="task-expand-btn p-0.5 hover:bg-gray-100 rounded transition" 
-                                                                data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}">
-                                                            <svg class="task-expand-icon w-4 h-4 text-gray-400 ${t.expanded ? 'expanded' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                                            </svg>
-                                                        </button>
-                                                    ` : '<div class="w-5"></div>'}
+                                            <div class="task-expandable pl-3 py-1">
+                                                <div class="goal-task-item flex items-center gap-3 p-2.5 bg-gray-50 rounded-lg group">
                                                     <input type="checkbox" class="goal-task-checkbox w-4 h-4 accent-violet-600 rounded" ${t.completed ? 'checked' : ''} 
                                                            data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}">
                                                     <span class="flex-1 text-sm ${t.completed ? 'line-through text-gray-400' : 'text-gray-700'}">${t.name}</span>
-                                                    ${hasSubtasks ? `
-                                                        <span class="text-xs text-gray-400">${completedSubtaskCount}/${subtaskCount}</span>
-                                                    ` : ''}
+                                                    ${totalSubtasks > 0 ? `<span class="text-xs text-gray-400">${completedSubtasks}/${totalSubtasks}</span>` : ''}
                                                     <span class="text-xs text-gray-400">${t.points || 5} pts</span>
-                                                    <button class="add-subtask text-xs text-emerald-600 hover:text-emerald-700 font-medium opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}">
-                                                        + Sub
-                                                    </button>
                                                     <button class="add-task-to-planner text-xs text-violet-600 hover:text-violet-700 font-medium opacity-0 group-hover:opacity-100 transition-opacity" 
-                                                            data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-task-name="${t.name}" data-task-points="${t.points || 5}">
+                                                            data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-task-name="${t.name}" data-task-points="${t.points || 5}" data-type="task">
                                                         → Planner
                                                     </button>
                                                     <button class="delete-goal-task text-gray-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity" 
@@ -1812,75 +1528,100 @@
                                                         </svg>
                                                     </button>
                                                 </div>
+                                                
                                                 <!-- Subtasks -->
-                                                <div class="subtasks-container mt-1 ${hasSubtasks && t.expanded ? '' : 'hidden'}" data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}">
-                                                    <!-- Inline Subtask Form -->
-                                                    <div class="subtask-form-container" data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}"></div>
-                                                    ${t.subtasks && t.subtasks.length > 0 ? t.subtasks.map(s => `
-                                                        <div class="subtask-item flex items-center gap-2 py-1.5 px-2 rounded group">
-                                                            <input type="checkbox" class="subtask-checkbox w-3.5 h-3.5 accent-emerald-600 rounded" ${s.completed ? 'checked' : ''}
-                                                                   data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-subtask-id="${s.id}">
-                                                            <span class="flex-1 text-xs ${s.completed ? 'line-through text-gray-400' : 'text-gray-600'}">${s.name}</span>
-                                                            <span class="text-xs text-gray-400">${s.points || 2} pts</span>
-                                                            <button class="add-subtask-to-planner text-xs text-emerald-600 hover:text-emerald-700 font-medium opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                    data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-subtask-id="${s.id}" 
-                                                                    data-subtask-name="${s.name}" data-subtask-points="${s.points || 2}">
-                                                                → Plan
+                                                <div class="mt-2 space-y-1">
+                                                    ${t.subtasks && t.subtasks.length > 0 ? t.subtasks.map(st => `
+                                                        <div class="subtask-item flex items-center gap-3 p-2 bg-amber-50 rounded-lg group">
+                                                            <input type="checkbox" class="subtask-checkbox w-3.5 h-3.5 accent-amber-500 rounded" ${st.completed ? 'checked' : ''} 
+                                                                   data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-subtask-id="${st.id}">
+                                                            <span class="flex-1 text-xs ${st.completed ? 'line-through text-gray-400' : 'text-gray-600'}">${st.name}</span>
+                                                            <span class="subtask-points-badge text-xs font-medium px-1.5 py-0.5 rounded text-white ${st.completed ? 'opacity-50' : ''}">+${st.points || 2}</span>
+                                                            <button class="add-subtask-to-planner text-xs text-amber-600 hover:text-amber-700 font-medium opacity-0 group-hover:opacity-100 transition-opacity" 
+                                                                    data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-subtask-id="${st.id}" 
+                                                                    data-task-name="${st.name}" data-task-points="${st.points || 2}" data-type="subtask">
+                                                                → Planner
                                                             </button>
-                                                            <button class="delete-subtask text-gray-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                    data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-subtask-id="${s.id}">
+                                                            <button class="delete-subtask text-gray-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity" 
+                                                                    data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-subtask-id="${st.id}">
                                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                                                 </svg>
                                                             </button>
                                                         </div>
                                                     `).join('') : ''}
+                                                    
+                                                    <!-- Subtask Form Container -->
+                                                    <div class="subtask-form-container" data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}"></div>
+                                                    
+                                                    <!-- Add Subtask Button -->
+                                                    <button class="add-subtask ml-6 mt-1 py-1.5 px-3 text-xs text-amber-600 hover:text-amber-700 font-medium flex items-center gap-1 border border-dashed border-amber-200 rounded hover:border-amber-400 hover:bg-amber-50 transition" 
+                                                            data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                                        </svg>
+                                                        Add Subtask
+                                                    </button>
                                                 </div>
                                             </div>
                                         `}).join('') : ''}
                                     </div>
+                                    
+                                    <!-- Add Task Form Container -->
+                                    <div class="task-form-container mt-2" data-goal-id="${goal.id}" data-milestone-id="${m.id}"></div>
+                                    
+                                    <!-- Add Task Button -->
+                                    <button class="add-milestone-task mt-2 w-full py-2 text-xs text-violet-600 hover:text-violet-700 font-medium flex items-center justify-center gap-1 border border-dashed border-violet-200 rounded-lg hover:border-violet-400 hover:bg-violet-50 transition" 
+                                            data-goal-id="${goal.id}" data-milestone-id="${m.id}">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                        </svg>
+                                        Add Task
+                                    </button>
                                 </div>
-                            `}).join('') : `
-                                <div class="text-center py-8 text-gray-400">
-                                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                                    </svg>
-                                    <p class="text-sm">No milestones yet. Add your first milestone to start organizing tasks!</p>
-                                </div>
-                            `}
-                        </div>
+                            </div>
+                        `}).join('') : '<p class="text-sm text-gray-400 italic">No milestones yet. Add your first milestone!</p>'}
                     </div>
+                    
+                    <!-- Add Milestone Form Container -->
+                    <div class="milestone-form-container mt-4" data-goal-id="${goal.id}"></div>
+                    
+                    <!-- Add Milestone Button -->
+                    <button class="add-milestone mt-4 w-full py-3 text-sm text-violet-600 hover:text-violet-700 font-medium flex items-center justify-center gap-2 border-2 border-dashed border-violet-200 rounded-xl hover:border-violet-400 hover:bg-violet-50 transition" data-goal-id="${goal.id}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Add Milestone
+                    </button>
                 </div>
-            `}).join('');
+            `).join('');
             
-            // Attach event listeners
             attachGoalsEventListeners();
         }
         
         function showMilestoneForm(goalId) {
-            // Close any open forms first
             closeMilestoneForm();
             closeTaskForm();
             closeSubtaskForm();
             
-            const container = document.querySelector(`.milestone-form-container[data-goal-id="${goalId}"]`);
+            const container = document.querySelector(`.milestone-form-container[data-goal-id="${goalId}"]:not([data-milestone-id])`);
             if (!container) return;
             
             openMilestoneForm = goalId;
             
             container.innerHTML = `
-                <div class="inline-add-form p-3 bg-violet-50 rounded-lg border border-violet-200">
-                    <div class="flex gap-2 mb-2">
+                <div class="inline-add-form p-4 bg-violet-50 rounded-xl border border-violet-200">
+                    <div class="flex gap-2 mb-3">
                         <input type="text" class="milestone-name-input flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:bg-white" 
                                placeholder="Enter milestone name..." autofocus>
-                        <input type="number" class="milestone-points-input w-20 px-3 py-2 border border-gray-200 rounded-lg text-sm text-center bg-white focus:bg-white" 
-                               placeholder="Pts" value="10" min="1">
+                        <input type="number" class="milestone-points-input w-24 px-3 py-2 border border-gray-200 rounded-lg text-sm text-center bg-white focus:bg-white" 
+                               placeholder="Reward" value="10" min="1">
                     </div>
                     <div class="flex gap-2 justify-end">
-                        <button class="cancel-milestone-btn px-3 py-1.5 text-gray-500 hover:text-gray-700 text-sm transition">
+                        <button class="cancel-milestone-btn px-4 py-2 text-gray-500 hover:text-gray-700 text-sm transition">
                             Cancel
                         </button>
-                        <button class="save-milestone-btn px-4 py-1.5 accent-gradient text-white rounded-lg text-sm font-medium hover:opacity-90 transition" data-goal-id="${goalId}">
+                        <button class="save-milestone-btn px-4 py-2 accent-gradient text-white rounded-lg text-sm font-medium hover:opacity-90 transition" data-goal-id="${goalId}">
                             Add Milestone
                         </button>
                     </div>
@@ -1891,7 +1632,6 @@
             const pointsInput = container.querySelector('.milestone-points-input');
             nameInput.focus();
             
-            // Handle Enter key
             nameInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     saveMilestone(goalId, nameInput.value, pointsInput.value);
@@ -1904,25 +1644,18 @@
                 }
             });
             
-            // Handle Escape key
             nameInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    closeMilestoneForm();
-                }
+                if (e.key === 'Escape') closeMilestoneForm();
             });
             
             pointsInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    closeMilestoneForm();
-                }
+                if (e.key === 'Escape') closeMilestoneForm();
             });
             
-            // Save button
             container.querySelector('.save-milestone-btn').addEventListener('click', () => {
                 saveMilestone(goalId, nameInput.value, pointsInput.value);
             });
             
-            // Cancel button
             container.querySelector('.cancel-milestone-btn').addEventListener('click', () => {
                 closeMilestoneForm();
             });
@@ -1930,7 +1663,7 @@
         
         function closeMilestoneForm() {
             if (openMilestoneForm !== null) {
-                const container = document.querySelector(`.milestone-form-container[data-goal-id="${openMilestoneForm}"]`);
+                const container = document.querySelector(`.milestone-form-container[data-goal-id="${openMilestoneForm}"]:not([data-milestone-id])`);
                 if (container) container.innerHTML = '';
                 openMilestoneForm = null;
             }
@@ -1946,14 +1679,14 @@
                 id: Date.now(),
                 name: name.trim(),
                 points: parseInt(points) || 10,
-                completed: false
+                completed: false,
+                tasks: []
             });
             saveGoals(goals);
             renderGoals();
         }
         
         function showTaskForm(goalId, milestoneId) {
-            // Close any open forms first
             closeMilestoneForm();
             closeTaskForm();
             closeSubtaskForm();
@@ -1964,7 +1697,7 @@
             openTaskForm = { goalId, milestoneId };
             
             container.innerHTML = `
-                <div class="inline-add-form p-3 bg-violet-50 rounded-lg border border-violet-200 mb-2">
+                <div class="inline-add-form p-3 bg-violet-50 rounded-lg border border-violet-200">
                     <div class="flex gap-2 mb-2">
                         <input type="text" class="task-name-input flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:bg-white" 
                                placeholder="Enter task name..." autofocus>
@@ -1986,38 +1719,30 @@
             const pointsInput = container.querySelector('.task-points-input');
             nameInput.focus();
             
-            // Handle Enter key
             nameInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
-                    saveTask(goalId, milestoneId, nameInput.value, pointsInput.value);
+                    saveTaskToMilestone(goalId, milestoneId, nameInput.value, pointsInput.value);
                 }
             });
             
             pointsInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
-                    saveTask(goalId, milestoneId, nameInput.value, pointsInput.value);
+                    saveTaskToMilestone(goalId, milestoneId, nameInput.value, pointsInput.value);
                 }
             });
             
-            // Handle Escape key
             nameInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    closeTaskForm();
-                }
+                if (e.key === 'Escape') closeTaskForm();
             });
             
             pointsInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    closeTaskForm();
-                }
+                if (e.key === 'Escape') closeTaskForm();
             });
             
-            // Save button
             container.querySelector('.save-task-btn').addEventListener('click', () => {
-                saveTask(goalId, milestoneId, nameInput.value, pointsInput.value);
+                saveTaskToMilestone(goalId, milestoneId, nameInput.value, pointsInput.value);
             });
             
-            // Cancel button
             container.querySelector('.cancel-task-btn').addEventListener('click', () => {
                 closeTaskForm();
             });
@@ -2031,7 +1756,7 @@
             }
         }
         
-        function saveTask(goalId, milestoneId, name, points) {
+        function saveTaskToMilestone(goalId, milestoneId, name, points) {
             if (!name || !name.trim()) return;
             
             const goals = loadGoals();
@@ -2043,54 +1768,36 @@
                 name: name.trim(),
                 points: parseInt(points) || 5,
                 completed: false,
-                subtasks: [],
-                expanded: false
+                subtasks: []
             });
             saveGoals(goals);
             renderGoals();
         }
         
         function showSubtaskForm(goalId, milestoneId, taskId) {
-            // Close any open forms first
             closeMilestoneForm();
             closeTaskForm();
             closeSubtaskForm();
             
-            // First expand the task if not expanded
-            const goals = loadGoals();
-            const goal = goals.find(g => g.id === goalId);
-            const milestone = goal.milestones.find(m => m.id === milestoneId);
-            const task = milestone.tasks.find(t => t.id === taskId);
-            if (!task.expanded) {
-                task.expanded = true;
-                saveGoals(goals);
-            }
-            
             const container = document.querySelector(`.subtask-form-container[data-goal-id="${goalId}"][data-milestone-id="${milestoneId}"][data-task-id="${taskId}"]`);
-            const subtasksContainer = document.querySelector(`.subtasks-container[data-goal-id="${goalId}"][data-milestone-id="${milestoneId}"][data-task-id="${taskId}"]`);
-            
-            if (subtasksContainer) {
-                subtasksContainer.classList.remove('hidden');
-            }
-            
             if (!container) return;
             
             openSubtaskForm = { goalId, milestoneId, taskId };
             
             container.innerHTML = `
-                <div class="inline-add-form p-2 bg-emerald-50 rounded-lg border border-emerald-200 mb-2">
+                <div class="inline-add-form ml-6 p-2 bg-amber-50 rounded-lg border border-amber-200">
                     <div class="flex gap-2 mb-2">
-                        <input type="text" class="subtask-name-input flex-1 px-2 py-1.5 border border-gray-200 rounded-lg text-xs bg-white focus:bg-white" 
-                               placeholder="Enter subtask..." autofocus>
-                        <input type="number" class="subtask-points-input w-16 px-2 py-1.5 border border-gray-200 rounded-lg text-xs text-center bg-white focus:bg-white" 
+                        <input type="text" class="subtask-name-input flex-1 px-2 py-1.5 border border-gray-200 rounded text-xs bg-white focus:bg-white" 
+                               placeholder="Enter subtask name..." autofocus>
+                        <input type="number" class="subtask-points-input w-16 px-2 py-1.5 border border-gray-200 rounded text-xs text-center bg-white focus:bg-white" 
                                placeholder="Pts" value="2" min="1">
                     </div>
                     <div class="flex gap-2 justify-end">
                         <button class="cancel-subtask-btn px-2 py-1 text-gray-500 hover:text-gray-700 text-xs transition">
                             Cancel
                         </button>
-                        <button class="save-subtask-btn px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-medium transition">
-                            Add Subtask
+                        <button class="save-subtask-btn px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-medium transition">
+                            Add
                         </button>
                     </div>
                 </div>
@@ -2100,7 +1807,6 @@
             const pointsInput = container.querySelector('.subtask-points-input');
             nameInput.focus();
             
-            // Handle Enter key
             nameInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     saveSubtask(goalId, milestoneId, taskId, nameInput.value, pointsInput.value);
@@ -2113,25 +1819,18 @@
                 }
             });
             
-            // Handle Escape key
             nameInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    closeSubtaskForm();
-                }
+                if (e.key === 'Escape') closeSubtaskForm();
             });
             
             pointsInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    closeSubtaskForm();
-                }
+                if (e.key === 'Escape') closeSubtaskForm();
             });
             
-            // Save button
             container.querySelector('.save-subtask-btn').addEventListener('click', () => {
                 saveSubtask(goalId, milestoneId, taskId, nameInput.value, pointsInput.value);
             });
             
-            // Cancel button
             container.querySelector('.cancel-subtask-btn').addEventListener('click', () => {
                 closeSubtaskForm();
             });
@@ -2159,49 +1858,10 @@
                 points: parseInt(points) || 2,
                 completed: false
             });
-            task.expanded = true;
             saveGoals(goals);
             renderGoals();
         }
         
-        function toggleTaskExpand(goalId, milestoneId, taskId) {
-            const goals = loadGoals();
-            const goal = goals.find(g => g.id === goalId);
-            const milestone = goal.milestones.find(m => m.id === milestoneId);
-            const task = milestone.tasks.find(t => t.id === taskId);
-            task.expanded = !task.expanded;
-            saveGoals(goals);
-            renderGoals();
-        }
-        
-        function toggleSubtask(goalId, milestoneId, taskId, subtaskId) {
-            const goals = loadGoals();
-            const goal = goals.find(g => g.id === goalId);
-            const milestone = goal.milestones.find(m => m.id === milestoneId);
-            const task = milestone.tasks.find(t => t.id === taskId);
-            const subtask = task.subtasks.find(s => s.id === subtaskId);
-            subtask.completed = !subtask.completed;
-            saveGoals(goals);
-            
-            // Sync with any planner tasks that reference this subtask
-            syncGoalTaskToPlanner(goalId, milestoneId, taskId, subtask.completed, subtaskId);
-            
-            renderGoals();
-            // Update planner points display
-            render();
-        }
-        
-        function deleteSubtask(goalId, milestoneId, taskId, subtaskId) {
-            const goals = loadGoals();
-            const goal = goals.find(g => g.id === goalId);
-            const milestone = goal.milestones.find(m => m.id === milestoneId);
-            const task = milestone.tasks.find(t => t.id === taskId);
-            task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
-            saveGoals(goals);
-            renderGoals();
-        }
-        
-        // Goal Form Management
         let currentEditingGoalId = null;
         
         function openGoalForm(goalId = null) {
@@ -2214,7 +1874,6 @@
             currentEditingGoalId = goalId;
             
             if (goalId) {
-                // Edit mode
                 const goals = loadGoals();
                 const goal = goals.find(g => g.id === goalId);
                 if (goal) {
@@ -2223,7 +1882,6 @@
                     descInput.value = goal.description || '';
                 }
             } else {
-                // Add mode
                 title.textContent = 'Add New Goal';
                 form.reset();
             }
@@ -2240,7 +1898,6 @@
             currentEditingGoalId = null;
         }
         
-        // Add Goal button handler (attach once)
         let addGoalHandlerAttached = false;
         function attachAddGoalHandler() {
             if (addGoalHandlerAttached) return;
@@ -2251,7 +1908,6 @@
             }
         }
         
-        // Goal Form Submit Handler
         const goalForm = document.getElementById('goalForm');
         if (goalForm) {
             goalForm.addEventListener('submit', (e) => {
@@ -2265,20 +1921,17 @@
                 const goals = loadGoals();
                 
                 if (currentEditingGoalId) {
-                    // Edit existing goal
                     const goal = goals.find(g => g.id === currentEditingGoalId);
                     if (goal) {
                         goal.name = name;
                         goal.description = descInput.value.trim();
                     }
                 } else {
-                    // Add new goal
                     goals.push({
                         id: Date.now(),
                         name: name,
                         description: descInput.value.trim(),
-                        milestones: [],
-                        tasks: []
+                        milestones: []
                     });
                 }
                 
@@ -2288,7 +1941,6 @@
             });
         }
         
-        // Close Goal Form handlers
         const closeGoalFormModal = document.getElementById('closeGoalFormModal');
         const cancelGoalForm = document.getElementById('cancelGoalForm');
         const goalFormModal = document.getElementById('goalFormModal');
@@ -2309,7 +1961,6 @@
             });
         }
         
-        // Event delegation for goals (attach once)
         let goalsEventDelegationAttached = false;
         function attachGoalsEventListeners() {
             attachAddGoalHandler();
@@ -2338,7 +1989,7 @@
                     return;
                 }
                 
-                // Add Milestone - Show inline form
+                // Add Milestone
                 if (e.target.closest('.add-milestone')) {
                     const btn = e.target.closest('.add-milestone');
                     const goalId = parseInt(btn.dataset.goalId);
@@ -2357,7 +2008,6 @@
                     milestone.completed = cb.checked;
                     saveGoals(goals);
                     renderGoals();
-                    // Also update points display on planner if visible
                     render();
                     return;
                 }
@@ -2375,7 +2025,7 @@
                     return;
                 }
                 
-                // Add Task to Milestone - Show inline form
+                // Add Task to Milestone
                 if (e.target.closest('.add-milestone-task')) {
                     const btn = e.target.closest('.add-milestone-task');
                     const goalId = parseInt(btn.dataset.goalId);
@@ -2397,8 +2047,7 @@
                     task.completed = cb.checked;
                     saveGoals(goals);
                     
-                    // Sync with any planner tasks that reference this goal task
-                    syncGoalTaskToPlanner(goalId, milestoneId, taskId, cb.checked);
+                    syncGoalItemToPlanner(goalId, milestoneId, taskId, null, cb.checked);
                     
                     renderGoals();
                     return;
@@ -2416,7 +2065,6 @@
                     document.getElementById('taskNameInput').value = taskName;
                     document.getElementById('taskPointsInput').value = taskPoints;
                     
-                    // Format date for input in GMT+3
                     const today = getTodayGMT3();
                     const year = today.getFullYear();
                     const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -2429,6 +2077,8 @@
                     modal.dataset.goalId = goalId;
                     modal.dataset.milestoneId = milestoneId;
                     modal.dataset.taskId = taskId;
+                    modal.dataset.subtaskId = '';
+                    modal.dataset.type = 'task';
                     return;
                 }
                 
@@ -2447,17 +2097,7 @@
                     return;
                 }
                 
-                // Expand/Collapse Task Subtasks
-                if (e.target.closest('.task-expand-btn')) {
-                    const btn = e.target.closest('.task-expand-btn');
-                    const goalId = parseInt(btn.dataset.goalId);
-                    const milestoneId = parseInt(btn.dataset.milestoneId);
-                    const taskId = parseInt(btn.dataset.taskId);
-                    toggleTaskExpand(goalId, milestoneId, taskId);
-                    return;
-                }
-                
-                // Add Subtask - Show inline form
+                // Add Subtask
                 if (e.target.closest('.add-subtask')) {
                     const btn = e.target.closest('.add-subtask');
                     const goalId = parseInt(btn.dataset.goalId);
@@ -2474,18 +2114,18 @@
                     const milestoneId = parseInt(cb.dataset.milestoneId);
                     const taskId = parseInt(cb.dataset.taskId);
                     const subtaskId = parseInt(cb.dataset.subtaskId);
-                    toggleSubtask(goalId, milestoneId, taskId, subtaskId);
-                    return;
-                }
-                
-                // Delete Subtask
-                if (e.target.closest('.delete-subtask')) {
-                    const btn = e.target.closest('.delete-subtask');
-                    const goalId = parseInt(btn.dataset.goalId);
-                    const milestoneId = parseInt(btn.dataset.milestoneId);
-                    const taskId = parseInt(btn.dataset.taskId);
-                    const subtaskId = parseInt(btn.dataset.subtaskId);
-                    deleteSubtask(goalId, milestoneId, taskId, subtaskId);
+                    const goals = loadGoals();
+                    const goal = goals.find(g => g.id === goalId);
+                    const milestone = goal.milestones.find(m => m.id === milestoneId);
+                    const task = milestone.tasks.find(t => t.id === taskId);
+                    const subtask = task.subtasks.find(st => st.id === subtaskId);
+                    subtask.completed = cb.checked;
+                    saveGoals(goals);
+                    
+                    syncGoalItemToPlanner(goalId, milestoneId, taskId, subtaskId, cb.checked);
+                    
+                    renderGoals();
+                    render();
                     return;
                 }
                 
@@ -2496,13 +2136,12 @@
                     const milestoneId = parseInt(btn.dataset.milestoneId);
                     const taskId = parseInt(btn.dataset.taskId);
                     const subtaskId = parseInt(btn.dataset.subtaskId);
-                    const subtaskName = btn.dataset.subtaskName;
-                    const subtaskPoints = parseInt(btn.dataset.subtaskPoints);
+                    const taskName = btn.dataset.taskName;
+                    const taskPoints = parseInt(btn.dataset.taskPoints);
                     
-                    document.getElementById('taskNameInput').value = subtaskName;
-                    document.getElementById('taskPointsInput').value = subtaskPoints;
+                    document.getElementById('taskNameInput').value = taskName;
+                    document.getElementById('taskPointsInput').value = taskPoints;
                     
-                    // Format date for input in GMT+3
                     const today = getTodayGMT3();
                     const year = today.getFullYear();
                     const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -2516,7 +2155,24 @@
                     modal.dataset.milestoneId = milestoneId;
                     modal.dataset.taskId = taskId;
                     modal.dataset.subtaskId = subtaskId;
-                    modal.dataset.isSubtask = 'true';
+                    modal.dataset.type = 'subtask';
+                    return;
+                }
+                
+                // Delete Subtask
+                if (e.target.closest('.delete-subtask')) {
+                    const btn = e.target.closest('.delete-subtask');
+                    const goalId = parseInt(btn.dataset.goalId);
+                    const milestoneId = parseInt(btn.dataset.milestoneId);
+                    const taskId = parseInt(btn.dataset.taskId);
+                    const subtaskId = parseInt(btn.dataset.subtaskId);
+                    const goals = loadGoals();
+                    const goal = goals.find(g => g.id === goalId);
+                    const milestone = goal.milestones.find(m => m.id === milestoneId);
+                    const task = milestone.tasks.find(t => t.id === taskId);
+                    task.subtasks = task.subtasks.filter(st => st.id !== subtaskId);
+                    saveGoals(goals);
+                    renderGoals();
                     return;
                 }
             });
@@ -2524,7 +2180,6 @@
             goalsEventDelegationAttached = true;
         }
         
-        // Add Task to Planner Modal handlers (attach once on init)
         const closeAddTaskModal = document.getElementById('closeAddTaskModal');
         const cancelAddTask = document.getElementById('cancelAddTask');
         const confirmAddTask = document.getElementById('confirmAddTask');
@@ -2546,51 +2201,42 @@
         
         if (confirmAddTask) {
             confirmAddTask.addEventListener('click', () => {
-            const modal = document.getElementById('addTaskModal');
-            const taskName = document.getElementById('taskNameInput').value;
-            const taskPoints = parseInt(document.getElementById('taskPointsInput').value) || 5;
-            const dateInputValue = document.getElementById('taskDateInput').value;
-            const goalId = parseInt(modal.dataset.goalId);
-            const milestoneId = parseInt(modal.dataset.milestoneId);
-            const goalTaskId = parseInt(modal.dataset.taskId);
-            const subtaskId = modal.dataset.subtaskId ? parseInt(modal.dataset.subtaskId) : null;
-            const isSubtask = modal.dataset.isSubtask === 'true';
-            
-            if (!taskName) return;
-            
-            // Parse date correctly for GMT+3
-            // The input value is YYYY-MM-DD, we need to create a date object for that specific day
-            const [year, month, day] = dateInputValue.split('-').map(Number);
-            const taskDate = new Date(year, month - 1, day);
-            taskDate.setHours(0, 0, 0, 0);
-            
-            // Add task to planner with goal reference
-            const dayData = loadDayData(taskDate);
-            const plannerTask = {
-                name: taskName,
-                points: taskPoints,
-                completed: false,
-                goalId: goalId,
-                milestoneId: milestoneId
-            };
-            
-            if (isSubtask && subtaskId) {
-                plannerTask.goalTaskId = goalTaskId;
-                plannerTask.subtaskId = subtaskId;
-            } else {
-                plannerTask.goalTaskId = goalTaskId;
-            }
-            
-            dayData.tasks.push(plannerTask);
-            saveDayData(taskDate, dayData);
-            
-                // Close modal and reset dataset
+                const modal = document.getElementById('addTaskModal');
+                const taskName = document.getElementById('taskNameInput').value;
+                const taskPoints = parseInt(document.getElementById('taskPointsInput').value) || 5;
+                const dateInputValue = document.getElementById('taskDateInput').value;
+                const goalId = parseInt(modal.dataset.goalId);
+                const milestoneId = parseInt(modal.dataset.milestoneId);
+                const goalTaskId = parseInt(modal.dataset.taskId);
+                const subtaskId = modal.dataset.subtaskId ? parseInt(modal.dataset.subtaskId) : null;
+                const type = modal.dataset.type;
+                
+                if (!taskName) return;
+                
+                const [year, month, day] = dateInputValue.split('-').map(Number);
+                const taskDate = new Date(year, month - 1, day);
+                taskDate.setHours(0, 0, 0, 0);
+                
+                const dayData = loadDayData(taskDate);
+                const newTask = {
+                    name: taskName,
+                    points: taskPoints,
+                    completed: false,
+                    goalId: goalId,
+                    milestoneId: milestoneId,
+                    goalTaskId: goalTaskId
+                };
+                
+                if (type === 'subtask' && subtaskId) {
+                    newTask.subtaskId = subtaskId;
+                }
+                
+                dayData.tasks.push(newTask);
+                saveDayData(taskDate, dayData);
+                
                 addTaskModal.classList.add('hidden');
                 addTaskModal.classList.remove('flex');
-                delete modal.dataset.subtaskId;
-                delete modal.dataset.isSubtask;
                 
-                // Switch to planner page if not already there
                 if (currentPage !== 'planner') {
                     switchPage('planner');
                     currentDate = taskDate;
@@ -2611,7 +2257,6 @@
         // Initialize
         render();
         
-        // Initialize goals event delegation when page loads
         if (document.getElementById('goalsList')) {
             attachGoalsEventListeners();
         }
