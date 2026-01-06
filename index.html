@@ -80,6 +80,9 @@
         .wish-category:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .wish-category-header { background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); }
         .wish-form-inline { animation: slideDown 0.2s ease; }
+        .transaction-item { transition: all 0.2s ease; }
+        .transaction-item:hover { background: #f9fafb; }
+        .money-gradient { background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -113,12 +116,12 @@
                     </svg>
                     Wishlist
                 </button>
-                <a href="#money" class="menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700">
+                <button data-page="money" class="menu-item w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     Money
-                </a>
+                </button>
             </nav>
         </aside>
 
@@ -355,6 +358,135 @@
                     <!-- Wishlist Categories -->
                     <div id="wishlistCategories" class="space-y-6"></div>
                 </div>
+                
+                <!-- Money Page -->
+                <div id="money-page" class="page">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-gray-900 mb-2">Money</h2>
+                        <p class="text-gray-500">Track your income and expenses</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-12 gap-6">
+                        <!-- Left Column - Stats & Form -->
+                        <div class="col-span-4 space-y-5">
+                            <!-- Balance Card -->
+                            <div class="card p-6 accent-gradient text-white relative overflow-hidden">
+                                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full translate-y-1/2 translate-x-1/2"></div>
+                                <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+                                <div class="relative">
+                                    <h3 class="font-medium text-white/80 text-sm mb-1">Total Balance</h3>
+                                    <div class="text-4xl font-bold mb-1" id="moneyBalance">0 ₽</div>
+                                    <p class="text-xs text-white/60">All time</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Monthly Stats -->
+                            <div class="card p-5">
+                                <h3 class="font-semibold text-gray-900 text-sm mb-4">This Month</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"/>
+                                                </svg>
+                                            </div>
+                                            <span class="text-sm text-gray-600">Income</span>
+                                        </div>
+                                        <span class="font-semibold text-emerald-600" id="monthlyIncome">+0 ₽</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"/>
+                                                </svg>
+                                            </div>
+                                            <span class="text-sm text-gray-600">Expenses</span>
+                                        </div>
+                                        <span class="font-semibold text-rose-600" id="monthlyExpenses">-0 ₽</span>
+                                    </div>
+                                    <div class="border-t border-gray-100 pt-3 flex justify-between items-center">
+                                        <span class="text-sm font-medium text-gray-700">Net Change</span>
+                                        <span class="font-bold" id="monthlyNet">0 ₽</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Add Transaction Form -->
+                            <div class="card p-5">
+                                <h3 class="font-semibold text-gray-900 text-sm mb-4">Add Transaction</h3>
+                                <form id="transactionForm" class="space-y-3">
+                                    <div>
+                                        <input type="text" id="transactionTitle" required 
+                                               class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white" 
+                                               placeholder="Title (e.g., Salary, Groceries)">
+                                    </div>
+                                    <div>
+                                        <input type="number" id="transactionAmount" required step="0.01"
+                                               class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white" 
+                                               placeholder="Amount (positive = income, negative = expense)">
+                                    </div>
+                                    <div>
+                                        <select id="transactionCategory" required
+                                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white">
+                                            <option value="">Select category</option>
+                                            <optgroup label="Income">
+                                                <option value="salary">Salary</option>
+                                                <option value="maxim">Maxim</option>
+                                                <option value="rent">Rent</option>
+                                                <option value="freelance">Freelance</option>
+                                                <option value="joiia">JOIIA</option>
+                                                
+                                                <option value="gift">Gift</option>
+                                                <option value="other_income">Other Income</option>
+                                            </optgroup>
+                                            <optgroup label="Expenses">
+                                                <option value="grocery">Grocery</option>
+                                                <option value="clothes">Clothes</option>
+                                                <option value="beauty">Beauty</option>
+                                                <option value="treats">Treats</option>
+                                                <option value="home">Home</option>
+                                                <option value="family">Family</option>
+                                                <option value="bills">Bills</option>
+                                                <option value="misc">Misc</option>
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="w-full py-2.5 accent-gradient text-white rounded-xl font-medium hover:opacity-90 transition">
+                                        Add Transaction
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column - Transactions List -->
+                        <div class="col-span-8">
+                            <div class="card p-5">
+                                <!-- Month Navigation -->
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="font-semibold text-gray-900 text-sm">Transactions</h3>
+                                    <div class="flex items-center gap-2 bg-gray-100 rounded-full px-2 py-1">
+                                        <button id="prevMonthMoney" class="nav-btn p-1.5 rounded-full">
+                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                            </svg>
+                                        </button>
+                                        <span id="moneyMonth" class="text-sm font-medium text-gray-700 min-w-32 text-center"></span>
+                                        <button id="nextMonthMoney" class="nav-btn p-1.5 rounded-full">
+                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Transactions List -->
+                                <div id="transactionsList" class="space-y-2 max-h-[500px] overflow-y-auto"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -469,10 +601,10 @@
         ];
 
         const defaultTreats = [
-            { id: 1, name: 'Coffee break', cost: 15, emoji: '☕' },
-            { id: 2, name: 'Netflix episode', cost: 30, emoji: '📺' },
-            { id: 3, name: 'Snack', cost: 10, emoji: '🍪' },
-            { id: 4, name: 'Gaming hour', cost: 50, emoji: '🎮' }
+            { id: 1, name: 'Coffee break', cost: 15 },
+            { id: 2, name: 'Netflix episode', cost: 30 },
+            { id: 3, name: 'Snack', cost: 10 },
+            { id: 4, name: 'Gaming hour', cost: 50 }
         ];
 
         // Utility functions
@@ -704,7 +836,6 @@
                 return `
                     <div class="treat-item flex items-center gap-3 p-3 rounded-xl border border-gray-100 ${canAfford ? 'affordable' : 'unaffordable'}" 
                          data-id="${treat.id}">
-                        <span class="text-2xl">${treat.emoji}</span>
                         <div class="flex-1">
                             <span class="text-sm font-medium text-gray-800">${treat.name}</span>
                             <span class="text-xs text-rose-400 ml-2">-${treat.cost} pts</span>
@@ -1114,7 +1245,7 @@
                 case 'treats':
                     title.textContent = 'Edit Treats';
                     items = global.treats;
-                    fields = ['emoji', 'name', 'cost'];
+                    fields = ['name', 'cost'];
                     break;
             }
             
@@ -1236,8 +1367,8 @@
                     fields = ['name', 'count', 'pointsEach', 'color'];
                     break;
                 case 'treats':
-                    newItem = { emoji: '', name: 'New Treat', cost: 10 };
-                    fields = ['emoji', 'name', 'cost'];
+                    newItem = { name: 'New Treat', cost: 10 };
+                    fields = ['name', 'cost'];
                     break;
             }
             
@@ -1402,6 +1533,8 @@
             } else if (page === 'wishlist') {
                 renderWishlist();
                 attachWishlistEventListeners();
+            } else if (page === 'money') {
+                renderMoney();
             }
         }
         
@@ -2620,6 +2753,233 @@
                     addTaskModal.classList.add('hidden');
                     addTaskModal.classList.remove('flex');
                 }
+            });
+        }
+
+        // Money Management
+        let moneyViewDate = getTodayGMT3();
+        
+        function loadTransactions() {
+            const saved = localStorage.getItem('transactions');
+            return saved ? JSON.parse(saved) : [];
+        }
+        
+        function saveTransactions(transactions) {
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+        }
+        
+        function getCategoryInfo(category) {
+            const categories = {
+                salary: { name: 'Salary' },
+                freelance: { name: 'Freelance' },
+                investment: { name: 'Investment' },
+                gift: { name: 'Gift' },
+                other_income: { name: 'Other Income' },
+                food: { name: 'Food & Dining' },
+                transport: { name: 'Transport' },
+                shopping: { name: 'Shopping' },
+                entertainment: { name: 'Entertainment' },
+                bills: { name: 'Bills & Utilities' },
+                health: { name: 'Health' },
+                education: { name: 'Education' },
+                other_expense: { name: 'Other Expense' }
+            };
+            return categories[category] || { name: category };
+        }
+        
+        function formatMoney(amount) {
+            const formatted = Math.abs(amount).toLocaleString('ru-RU');
+            if (amount >= 0) {
+                return `+${formatted} ₽`;
+            }
+            return `-${formatted} ₽`;
+        }
+        
+        function formatMoneyPlain(amount) {
+            return `${amount.toLocaleString('ru-RU')} ₽`;
+        }
+        
+        function calculateMoneyStats() {
+            const transactions = loadTransactions();
+            let totalBalance = 0;
+            let monthlyIncome = 0;
+            let monthlyExpenses = 0;
+            
+            const viewYear = moneyViewDate.getFullYear();
+            const viewMonth = moneyViewDate.getMonth();
+            
+            transactions.forEach(t => {
+                totalBalance += t.amount;
+                
+                const tDate = new Date(t.date);
+                if (tDate.getFullYear() === viewYear && tDate.getMonth() === viewMonth) {
+                    if (t.amount >= 0) {
+                        monthlyIncome += t.amount;
+                    } else {
+                        monthlyExpenses += Math.abs(t.amount);
+                    }
+                }
+            });
+            
+            return {
+                totalBalance,
+                monthlyIncome,
+                monthlyExpenses,
+                monthlyNet: monthlyIncome - monthlyExpenses
+            };
+        }
+        
+        function getMonthTransactions() {
+            const transactions = loadTransactions();
+            const viewYear = moneyViewDate.getFullYear();
+            const viewMonth = moneyViewDate.getMonth();
+            
+            return transactions
+                .filter(t => {
+                    const tDate = new Date(t.date);
+                    return tDate.getFullYear() === viewYear && tDate.getMonth() === viewMonth;
+                })
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+        }
+        
+        function renderMoney() {
+            const stats = calculateMoneyStats();
+            
+            // Update balance
+            document.getElementById('moneyBalance').textContent = formatMoneyPlain(stats.totalBalance);
+            document.getElementById('moneyBalance').className = `text-4xl font-bold mb-1 ${stats.totalBalance >= 0 ? '' : 'text-rose-100'}`;
+            
+            // Update monthly stats
+            document.getElementById('monthlyIncome').textContent = `+${stats.monthlyIncome.toLocaleString('ru-RU')} ₽`;
+            document.getElementById('monthlyExpenses').textContent = `-${stats.monthlyExpenses.toLocaleString('ru-RU')} ₽`;
+            
+            const netEl = document.getElementById('monthlyNet');
+            netEl.textContent = formatMoney(stats.monthlyNet);
+            netEl.className = `font-bold ${stats.monthlyNet >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
+            
+            // Update month label
+            document.getElementById('moneyMonth').textContent = moneyViewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            
+            // Render transactions list
+            const container = document.getElementById('transactionsList');
+            const transactions = getMonthTransactions();
+            
+            if (transactions.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <p class="text-gray-500">No transactions this month</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Group by date
+            const grouped = {};
+            transactions.forEach(t => {
+                const dateKey = t.date;
+                if (!grouped[dateKey]) grouped[dateKey] = [];
+                grouped[dateKey].push(t);
+            });
+            
+            container.innerHTML = Object.entries(grouped).map(([date, items]) => {
+                const dateObj = new Date(date);
+                const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                
+                return `
+                    <div class="mb-4">
+                        <div class="text-xs font-medium text-gray-400 mb-2 px-2">${dateStr}</div>
+                        <div class="space-y-1">
+                            ${items.map(t => {
+                                const catInfo = getCategoryInfo(t.category);
+                                const isIncome = t.amount >= 0;
+                                return `
+                                    <div class="transaction-item ${isIncome ? 'transaction-income' : 'transaction-expense'} flex items-center gap-3 p-3 bg-white rounded-lg group" data-id="${t.id}">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="font-medium text-gray-900 text-sm truncate">${t.title}</div>
+                                            <div class="text-xs text-gray-400">${catInfo.name}</div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="font-semibold ${isIncome ? 'text-emerald-600' : 'text-rose-600'}">${formatMoney(t.amount)}</div>
+                                        </div>
+                                        <button class="delete-transaction opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50" data-id="${t.id}">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Attach delete handlers
+            container.querySelectorAll('.delete-transaction').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.id);
+                    deleteTransaction(id);
+                });
+            });
+        }
+        
+        function addTransaction(title, amount, category) {
+            const transactions = loadTransactions();
+            const today = getTodayGMT3();
+            
+            transactions.push({
+                id: Date.now(),
+                title: title.trim(),
+                amount: parseFloat(amount),
+                category: category,
+                date: getDateKey(today)
+            });
+            
+            saveTransactions(transactions);
+            renderMoney();
+        }
+        
+        function deleteTransaction(id) {
+            if (!confirm('Delete this transaction?')) return;
+            const transactions = loadTransactions().filter(t => t.id !== id);
+            saveTransactions(transactions);
+            renderMoney();
+        }
+        
+        // Money event listeners
+        const transactionForm = document.getElementById('transactionForm');
+        if (transactionForm) {
+            transactionForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const title = document.getElementById('transactionTitle').value;
+                const amount = document.getElementById('transactionAmount').value;
+                const category = document.getElementById('transactionCategory').value;
+                
+                if (!title || !amount || !category) return;
+                
+                addTransaction(title, amount, category);
+                transactionForm.reset();
+            });
+        }
+        
+        const prevMonthMoney = document.getElementById('prevMonthMoney');
+        const nextMonthMoney = document.getElementById('nextMonthMoney');
+        
+        if (prevMonthMoney) {
+            prevMonthMoney.addEventListener('click', () => {
+                moneyViewDate.setMonth(moneyViewDate.getMonth() - 1);
+                renderMoney();
+            });
+        }
+        
+        if (nextMonthMoney) {
+            nextMonthMoney.addEventListener('click', () => {
+                moneyViewDate.setMonth(moneyViewDate.getMonth() + 1);
+                renderMoney();
             });
         }
 
