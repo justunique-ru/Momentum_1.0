@@ -87,6 +87,8 @@
         .wish-form-inline { animation: slideDown 0.2s ease; }
         .transaction-item { transition: all 0.2s ease; }
         .transaction-item:hover { background: #f9fafb; }
+        .category-item { transition: all 0.15s ease; }
+        .category-item:hover { background: #f9fafb; }
         .money-gradient { background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); }
         /* Notes styles */
         .note-card { transition: all 0.2s ease; }
@@ -504,27 +506,18 @@
                                                placeholder="Amount (positive = income, negative = expense)">
                                     </div>
                                     <div>
-                                        <select id="transactionCategory" required
-                                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white">
-                                            <option value="">Select category</option>
-                                            <optgroup label="Income">
-                                                <option value="salary">Salary</option>
-                                                <option value="freelance">Freelance</option>
-                                                <option value="investment">Investment</option>
-                                                <option value="gift">Gift</option>
-                                                <option value="other_income">Other Income</option>
-                                            </optgroup>
-                                            <optgroup label="Expenses">
-                                                <option value="food">Food & Dining</option>
-                                                <option value="transport">Transport</option>
-                                                <option value="shopping">Shopping</option>
-                                                <option value="entertainment">Entertainment</option>
-                                                <option value="bills">Bills & Utilities</option>
-                                                <option value="health">Health</option>
-                                                <option value="education">Education</option>
-                                                <option value="other_expense">Other Expense</option>
-                                            </optgroup>
-                                        </select>
+                                        <div class="flex gap-2">
+                                            <select id="transactionCategory" required
+                                                    class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white">
+                                                <option value="">Select category</option>
+                                            </select>
+                                            <button type="button" id="editCategoriesBtn" class="btn-icon p-2.5 rounded-xl border border-gray-200 text-gray-400 hover:text-violet-600 hover:border-violet-300">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
                                     <button type="submit" class="w-full py-2.5 accent-gradient text-white rounded-xl font-medium hover:opacity-90 transition">
                                         Add Transaction
@@ -610,6 +603,51 @@
                     <button type="submit" class="flex-1 px-4 py-2.5 accent-gradient text-white rounded-xl font-medium hover:opacity-90 transition">Save Goal</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Money Categories Modal -->
+    <div id="categoriesModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-lg font-bold text-gray-900">Edit Categories</h3>
+                <button id="closeCategoriesModal" class="btn-icon p-2 rounded-lg text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                <!-- Income Categories -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-sm font-semibold text-emerald-600">Income Categories</h4>
+                        <button id="addIncomeCategory" class="text-xs text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Add
+                        </button>
+                    </div>
+                    <div id="incomeCategoriesList" class="space-y-1"></div>
+                </div>
+                <!-- Expense Categories -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-sm font-semibold text-rose-600">Expense Categories</h4>
+                        <button id="addExpenseCategory" class="text-xs text-rose-600 hover:text-rose-700 font-medium flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Add
+                        </button>
+                    </div>
+                    <div id="expenseCategoriesList" class="space-y-1"></div>
+                </div>
+            </div>
+            <button id="saveCategoriesBtn" class="mt-5 w-full py-3 accent-gradient text-white rounded-xl font-medium hover:opacity-90 transition">
+                Save Changes
+            </button>
         </div>
     </div>
 
@@ -2976,6 +3014,39 @@
         // Money Management
         let moneyViewDate = getTodayGMT3();
         
+        // Default categories
+        const defaultMoneyCategories = {
+            income: [
+                { id: 'work', name: 'Work' },
+                { id: 'freelance', name: 'Freelance' },
+                { id: 'rent', name: 'Rent' },
+                { id: 'maxim', name: 'Maxim' },
+                { id: 'gifts', name: 'Gifts' },
+                { id: 'joiia_income', name: 'JOIIA' },
+                { id: 'savings', name: 'Savings' }
+            ],
+            expenses: [
+                { id: 'food', name: 'Food' },
+                { id: 'treats', name: 'Treats' },
+                { id: 'clothes', name: 'Clothes' },
+                { id: 'beauty', name: 'Beauty' },
+                { id: 'family', name: 'Family' },
+                { id: 'home', name: 'Home' },
+                { id: 'bills', name: 'Bills' },
+                { id: 'ivanechka', name: 'Ivanechka' },
+                { id: 'joiia_expense', name: 'JOIIA' }
+            ]
+        };
+        
+        function loadMoneyCategories() {
+            const saved = localStorage.getItem('moneyCategories');
+            return saved ? JSON.parse(saved) : { ...defaultMoneyCategories };
+        }
+        
+        function saveMoneyCategories(categories) {
+            localStorage.setItem('moneyCategories', JSON.stringify(categories));
+        }
+        
         function loadTransactions() {
             const saved = localStorage.getItem('transactions');
             return saved ? JSON.parse(saved) : [];
@@ -2985,23 +3056,28 @@
             localStorage.setItem('transactions', JSON.stringify(transactions));
         }
         
-        function getCategoryInfo(category) {
-            const categories = {
-                salary: { name: 'Salary' },
-                freelance: { name: 'Freelance' },
-                investment: { name: 'Investment' },
-                gift: { name: 'Gift' },
-                other_income: { name: 'Other Income' },
-                food: { name: 'Food & Dining' },
-                transport: { name: 'Transport' },
-                shopping: { name: 'Shopping' },
-                entertainment: { name: 'Entertainment' },
-                bills: { name: 'Bills & Utilities' },
-                health: { name: 'Health' },
-                education: { name: 'Education' },
-                other_expense: { name: 'Other Expense' }
-            };
-            return categories[category] || { name: category };
+        function getCategoryInfo(categoryId) {
+            const categories = loadMoneyCategories();
+            const allCategories = [...categories.income, ...categories.expenses];
+            const cat = allCategories.find(c => c.id === categoryId);
+            return cat || { name: categoryId };
+        }
+        
+        function renderCategoryDropdown() {
+            const select = document.getElementById('transactionCategory');
+            if (!select) return;
+            
+            const categories = loadMoneyCategories();
+            
+            select.innerHTML = `
+                <option value="">Select category</option>
+                <optgroup label="Income">
+                    ${categories.income.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                </optgroup>
+                <optgroup label="Expenses">
+                    ${categories.expenses.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                </optgroup>
+            `;
         }
         
         function formatMoney(amount) {
@@ -3061,6 +3137,9 @@
         
         function renderMoney() {
             const stats = calculateMoneyStats();
+            
+            // Render category dropdown
+            renderCategoryDropdown();
             
             // Update balance
             document.getElementById('moneyBalance').textContent = formatMoneyPlain(stats.totalBalance);
@@ -3197,6 +3276,147 @@
             nextMonthMoney.addEventListener('click', () => {
                 moneyViewDate.setMonth(moneyViewDate.getMonth() + 1);
                 renderMoney();
+            });
+        }
+        
+        // Categories Modal
+        const editCategoriesBtn = document.getElementById('editCategoriesBtn');
+        const categoriesModal = document.getElementById('categoriesModal');
+        const closeCategoriesModal = document.getElementById('closeCategoriesModal');
+        const saveCategoriesBtn = document.getElementById('saveCategoriesBtn');
+        const addIncomeCategory = document.getElementById('addIncomeCategory');
+        const addExpenseCategory = document.getElementById('addExpenseCategory');
+        
+        function openCategoriesModal() {
+            renderCategoriesModal();
+            categoriesModal.classList.remove('hidden');
+            categoriesModal.classList.add('flex');
+        }
+        
+        function closeCategoriesModalFn() {
+            categoriesModal.classList.add('hidden');
+            categoriesModal.classList.remove('flex');
+        }
+        
+        function renderCategoriesModal() {
+            const categories = loadMoneyCategories();
+            
+            const incomeList = document.getElementById('incomeCategoriesList');
+            const expenseList = document.getElementById('expenseCategoriesList');
+            
+            incomeList.innerHTML = categories.income.map((cat, idx) => `
+                <div class="flex items-center gap-2 p-2 bg-emerald-50 rounded-lg" data-type="income" data-idx="${idx}">
+                    <input type="text" class="category-name-input flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-white" value="${cat.name}" data-type="income" data-idx="${idx}">
+                    <button class="delete-category-btn text-gray-300 hover:text-rose-500 transition" data-type="income" data-idx="${idx}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+            
+            expenseList.innerHTML = categories.expenses.map((cat, idx) => `
+                <div class="flex items-center gap-2 p-2 bg-rose-50 rounded-lg" data-type="expense" data-idx="${idx}">
+                    <input type="text" class="category-name-input flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-white" value="${cat.name}" data-type="expense" data-idx="${idx}">
+                    <button class="delete-category-btn text-gray-300 hover:text-rose-500 transition" data-type="expense" data-idx="${idx}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+            
+            // Attach delete handlers
+            document.querySelectorAll('.delete-category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const type = btn.dataset.type;
+                    const idx = parseInt(btn.dataset.idx);
+                    const categories = loadMoneyCategories();
+                    if (type === 'income') {
+                        categories.income.splice(idx, 1);
+                    } else {
+                        categories.expenses.splice(idx, 1);
+                    }
+                    saveMoneyCategories(categories);
+                    renderCategoriesModal();
+                });
+            });
+        }
+        
+        function saveCategoriesFromModal() {
+            const categories = { income: [], expenses: [] };
+            
+            document.querySelectorAll('#incomeCategoriesList .category-name-input').forEach((input, idx) => {
+                const name = input.value.trim();
+                if (name) {
+                    categories.income.push({
+                        id: name.toLowerCase().replace(/\s+/g, '_'),
+                        name: name
+                    });
+                }
+            });
+            
+            document.querySelectorAll('#expenseCategoriesList .category-name-input').forEach((input, idx) => {
+                const name = input.value.trim();
+                if (name) {
+                    categories.expenses.push({
+                        id: name.toLowerCase().replace(/\s+/g, '_'),
+                        name: name
+                    });
+                }
+            });
+            
+            saveMoneyCategories(categories);
+            closeCategoriesModalFn();
+            renderMoney();
+        }
+        
+        function addCategoryToList(type) {
+            const categories = loadMoneyCategories();
+            const newCat = { id: `new_${Date.now()}`, name: 'New Category' };
+            if (type === 'income') {
+                categories.income.push(newCat);
+            } else {
+                categories.expenses.push(newCat);
+            }
+            saveMoneyCategories(categories);
+            renderCategoriesModal();
+            
+            // Focus on new input
+            setTimeout(() => {
+                const list = type === 'income' ? '#incomeCategoriesList' : '#expenseCategoriesList';
+                const inputs = document.querySelectorAll(`${list} .category-name-input`);
+                if (inputs.length > 0) {
+                    const lastInput = inputs[inputs.length - 1];
+                    lastInput.focus();
+                    lastInput.select();
+                }
+            }, 50);
+        }
+        
+        if (editCategoriesBtn) {
+            editCategoriesBtn.addEventListener('click', openCategoriesModal);
+        }
+        
+        if (closeCategoriesModal) {
+            closeCategoriesModal.addEventListener('click', closeCategoriesModalFn);
+        }
+        
+        if (saveCategoriesBtn) {
+            saveCategoriesBtn.addEventListener('click', saveCategoriesFromModal);
+        }
+        
+        if (addIncomeCategory) {
+            addIncomeCategory.addEventListener('click', () => addCategoryToList('income'));
+        }
+        
+        if (addExpenseCategory) {
+            addExpenseCategory.addEventListener('click', () => addCategoryToList('expense'));
+        }
+        
+        if (categoriesModal) {
+            categoriesModal.addEventListener('click', (e) => {
+                if (e.target === categoriesModal) closeCategoriesModalFn();
             });
         }
 
