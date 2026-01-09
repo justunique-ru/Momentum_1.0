@@ -82,8 +82,6 @@
         .wish-form-inline { animation: slideDown 0.2s ease; }
         .transaction-item { transition: all 0.2s ease; }
         .transaction-item:hover { background: #f9fafb; }
-        .transaction-income { border-left: 3px solid #10b981; }
-        .transaction-expense { border-left: 3px solid #f43f5e; }
         .money-gradient { background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); }
         /* Notes styles */
         .note-card { transition: all 0.2s ease; }
@@ -260,7 +258,7 @@
                                     <h3 class="font-semibold text-gray-900 text-sm">Today's Tasks</h3>
                                     <span class="text-xs font-medium px-2 py-1 rounded-full bg-violet-50 text-violet-600" id="taskPoints">0 pts</span>
                                 </div>
-                                <div id="tasksList" class="space-y-1 mb-4 max-h-64 overflow-y-auto"></div>
+                                <div id="tasksList" class="space-y-1 mb-4"></div>
                                 <div class="flex gap-2">
                                     <input type="text" id="newTaskInput" placeholder="Add a new task..." class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white">
                                     <input type="number" id="newTaskPoints" placeholder="Pts" class="w-16 px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-center bg-gray-50 focus:bg-white" value="2">
@@ -419,7 +417,7 @@
                         <!-- Left Column - Stats & Form -->
                         <div class="col-span-4 space-y-5">
                             <!-- Balance Card -->
-                            <div class="card p-6 bg-gradient-to-br from-emerald-500 to-teal-600 text-white relative overflow-hidden">
+                            <div class="card p-6 accent-gradient text-white relative overflow-hidden">
                                 <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
                                 <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
                                 <div class="relative">
@@ -2945,7 +2943,7 @@
                                 const catInfo = getCategoryInfo(t.category);
                                 const isIncome = t.amount >= 0;
                                 return `
-                                    <div class="transaction-item ${isIncome ? 'transaction-income' : 'transaction-expense'} flex items-center gap-3 p-3 bg-white rounded-lg group" data-id="${t.id}">
+                                    <div class="transaction-item flex items-center gap-3 p-3 bg-white rounded-lg group" data-id="${t.id}">
                                         <div class="flex-1 min-w-0">
                                             <div class="font-medium text-gray-900 text-sm truncate">${t.title}</div>
                                             <div class="text-xs text-gray-400">${catInfo.name}</div>
