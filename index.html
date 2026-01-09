@@ -131,6 +131,8 @@
         .goal-card:hover .drag-handle, .milestone-block:hover .drag-handle, 
         .goal-task-item:hover .drag-handle, .subtask-item:hover .drag-handle { opacity: 0.5; }
         .drag-handle:hover { opacity: 1 !important; }
+        /* Goal label for tasks */
+        .goal-label { color: #7c3aed; font-size: 11px; font-weight: 500; white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -845,14 +847,29 @@
         function renderTasks() {
             const container = document.getElementById('tasksList');
             const dayData = loadDayData(currentDate);
+            const goals = loadGoals();
             
             if (dayData.tasks.length === 0) {
                 container.innerHTML = '<div class="text-center py-8 text-gray-400 text-sm">No tasks yet. Add one below!</div>';
             } else {
-                container.innerHTML = dayData.tasks.map((task, idx) => `
+                container.innerHTML = dayData.tasks.map((task, idx) => {
+                    // Get goal name if task is from a goal
+                    let goalLabel = '';
+                    if (task.goalId && task.goalName) {
+                        goalLabel = `<span class="goal-label" title="${task.goalName}">${task.goalName}</span>`;
+                    } else if (task.goalId) {
+                        // Fallback: find goal name from goals data
+                        const goal = goals.find(g => g.id === task.goalId);
+                        if (goal) {
+                            goalLabel = `<span class="goal-label" title="${goal.name}">${goal.name}</span>`;
+                        }
+                    }
+                    
+                    return `
                     <div class="task-item flex items-center gap-3 p-2.5 rounded-xl group ${task.completed ? 'completed' : ''}" data-idx="${idx}">
                         <input type="checkbox" class="w-4 h-4 accent-violet-600 rounded" ${task.completed ? 'checked' : ''} data-idx="${idx}">
                         <span class="flex-1 text-sm text-gray-700">${task.name}</span>
+                        ${goalLabel}
                         <span class="text-xs font-medium text-gray-400">${task.points}</span>
                         <div class="task-actions flex gap-0.5">
                             <button class="edit-task btn-icon p-1.5 rounded-lg" data-idx="${idx}" title="Edit">
@@ -872,7 +889,7 @@
                             </button>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
             }
             
             container.querySelectorAll('input[type="checkbox"]').forEach(el => {
@@ -2909,6 +2926,11 @@
                 
                 if (!taskName) return;
                 
+                // Get goal name for the label
+                const goals = loadGoals();
+                const goal = goals.find(g => g.id === goalId);
+                const goalName = goal ? goal.name : '';
+                
                 const [year, month, day] = dateInputValue.split('-').map(Number);
                 const taskDate = new Date(year, month - 1, day);
                 taskDate.setHours(0, 0, 0, 0);
@@ -2920,7 +2942,8 @@
                     completed: false,
                     goalId: goalId,
                     milestoneId: milestoneId,
-                    goalTaskId: goalTaskId
+                    goalTaskId: goalTaskId,
+                    goalName: goalName
                 };
                 
                 if (type === 'subtask' && subtaskId) {
