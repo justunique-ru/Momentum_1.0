@@ -73,6 +73,10 @@
         .task-expandable:hover { border-left-color: #c4b5fd; }
         .subtask-item { margin-left: 1.5rem; }
         .subtask-points-badge { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); }
+        /* Inline editable styles */
+        .editable-text { cursor: pointer; transition: all 0.15s ease; border-radius: 4px; padding: 2px 4px; margin: -2px -4px; }
+        .editable-text:hover { background: #f3f4f6; }
+        .inline-edit-input { background: white; border: 2px solid #7c3aed; border-radius: 6px; padding: 4px 8px; font-size: inherit; font-weight: inherit; width: 100%; }
         .wish-item { transition: all 0.2s ease; }
         .wish-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .wish-link { transition: all 0.2s ease; }
@@ -106,6 +110,27 @@
         .toolbar-btn { transition: all 0.15s ease; }
         .toolbar-btn:hover { background: #e5e7eb; }
         .toolbar-btn.active { background: #7c3aed; color: white; }
+        /* Drag and drop for Goals */
+        .goal-card[draggable="true"] { cursor: grab; }
+        .goal-card[draggable="true"]:active { cursor: grabbing; }
+        .goal-card.dragging { opacity: 0.5; transform: scale(0.98); }
+        .goal-card.drag-over { border: 2px dashed #7c3aed; background: #faf5ff; }
+        .milestone-block[draggable="true"] { cursor: grab; }
+        .milestone-block[draggable="true"]:active { cursor: grabbing; }
+        .milestone-block.dragging { opacity: 0.5; }
+        .milestone-block.drag-over { border: 2px dashed #7c3aed !important; background: #faf5ff !important; }
+        .goal-task-item[draggable="true"] { cursor: grab; }
+        .goal-task-item[draggable="true"]:active { cursor: grabbing; }
+        .goal-task-item.dragging { opacity: 0.5; }
+        .goal-task-item.drag-over { border: 2px dashed #7c3aed !important; background: #faf5ff !important; }
+        .subtask-item[draggable="true"] { cursor: grab; }
+        .subtask-item[draggable="true"]:active { cursor: grabbing; }
+        .subtask-item.dragging { opacity: 0.5; }
+        .subtask-item.drag-over { border: 2px dashed #f59e0b !important; background: #fffbeb !important; }
+        .drag-handle { cursor: grab; opacity: 0; transition: opacity 0.15s ease; }
+        .goal-card:hover .drag-handle, .milestone-block:hover .drag-handle, 
+        .goal-task-item:hover .drag-handle, .subtask-item:hover .drag-handle { opacity: 0.5; }
+        .drag-handle:hover { opacity: 1 !important; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -1996,11 +2021,18 @@
             }
             
             container.innerHTML = goals.map(goal => `
-                <div class="goal-card card p-6" data-goal-id="${goal.id}">
+                <div class="goal-card card p-6" data-goal-id="${goal.id}" draggable="true">
                     <div class="flex justify-between items-start mb-6">
-                        <div class="flex-1">
-                            <h3 class="text-xl font-bold text-gray-900 mb-1">${goal.name}</h3>
-                            ${goal.description ? `<p class="text-sm text-gray-500">${goal.description}</p>` : ''}
+                        <div class="flex items-start gap-3 flex-1">
+                            <div class="drag-handle mt-1 text-gray-400 cursor-grab">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="editable-text text-xl font-bold text-gray-900 mb-1" data-edit-type="goal-name" data-goal-id="${goal.id}">${goal.name}</h3>
+                                <p class="editable-text text-sm text-gray-500" data-edit-type="goal-description" data-goal-id="${goal.id}">${goal.description || 'Add description...'}</p>
+                            </div>
                         </div>
                         <div class="flex gap-2">
                             <button class="edit-goal btn-icon p-2 rounded-lg text-gray-400 hover:text-violet-600" data-goal-id="${goal.id}">
@@ -2024,15 +2056,20 @@
                             const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
                             
                             return `
-                            <div class="milestone-block border-2 border-violet-100 rounded-xl overflow-hidden" data-goal-id="${goal.id}" data-milestone-id="${m.id}">
+                            <div class="milestone-block border-2 border-violet-100 rounded-xl overflow-hidden" data-goal-id="${goal.id}" data-milestone-id="${m.id}" draggable="true">
                                 <!-- Milestone Header -->
                                 <div class="milestone-header ${m.completed ? 'completed' : ''} p-4">
                                     <div class="flex items-center gap-3">
+                                        <div class="drag-handle text-gray-400 cursor-grab">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
+                                            </svg>
+                                        </div>
                                         <input type="checkbox" class="milestone-checkbox w-5 h-5 accent-violet-600 rounded" ${m.completed ? 'checked' : ''} 
                                                data-goal-id="${goal.id}" data-milestone-id="${m.id}">
                                         <div class="flex-1">
                                             <div class="flex items-center gap-2">
-                                                <span class="font-semibold ${m.completed ? 'line-through text-gray-400' : 'text-gray-800'}">${m.name}</span>
+                                                <span class="editable-text font-semibold ${m.completed ? 'line-through text-gray-400' : 'text-gray-800'}" data-edit-type="milestone-name" data-goal-id="${goal.id}" data-milestone-id="${m.id}">${m.name}</span>
                                                 <span class="milestone-points-badge text-xs font-medium px-2 py-0.5 rounded-full text-white ${m.completed ? 'opacity-50' : ''}">+${m.points || 10} pts</span>
                                             </div>
                                             ${totalTasks > 0 ? `
@@ -2062,10 +2099,15 @@
                                             
                                             return `
                                             <div class="task-expandable pl-3 py-1">
-                                                <div class="goal-task-item flex items-center gap-3 p-2.5 bg-gray-50 rounded-lg group">
+                                                <div class="goal-task-item flex items-center gap-3 p-2.5 bg-gray-50 rounded-lg group" data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" draggable="true">
+                                                    <div class="drag-handle text-gray-400 cursor-grab">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
+                                                        </svg>
+                                                    </div>
                                                     <input type="checkbox" class="goal-task-checkbox w-4 h-4 accent-violet-600 rounded" ${t.completed ? 'checked' : ''} 
                                                            data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}">
-                                                    <span class="flex-1 text-sm ${t.completed ? 'line-through text-gray-400' : 'text-gray-700'}">${t.name}</span>
+                                                    <span class="editable-text flex-1 text-sm ${t.completed ? 'line-through text-gray-400' : 'text-gray-700'}" data-edit-type="task-name" data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}">${t.name}</span>
                                                     ${totalSubtasks > 0 ? `<span class="text-xs text-gray-400">${completedSubtasks}/${totalSubtasks}</span>` : ''}
                                                     <span class="text-xs text-gray-400">${t.points || 5} pts</span>
                                                     <button class="add-task-to-planner text-xs text-violet-600 hover:text-violet-700 font-medium opacity-0 group-hover:opacity-100 transition-opacity" 
@@ -2083,10 +2125,15 @@
                                                 <!-- Subtasks -->
                                                 <div class="mt-2 space-y-1">
                                                     ${t.subtasks && t.subtasks.length > 0 ? t.subtasks.map(st => `
-                                                        <div class="subtask-item flex items-center gap-3 p-2 bg-amber-50 rounded-lg group">
+                                                        <div class="subtask-item flex items-center gap-3 p-2 bg-amber-50 rounded-lg group" data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-subtask-id="${st.id}" draggable="true">
+                                                            <div class="drag-handle text-gray-400 cursor-grab">
+                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
+                                                                </svg>
+                                                            </div>
                                                             <input type="checkbox" class="subtask-checkbox w-3.5 h-3.5 accent-amber-500 rounded" ${st.completed ? 'checked' : ''} 
                                                                    data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-subtask-id="${st.id}">
-                                                            <span class="flex-1 text-xs ${st.completed ? 'line-through text-gray-400' : 'text-gray-600'}">${st.name}</span>
+                                                            <span class="editable-text flex-1 text-xs ${st.completed ? 'line-through text-gray-400' : 'text-gray-600'}" data-edit-type="subtask-name" data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-subtask-id="${st.id}">${st.name}</span>
                                                             <span class="subtask-points-badge text-xs font-medium px-1.5 py-0.5 rounded text-white ${st.completed ? 'opacity-50' : ''}">+${st.points || 2}</span>
                                                             <button class="add-subtask-to-planner text-xs text-amber-600 hover:text-amber-700 font-medium opacity-0 group-hover:opacity-100 transition-opacity" 
                                                                     data-goal-id="${goal.id}" data-milestone-id="${m.id}" data-task-id="${t.id}" data-subtask-id="${st.id}" 
@@ -2516,6 +2563,9 @@
         function attachGoalsEventListeners() {
             attachAddGoalHandler();
             
+            // Setup drag and drop every time goals are rendered
+            setupGoalsDragDrop();
+            
             if (goalsEventDelegationAttached) return;
             const goalsContainer = document.getElementById('goalsList');
             if (!goalsContainer) return;
@@ -2728,7 +2778,102 @@
                 }
             });
             
+            // Inline editing for goals
+            goalsContainer.addEventListener('click', (e) => {
+                if (e.target.matches('.editable-text') && !e.target.querySelector('input')) {
+                    startInlineEdit(e.target);
+                }
+            });
+            
             goalsEventDelegationAttached = true;
+        }
+        
+        // Inline editing functions
+        function startInlineEdit(element) {
+            const currentText = element.textContent;
+            const editType = element.dataset.editType;
+            const isDescription = editType === 'goal-description';
+            const placeholder = isDescription && currentText === 'Add description...' ? '' : currentText;
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'inline-edit-input';
+            input.value = placeholder;
+            input.placeholder = isDescription ? 'Add description...' : '';
+            
+            element.innerHTML = '';
+            element.appendChild(input);
+            input.focus();
+            input.select();
+            
+            const saveEdit = () => {
+                const newValue = input.value.trim();
+                saveInlineEdit(element, newValue);
+            };
+            
+            input.addEventListener('blur', saveEdit);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    input.blur();
+                }
+                if (e.key === 'Escape') {
+                    element.textContent = currentText;
+                }
+            });
+        }
+        
+        function saveInlineEdit(element, newValue) {
+            const editType = element.dataset.editType;
+            const goalId = parseInt(element.dataset.goalId);
+            const milestoneId = element.dataset.milestoneId ? parseInt(element.dataset.milestoneId) : null;
+            const taskId = element.dataset.taskId ? parseInt(element.dataset.taskId) : null;
+            const subtaskId = element.dataset.subtaskId ? parseInt(element.dataset.subtaskId) : null;
+            
+            const goals = loadGoals();
+            const goal = goals.find(g => g.id === goalId);
+            if (!goal) return;
+            
+            switch (editType) {
+                case 'goal-name':
+                    if (newValue) {
+                        goal.name = newValue;
+                    }
+                    break;
+                case 'goal-description':
+                    goal.description = newValue;
+                    break;
+                case 'milestone-name':
+                    if (newValue && milestoneId) {
+                        const milestone = goal.milestones.find(m => m.id === milestoneId);
+                        if (milestone) milestone.name = newValue;
+                    }
+                    break;
+                case 'task-name':
+                    if (newValue && milestoneId && taskId) {
+                        const milestone = goal.milestones.find(m => m.id === milestoneId);
+                        if (milestone) {
+                            const task = milestone.tasks.find(t => t.id === taskId);
+                            if (task) task.name = newValue;
+                        }
+                    }
+                    break;
+                case 'subtask-name':
+                    if (newValue && milestoneId && taskId && subtaskId) {
+                        const milestone = goal.milestones.find(m => m.id === milestoneId);
+                        if (milestone) {
+                            const task = milestone.tasks.find(t => t.id === taskId);
+                            if (task && task.subtasks) {
+                                const subtask = task.subtasks.find(st => st.id === subtaskId);
+                                if (subtask) subtask.name = newValue;
+                            }
+                        }
+                    }
+                    break;
+            }
+            
+            saveGoals(goals);
+            renderGoals();
         }
         
         const closeAddTaskModal = document.getElementById('closeAddTaskModal');
@@ -3458,6 +3603,282 @@
             });
             
             notesEventDelegationAttached = true;
+        }
+
+        // Goals Drag and Drop Functions
+        let draggedGoalElement = null;
+        let draggedType = null;
+        
+        function setupGoalsDragDrop() {
+            const container = document.getElementById('goalsList');
+            if (!container) return;
+            
+            // Goal cards drag and drop
+            container.querySelectorAll('.goal-card[draggable="true"]').forEach(el => {
+                el.addEventListener('dragstart', handleGoalDragStart);
+                el.addEventListener('dragend', handleGoalDragEnd);
+                el.addEventListener('dragover', handleGoalDragOver);
+                el.addEventListener('dragleave', handleGoalDragLeave);
+                el.addEventListener('drop', handleGoalDrop);
+            });
+            
+            // Milestone blocks drag and drop
+            container.querySelectorAll('.milestone-block[draggable="true"]').forEach(el => {
+                el.addEventListener('dragstart', handleMilestoneDragStart);
+                el.addEventListener('dragend', handleMilestoneDragEnd);
+                el.addEventListener('dragover', handleMilestoneDragOver);
+                el.addEventListener('dragleave', handleMilestoneDragLeave);
+                el.addEventListener('drop', handleMilestoneDrop);
+            });
+            
+            // Task items drag and drop
+            container.querySelectorAll('.goal-task-item[draggable="true"]').forEach(el => {
+                el.addEventListener('dragstart', handleTaskDragStart);
+                el.addEventListener('dragend', handleTaskDragEnd);
+                el.addEventListener('dragover', handleTaskDragOver);
+                el.addEventListener('dragleave', handleTaskDragLeave);
+                el.addEventListener('drop', handleTaskDrop);
+            });
+            
+            // Subtask items drag and drop
+            container.querySelectorAll('.subtask-item[draggable="true"]').forEach(el => {
+                el.addEventListener('dragstart', handleSubtaskDragStart);
+                el.addEventListener('dragend', handleSubtaskDragEnd);
+                el.addEventListener('dragover', handleSubtaskDragOver);
+                el.addEventListener('dragleave', handleSubtaskDragLeave);
+                el.addEventListener('drop', handleSubtaskDrop);
+            });
+        }
+        
+        // Goal drag handlers
+        function handleGoalDragStart(e) {
+            draggedGoalElement = this;
+            draggedType = 'goal';
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', this.dataset.goalId);
+        }
+        
+        function handleGoalDragEnd(e) {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.goal-card').forEach(el => el.classList.remove('drag-over'));
+            draggedGoalElement = null;
+            draggedType = null;
+        }
+        
+        function handleGoalDragOver(e) {
+            if (draggedType !== 'goal') return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('drag-over');
+        }
+        
+        function handleGoalDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+        
+        function handleGoalDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            if (draggedType !== 'goal' || !draggedGoalElement) return;
+            
+            const fromId = parseInt(draggedGoalElement.dataset.goalId);
+            const toId = parseInt(this.dataset.goalId);
+            if (fromId === toId) return;
+            
+            const goals = loadGoals();
+            const fromIdx = goals.findIndex(g => g.id === fromId);
+            const toIdx = goals.findIndex(g => g.id === toId);
+            const [goal] = goals.splice(fromIdx, 1);
+            goals.splice(toIdx, 0, goal);
+            saveGoals(goals);
+            renderGoals();
+        }
+        
+        // Milestone drag handlers
+        function handleMilestoneDragStart(e) {
+            e.stopPropagation();
+            draggedGoalElement = this;
+            draggedType = 'milestone';
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+                goalId: this.dataset.goalId,
+                milestoneId: this.dataset.milestoneId
+            }));
+        }
+        
+        function handleMilestoneDragEnd(e) {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.milestone-block').forEach(el => el.classList.remove('drag-over'));
+            draggedGoalElement = null;
+            draggedType = null;
+        }
+        
+        function handleMilestoneDragOver(e) {
+            if (draggedType !== 'milestone') return;
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('drag-over');
+        }
+        
+        function handleMilestoneDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+        
+        function handleMilestoneDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('drag-over');
+            if (draggedType !== 'milestone' || !draggedGoalElement) return;
+            
+            const fromGoalId = parseInt(draggedGoalElement.dataset.goalId);
+            const fromMilestoneId = parseInt(draggedGoalElement.dataset.milestoneId);
+            const toGoalId = parseInt(this.dataset.goalId);
+            const toMilestoneId = parseInt(this.dataset.milestoneId);
+            
+            if (fromGoalId !== toGoalId) return; // Only allow reordering within same goal
+            if (fromMilestoneId === toMilestoneId) return;
+            
+            const goals = loadGoals();
+            const goal = goals.find(g => g.id === fromGoalId);
+            if (!goal || !goal.milestones) return;
+            
+            const fromIdx = goal.milestones.findIndex(m => m.id === fromMilestoneId);
+            const toIdx = goal.milestones.findIndex(m => m.id === toMilestoneId);
+            const [milestone] = goal.milestones.splice(fromIdx, 1);
+            goal.milestones.splice(toIdx, 0, milestone);
+            saveGoals(goals);
+            renderGoals();
+        }
+        
+        // Task drag handlers
+        function handleTaskDragStart(e) {
+            e.stopPropagation();
+            draggedGoalElement = this;
+            draggedType = 'task';
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+                goalId: this.dataset.goalId,
+                milestoneId: this.dataset.milestoneId,
+                taskId: this.dataset.taskId
+            }));
+        }
+        
+        function handleTaskDragEnd(e) {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.goal-task-item').forEach(el => el.classList.remove('drag-over'));
+            draggedGoalElement = null;
+            draggedType = null;
+        }
+        
+        function handleTaskDragOver(e) {
+            if (draggedType !== 'task') return;
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('drag-over');
+        }
+        
+        function handleTaskDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+        
+        function handleTaskDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('drag-over');
+            if (draggedType !== 'task' || !draggedGoalElement) return;
+            
+            const fromGoalId = parseInt(draggedGoalElement.dataset.goalId);
+            const fromMilestoneId = parseInt(draggedGoalElement.dataset.milestoneId);
+            const fromTaskId = parseInt(draggedGoalElement.dataset.taskId);
+            const toGoalId = parseInt(this.dataset.goalId);
+            const toMilestoneId = parseInt(this.dataset.milestoneId);
+            const toTaskId = parseInt(this.dataset.taskId);
+            
+            if (fromGoalId !== toGoalId || fromMilestoneId !== toMilestoneId) return;
+            if (fromTaskId === toTaskId) return;
+            
+            const goals = loadGoals();
+            const goal = goals.find(g => g.id === fromGoalId);
+            const milestone = goal?.milestones?.find(m => m.id === fromMilestoneId);
+            if (!milestone || !milestone.tasks) return;
+            
+            const fromIdx = milestone.tasks.findIndex(t => t.id === fromTaskId);
+            const toIdx = milestone.tasks.findIndex(t => t.id === toTaskId);
+            const [task] = milestone.tasks.splice(fromIdx, 1);
+            milestone.tasks.splice(toIdx, 0, task);
+            saveGoals(goals);
+            renderGoals();
+        }
+        
+        // Subtask drag handlers
+        function handleSubtaskDragStart(e) {
+            e.stopPropagation();
+            draggedGoalElement = this;
+            draggedType = 'subtask';
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+                goalId: this.dataset.goalId,
+                milestoneId: this.dataset.milestoneId,
+                taskId: this.dataset.taskId,
+                subtaskId: this.dataset.subtaskId
+            }));
+        }
+        
+        function handleSubtaskDragEnd(e) {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.subtask-item').forEach(el => el.classList.remove('drag-over'));
+            draggedGoalElement = null;
+            draggedType = null;
+        }
+        
+        function handleSubtaskDragOver(e) {
+            if (draggedType !== 'subtask') return;
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('drag-over');
+        }
+        
+        function handleSubtaskDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+        
+        function handleSubtaskDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('drag-over');
+            if (draggedType !== 'subtask' || !draggedGoalElement) return;
+            
+            const fromGoalId = parseInt(draggedGoalElement.dataset.goalId);
+            const fromMilestoneId = parseInt(draggedGoalElement.dataset.milestoneId);
+            const fromTaskId = parseInt(draggedGoalElement.dataset.taskId);
+            const fromSubtaskId = parseInt(draggedGoalElement.dataset.subtaskId);
+            const toGoalId = parseInt(this.dataset.goalId);
+            const toMilestoneId = parseInt(this.dataset.milestoneId);
+            const toTaskId = parseInt(this.dataset.taskId);
+            const toSubtaskId = parseInt(this.dataset.subtaskId);
+            
+            if (fromGoalId !== toGoalId || fromMilestoneId !== toMilestoneId || fromTaskId !== toTaskId) return;
+            if (fromSubtaskId === toSubtaskId) return;
+            
+            const goals = loadGoals();
+            const goal = goals.find(g => g.id === fromGoalId);
+            const milestone = goal?.milestones?.find(m => m.id === fromMilestoneId);
+            const task = milestone?.tasks?.find(t => t.id === fromTaskId);
+            if (!task || !task.subtasks) return;
+            
+            const fromIdx = task.subtasks.findIndex(st => st.id === fromSubtaskId);
+            const toIdx = task.subtasks.findIndex(st => st.id === toSubtaskId);
+            const [subtask] = task.subtasks.splice(fromIdx, 1);
+            task.subtasks.splice(toIdx, 0, subtask);
+            saveGoals(goals);
+            renderGoals();
         }
 
         // Initialize
