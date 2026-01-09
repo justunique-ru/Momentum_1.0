@@ -82,7 +82,31 @@
         .wish-form-inline { animation: slideDown 0.2s ease; }
         .transaction-item { transition: all 0.2s ease; }
         .transaction-item:hover { background: #f9fafb; }
+        .transaction-income { border-left: 3px solid #10b981; }
+        .transaction-expense { border-left: 3px solid #f43f5e; }
         .money-gradient { background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); }
+        /* Notes styles */
+        .note-card { transition: all 0.2s ease; }
+        .note-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .note-block { position: relative; transition: all 0.15s ease; }
+        .note-block:hover { background: #f9fafb; }
+        .note-block.selected { background: #f3f4f6; }
+        .note-block-content { min-height: 1.5em; outline: none; }
+        .note-block-content:empty:before { content: attr(data-placeholder); color: #9ca3af; }
+        .note-block-content:focus { outline: none; }
+        .block-toolbar { position: absolute; top: 4px; right: 4px; display: none; z-index: 10; }
+        .note-block.selected .block-toolbar { display: flex; }
+        .block-copy-btn { position: absolute; top: 50%; left: -36px; transform: translateY(-50%); display: none; z-index: 10; }
+        .note-block.selected .block-copy-btn { display: flex; }
+        .note-block { position: relative; margin-left: 40px; }
+        .note-block-title .note-block-content { font-size: 1.5rem; font-weight: 700; color: #111827; }
+        .note-block-list .list-item { display: flex; align-items: flex-start; gap: 8px; padding: 4px 0; }
+        .note-block-list .list-item input[type="checkbox"] { margin-top: 4px; }
+        .note-block-list .list-item-text { flex: 1; outline: none; min-height: 1.5em; }
+        .note-block-list .list-item-text:empty:before { content: 'List item...'; color: #9ca3af; }
+        .toolbar-btn { transition: all 0.15s ease; }
+        .toolbar-btn:hover { background: #e5e7eb; }
+        .toolbar-btn.active { background: #7c3aed; color: white; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -121,6 +145,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     Money
+                </button>
+                <button data-page="notes" class="menu-item w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    Notes
                 </button>
             </nav>
         </aside>
@@ -359,6 +389,25 @@
                     <div id="wishlistCategories" class="space-y-6"></div>
                 </div>
                 
+                <!-- Notes Page -->
+                <div id="notes-page" class="page">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-gray-900 mb-2">Notes</h2>
+                        <p class="text-gray-500">Write and organize your thoughts</p>
+                    </div>
+                    
+                    <!-- Add Note Button -->
+                    <button id="addNoteBtn" class="mb-6 px-6 py-3 accent-gradient text-white rounded-xl font-medium hover:opacity-90 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Add New Note
+                    </button>
+                    
+                    <!-- Notes List -->
+                    <div id="notesList" class="space-y-4"></div>
+                </div>
+                
                 <!-- Money Page -->
                 <div id="money-page" class="page">
                     <div class="mb-8">
@@ -370,8 +419,8 @@
                         <!-- Left Column - Stats & Form -->
                         <div class="col-span-4 space-y-5">
                             <!-- Balance Card -->
-                            <div class="card p-6 accent-gradient text-white relative overflow-hidden">
-                                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full translate-y-1/2 translate-x-1/2"></div>
+                            <div class="card p-6 bg-gradient-to-br from-emerald-500 to-teal-600 text-white relative overflow-hidden">
+                                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
                                 <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
                                 <div class="relative">
                                     <h3 class="font-medium text-white/80 text-sm mb-1">Total Balance</h3>
@@ -433,23 +482,20 @@
                                             <option value="">Select category</option>
                                             <optgroup label="Income">
                                                 <option value="salary">Salary</option>
-                                                <option value="maxim">Maxim</option>
-                                                <option value="rent">Rent</option>
                                                 <option value="freelance">Freelance</option>
-                                                <option value="joiia">JOIIA</option>
-                                                
+                                                <option value="investment">Investment</option>
                                                 <option value="gift">Gift</option>
                                                 <option value="other_income">Other Income</option>
                                             </optgroup>
                                             <optgroup label="Expenses">
-                                                <option value="grocery">Grocery</option>
-                                                <option value="clothes">Clothes</option>
-                                                <option value="beauty">Beauty</option>
-                                                <option value="treats">Treats</option>
-                                                <option value="home">Home</option>
-                                                <option value="family">Family</option>
-                                                <option value="bills">Bills</option>
-                                                <option value="misc">Misc</option>
+                                                <option value="food">Food & Dining</option>
+                                                <option value="transport">Transport</option>
+                                                <option value="shopping">Shopping</option>
+                                                <option value="entertainment">Entertainment</option>
+                                                <option value="bills">Bills & Utilities</option>
+                                                <option value="health">Health</option>
+                                                <option value="education">Education</option>
+                                                <option value="other_expense">Other Expense</option>
                                             </optgroup>
                                         </select>
                                     </div>
@@ -1535,6 +1581,9 @@
                 attachWishlistEventListeners();
             } else if (page === 'money') {
                 renderMoney();
+            } else if (page === 'notes') {
+                renderNotes();
+                attachNotesEventListeners();
             }
         }
         
@@ -2981,6 +3030,434 @@
                 moneyViewDate.setMonth(moneyViewDate.getMonth() + 1);
                 renderMoney();
             });
+        }
+
+        // Notes Management
+        function loadNotes() {
+            const saved = localStorage.getItem('notes');
+            return saved ? JSON.parse(saved) : [];
+        }
+        
+        function saveNotes(notes) {
+            localStorage.setItem('notes', JSON.stringify(notes));
+        }
+        
+        let selectedBlockId = null;
+        let lastEnterTime = 0;
+        
+        function renderNotes() {
+            const container = document.getElementById('notesList');
+            const notes = loadNotes();
+            
+            if (notes.length === 0) {
+                container.innerHTML = `
+                    <div class="card p-12 text-center">
+                        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        <p class="text-gray-500">No notes yet. Create your first note!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = notes.map(note => `
+                <div class="note-card card p-5" data-note-id="${note.id}">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-xs text-gray-400">${new Date(note.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                        <button class="delete-note btn-icon p-1.5 rounded-lg text-gray-400 hover:text-rose-600" data-note-id="${note.id}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="note-blocks space-y-1" data-note-id="${note.id}">
+                        ${note.blocks.map(block => renderBlock(note.id, block)).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            attachNotesEventListeners();
+        }
+        
+        function renderBlock(noteId, block) {
+            const isSelected = selectedBlockId === block.id;
+            
+            if (block.type === 'list') {
+                return `
+                    <div class="note-block note-block-list p-2 rounded-lg ${isSelected ? 'selected' : ''}" data-note-id="${noteId}" data-block-id="${block.id}" data-block-type="list">
+                        <div class="block-toolbar flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
+                            <button class="toolbar-btn block-type-text p-1.5 rounded text-gray-600 text-xs font-medium" data-type="text" title="Text">T</button>
+                            <button class="toolbar-btn block-type-title p-1.5 rounded text-gray-600 text-xs font-medium" data-type="title" title="Title">H</button>
+                            <button class="toolbar-btn active block-type-list p-1.5 rounded text-gray-600" data-type="list" title="List">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <button class="block-copy-btn p-1.5 rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-violet-600 hover:bg-gray-50 shadow-sm" title="Copy">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                        </button>
+                        <div class="list-items">
+                            ${block.items.map((item, idx) => `
+                                <div class="list-item" data-item-idx="${idx}">
+                                    <input type="checkbox" class="list-item-checkbox w-4 h-4 accent-violet-600 rounded" ${item.checked ? 'checked' : ''}>
+                                    <div class="list-item-text ${item.checked ? 'line-through text-gray-400' : ''}" contenteditable="true" data-item-idx="${idx}">${item.text}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            const isTitle = block.type === 'title';
+            return `
+                <div class="note-block note-block-${block.type} p-2 rounded-lg ${isSelected ? 'selected' : ''}" data-note-id="${noteId}" data-block-id="${block.id}" data-block-type="${block.type}">
+                    <div class="block-toolbar flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
+                        <button class="toolbar-btn block-type-text p-1.5 rounded text-gray-600 text-xs font-medium ${block.type === 'text' ? 'active' : ''}" data-type="text" title="Text">T</button>
+                        <button class="toolbar-btn block-type-title p-1.5 rounded text-gray-600 text-xs font-medium ${block.type === 'title' ? 'active' : ''}" data-type="title" title="Title">H</button>
+                        <button class="toolbar-btn block-type-list p-1.5 rounded text-gray-600 ${block.type === 'list' ? 'active' : ''}" data-type="list" title="List">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="block-copy-btn p-1.5 rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-violet-600 hover:bg-gray-50 shadow-sm" title="Copy">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                    </button>
+                    <div class="note-block-content" contenteditable="true" data-placeholder="${isTitle ? 'Heading...' : 'Type something...'}">${block.content || ''}</div>
+                </div>
+            `;
+        }
+        
+        function addNote() {
+            const notes = loadNotes();
+            const newNote = {
+                id: Date.now(),
+                createdAt: new Date().toISOString(),
+                blocks: [
+                    { id: Date.now() + 1, type: 'text', content: '' }
+                ]
+            };
+            notes.unshift(newNote);
+            saveNotes(notes);
+            renderNotes();
+            
+            // Focus on the first block
+            setTimeout(() => {
+                const firstBlock = document.querySelector(`[data-note-id="${newNote.id}"] .note-block-content`);
+                if (firstBlock) firstBlock.focus();
+            }, 100);
+        }
+        
+        function deleteNote(noteId) {
+            if (!confirm('Delete this note?')) return;
+            const notes = loadNotes().filter(n => n.id !== noteId);
+            saveNotes(notes);
+            renderNotes();
+        }
+        
+        function updateBlockContent(noteId, blockId, content) {
+            const notes = loadNotes();
+            const note = notes.find(n => n.id === noteId);
+            if (!note) return;
+            const block = note.blocks.find(b => b.id === blockId);
+            if (!block) return;
+            block.content = content;
+            saveNotes(notes);
+        }
+        
+        function updateListItem(noteId, blockId, itemIdx, text, checked) {
+            const notes = loadNotes();
+            const note = notes.find(n => n.id === noteId);
+            if (!note) return;
+            const block = note.blocks.find(b => b.id === blockId);
+            if (!block || block.type !== 'list') return;
+            if (block.items[itemIdx]) {
+                if (text !== undefined) block.items[itemIdx].text = text;
+                if (checked !== undefined) block.items[itemIdx].checked = checked;
+            }
+            saveNotes(notes);
+        }
+        
+        function addBlockAfter(noteId, blockId) {
+            const notes = loadNotes();
+            const note = notes.find(n => n.id === noteId);
+            if (!note) return null;
+            const blockIdx = note.blocks.findIndex(b => b.id === blockId);
+            if (blockIdx === -1) return null;
+            
+            const newBlock = { id: Date.now(), type: 'text', content: '' };
+            note.blocks.splice(blockIdx + 1, 0, newBlock);
+            saveNotes(notes);
+            return newBlock.id;
+        }
+        
+        function addListItem(noteId, blockId, afterIdx) {
+            const notes = loadNotes();
+            const note = notes.find(n => n.id === noteId);
+            if (!note) return;
+            const block = note.blocks.find(b => b.id === blockId);
+            if (!block || block.type !== 'list') return;
+            
+            block.items.splice(afterIdx + 1, 0, { text: '', checked: false });
+            saveNotes(notes);
+            renderNotes();
+            
+            // Focus on new item
+            setTimeout(() => {
+                const newItem = document.querySelector(`[data-block-id="${blockId}"] .list-item[data-item-idx="${afterIdx + 1}"] .list-item-text`);
+                if (newItem) newItem.focus();
+            }, 50);
+        }
+        
+        function changeBlockType(noteId, blockId, newType) {
+            const notes = loadNotes();
+            const note = notes.find(n => n.id === noteId);
+            if (!note) return;
+            const block = note.blocks.find(b => b.id === blockId);
+            if (!block) return;
+            
+            const oldType = block.type;
+            if (oldType === newType) return;
+            
+            if (newType === 'list') {
+                // Convert to list
+                const content = block.content || '';
+                block.type = 'list';
+                block.items = content ? [{ text: content, checked: false }] : [{ text: '', checked: false }];
+                delete block.content;
+            } else {
+                // Convert from list or change text/title
+                if (oldType === 'list') {
+                    const text = block.items.map(i => i.text).join('\n');
+                    block.content = text;
+                    delete block.items;
+                }
+                block.type = newType;
+            }
+            
+            saveNotes(notes);
+            renderNotes();
+        }
+        
+        function copyBlockContent(noteId, blockId) {
+            const notes = loadNotes();
+            const note = notes.find(n => n.id === noteId);
+            if (!note) return;
+            const block = note.blocks.find(b => b.id === blockId);
+            if (!block) return;
+            
+            let text = '';
+            if (block.type === 'list') {
+                text = block.items.map(i => `${i.checked ? '☑' : '☐'} ${i.text}`).join('\n');
+            } else {
+                text = block.content || '';
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // Show brief feedback
+                const copyBtn = document.querySelector(`[data-block-id="${blockId}"] .block-copy-btn`);
+                if (copyBtn) {
+                    copyBtn.classList.add('text-emerald-600');
+                    setTimeout(() => copyBtn.classList.remove('text-emerald-600'), 1000);
+                }
+            });
+        }
+        
+        function selectBlock(blockId) {
+            selectedBlockId = blockId;
+            document.querySelectorAll('.note-block').forEach(b => b.classList.remove('selected'));
+            if (blockId) {
+                const block = document.querySelector(`[data-block-id="${blockId}"]`);
+                if (block) block.classList.add('selected');
+            }
+        }
+        
+        let notesEventDelegationAttached = false;
+        
+        function attachNotesEventListeners() {
+            // Add Note button
+            const addNoteBtn = document.getElementById('addNoteBtn');
+            if (addNoteBtn && !addNoteBtn.dataset.attached) {
+                addNoteBtn.addEventListener('click', addNote);
+                addNoteBtn.dataset.attached = 'true';
+            }
+            
+            if (notesEventDelegationAttached) return;
+            
+            const container = document.getElementById('notesList');
+            if (!container) return;
+            
+            // Delete note
+            container.addEventListener('click', (e) => {
+                if (e.target.closest('.delete-note')) {
+                    const btn = e.target.closest('.delete-note');
+                    deleteNote(parseInt(btn.dataset.noteId));
+                    return;
+                }
+                
+                // Block type change
+                if (e.target.closest('.toolbar-btn')) {
+                    const btn = e.target.closest('.toolbar-btn');
+                    const block = btn.closest('.note-block');
+                    const noteId = parseInt(block.dataset.noteId);
+                    const blockId = parseInt(block.dataset.blockId);
+                    const newType = btn.dataset.type;
+                    changeBlockType(noteId, blockId, newType);
+                    return;
+                }
+                
+                // Copy button
+                if (e.target.closest('.block-copy-btn')) {
+                    const btn = e.target.closest('.block-copy-btn');
+                    const block = btn.closest('.note-block');
+                    const noteId = parseInt(block.dataset.noteId);
+                    const blockId = parseInt(block.dataset.blockId);
+                    copyBlockContent(noteId, blockId);
+                    return;
+                }
+                
+                // List item checkbox
+                if (e.target.matches('.list-item-checkbox')) {
+                    const checkbox = e.target;
+                    const block = checkbox.closest('.note-block');
+                    const noteId = parseInt(block.dataset.noteId);
+                    const blockId = parseInt(block.dataset.blockId);
+                    const itemIdx = parseInt(checkbox.closest('.list-item').dataset.itemIdx);
+                    updateListItem(noteId, blockId, itemIdx, undefined, checkbox.checked);
+                    
+                    // Update visual style
+                    const textEl = checkbox.closest('.list-item').querySelector('.list-item-text');
+                    if (checkbox.checked) {
+                        textEl.classList.add('line-through', 'text-gray-400');
+                    } else {
+                        textEl.classList.remove('line-through', 'text-gray-400');
+                    }
+                    return;
+                }
+            });
+            
+            // Focus/click on block to select
+            container.addEventListener('focusin', (e) => {
+                const block = e.target.closest('.note-block');
+                if (block) {
+                    selectBlock(parseInt(block.dataset.blockId));
+                }
+            });
+            
+            // Click outside to deselect
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.note-block') && !e.target.closest('.block-toolbar')) {
+                    selectBlock(null);
+                }
+            });
+            
+            // Input handling for content editable
+            container.addEventListener('input', (e) => {
+                if (e.target.matches('.note-block-content')) {
+                    const block = e.target.closest('.note-block');
+                    const noteId = parseInt(block.dataset.noteId);
+                    const blockId = parseInt(block.dataset.blockId);
+                    updateBlockContent(noteId, blockId, e.target.innerHTML);
+                }
+                
+                if (e.target.matches('.list-item-text')) {
+                    const block = e.target.closest('.note-block');
+                    const noteId = parseInt(block.dataset.noteId);
+                    const blockId = parseInt(block.dataset.blockId);
+                    const itemIdx = parseInt(e.target.dataset.itemIdx);
+                    updateListItem(noteId, blockId, itemIdx, e.target.textContent);
+                }
+            });
+            
+            // Keydown handling for Enter
+            container.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const block = e.target.closest('.note-block');
+                    if (!block) return;
+                    
+                    const noteId = parseInt(block.dataset.noteId);
+                    const blockId = parseInt(block.dataset.blockId);
+                    const blockType = block.dataset.blockType;
+                    
+                    if (blockType === 'list' && e.target.matches('.list-item-text')) {
+                        e.preventDefault();
+                        const itemIdx = parseInt(e.target.dataset.itemIdx);
+                        const currentTime = Date.now();
+                        const itemText = e.target.textContent.trim();
+                        
+                        // Double Enter detection - create new block
+                        if (currentTime - lastEnterTime < 500 && itemText === '') {
+                            // Remove empty item and create new block
+                            const notes = loadNotes();
+                            const note = notes.find(n => n.id === noteId);
+                            const blockData = note.blocks.find(b => b.id === blockId);
+                            if (blockData.items.length > 1) {
+                                blockData.items.splice(itemIdx, 1);
+                            }
+                            saveNotes(notes);
+                            
+                            const newBlockId = addBlockAfter(noteId, blockId);
+                            renderNotes();
+                            setTimeout(() => {
+                                const newContent = document.querySelector(`[data-block-id="${newBlockId}"] .note-block-content`);
+                                if (newContent) newContent.focus();
+                            }, 50);
+                        } else {
+                            // Add new list item
+                            addListItem(noteId, blockId, itemIdx);
+                        }
+                        lastEnterTime = currentTime;
+                    } else if (e.target.matches('.note-block-content')) {
+                        e.preventDefault();
+                        const newBlockId = addBlockAfter(noteId, blockId);
+                        renderNotes();
+                        setTimeout(() => {
+                            const newContent = document.querySelector(`[data-block-id="${newBlockId}"] .note-block-content`);
+                            if (newContent) newContent.focus();
+                        }, 50);
+                    }
+                }
+                
+                // Backspace on empty block to delete
+                if (e.key === 'Backspace') {
+                    const block = e.target.closest('.note-block');
+                    if (!block) return;
+                    
+                    const blockType = block.dataset.blockType;
+                    
+                    if (e.target.matches('.note-block-content') && e.target.textContent === '') {
+                        const noteId = parseInt(block.dataset.noteId);
+                        const blockId = parseInt(block.dataset.blockId);
+                        const notes = loadNotes();
+                        const note = notes.find(n => n.id === noteId);
+                        
+                        if (note.blocks.length > 1) {
+                            e.preventDefault();
+                            const blockIdx = note.blocks.findIndex(b => b.id === blockId);
+                            note.blocks.splice(blockIdx, 1);
+                            saveNotes(notes);
+                            renderNotes();
+                            
+                            // Focus previous block
+                            if (blockIdx > 0) {
+                                const prevBlock = note.blocks[blockIdx - 1];
+                                setTimeout(() => {
+                                    const prevContent = document.querySelector(`[data-block-id="${prevBlock.id}"] .note-block-content, [data-block-id="${prevBlock.id}"] .list-item-text:last-child`);
+                                    if (prevContent) prevContent.focus();
+                                }, 50);
+                            }
+                        }
+                    }
+                }
+            });
+            
+            notesEventDelegationAttached = true;
         }
 
         // Initialize
