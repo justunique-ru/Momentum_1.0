@@ -1336,45 +1336,46 @@
       }
 
       function renderTreats() {
-        const container = document.getElementById("treatsList");
-        const global = loadGlobalData();
-        const dayData = loadDayData(currentDate);
-        const allTimePoints = calculateAllTimePoints();
-        const availablePoints = allTimePoints.available;
+  const container = document.getElementById("treatsList");
+  const global = loadGlobalData();
+  const dayData = loadDayData(currentDate);
+  const allTimePoints = calculateAllTimePoints();
+  const availablePoints = allTimePoints.available;
 
-        document.getElementById("treatsSpent").textContent = `${allTimePoints.spent} total spent`;
+  document.getElementById("treatsSpent").textContent = `${allTimePoints.spent} total spent`;
 
-        container.innerHTML = global.treats
-          .map((treat) => {
-            const treatData = dayData.treatsUsed.find((t) => t.id === treat.id) || { count: 0 };
-            const canAfford = availablePoints >= treat.cost;
-            return `
-                    <div class="treat-item flex items-center gap-3 p-3 rounded-xl border border-gray-100 ${canAfford ? "affordable" : "unaffordable"}" 
-                         data-id="${treat.id}">
-                        <div class="flex-1">
-                            <span class="text-sm font-medium text-gray-800">${treat.name}</span>
-                            <span class="text-xs text-rose-400 ml-2">-${treat.cost} pts</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button class="treat-dec w-6 h-6 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 flex items-center justify-center text-sm font-bold ${treatData.count === 0 ? "invisible" : ""}" data-id="${treat.id}">−</button>
-                            <span class="treat-count text-sm font-semibold w-6 text-center cursor-pointer" data-id="${treat.id}">${treatData.count}</span>
-                            <button class="treat-inc w-6 h-6 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 flex items-center justify-center text-sm font-bold ${canAfford ? "" : "invisible"}" data-id="${treat.id}">+</button>
-                        </div>
-                    </div>
-                `;
-          })
-          .join("");
+  container.innerHTML = global.treats
+    .map((treat) => {
+      const treatData = dayData.treatsUsed.find((t) => t.id === treat.id) || { count: 0 };
+      const canAfford = true;
+      return `
+        <div class="treat-item flex items-center gap-3 p-3 rounded-xl border border-gray-100 affordable" 
+             data-id="${treat.id}">
+            <div class="flex-1">
+                <span class="text-sm font-medium text-gray-800">${treat.name}</span>
+                <span class="text-xs text-rose-400 ml-2">-${treat.cost} pts</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button class="treat-dec w-6 h-6 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 flex items-center justify-center text-sm font-bold ${treatData.count === 0 ? "invisible" : ""}" data-id="${treat.id}">−</button>
+                <span class="treat-count text-sm font-semibold w-6 text-center cursor-pointer" data-id="${treat.id}">${treatData.count}</span>
+                <button class="treat-inc w-6 h-6 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 flex items-center justify-center text-sm font-bold" data-id="${treat.id}">+</button>
+            </div>
+        </div>
+      `;
+    })
+    .join("");
 
-        container.querySelectorAll(".treat-inc").forEach((el) => {
-          el.addEventListener("click", () => changeTreat(parseInt(el.dataset.id), 1));
-        });
-        container.querySelectorAll(".treat-dec").forEach((el) => {
-          el.addEventListener("click", () => changeTreat(parseInt(el.dataset.id), -1));
-        });
-        container.querySelectorAll(".treat-count").forEach((el) => {
-          el.addEventListener("click", () => editTreatCount(parseInt(el.dataset.id)));
-        });
-      }
+  container.querySelectorAll(".treat-inc").forEach((el) => {
+    el.addEventListener("click", () => changeTreat(parseInt(el.dataset.id), 1));
+  });
+  container.querySelectorAll(".treat-dec").forEach((el) => {
+    el.addEventListener("click", () => changeTreat(parseInt(el.dataset.id), -1));
+  });
+  container.querySelectorAll(".treat-count").forEach((el) => {
+    el.addEventListener("click", () => editTreatCount(parseInt(el.dataset.id)));
+  });
+}
+
 
       function renderStats() {
         const container = document.getElementById("statsChart");
@@ -1451,19 +1452,28 @@
       }
 
       function renderPoints() {
-        const allTimePoints = calculateAllTimePoints();
-        const todayEarned = calculateTodayEarned(currentDate);
-        const dayData = loadDayData(currentDate);
+  const allTimePoints = calculateAllTimePoints();
+  const todayEarned = calculateTodayEarned(currentDate);
+  const dayData = loadDayData(currentDate);
 
-        document.getElementById("totalPoints").textContent = allTimePoints.available;
-        document.getElementById("totalEarned").textContent = allTimePoints.earned;
-        document.getElementById("totalSpent").textContent = allTimePoints.spent;
-        document.getElementById("habitsCompleted").textContent = dayData.habitsCompleted.length;
-        document.getElementById("pomosCompleted").textContent = dayData.pomosCompleted.reduce((sum, p) => sum + p.completed.length, 0);
-        document.getElementById("tasksCompleted").textContent = dayData.tasks.filter((t) => t.completed).length;
+  const totalPointsEl = document.getElementById("totalPoints");
+  totalPointsEl.textContent = allTimePoints.available;
+  
+  if (allTimePoints.available < 0) {
+    totalPointsEl.classList.add("text-rose-200");
+  } else {
+    totalPointsEl.classList.remove("text-rose-200");
+  }
+  
+  document.getElementById("totalEarned").textContent = allTimePoints.earned;
+  document.getElementById("totalSpent").textContent = allTimePoints.spent;
+  document.getElementById("habitsCompleted").textContent = dayData.habitsCompleted.length;
+  document.getElementById("pomosCompleted").textContent = dayData.pomosCompleted.reduce((sum, p) => sum + p.completed.length, 0);
+  document.getElementById("tasksCompleted").textContent = dayData.tasks.filter((t) => t.completed).length;
 
-        document.getElementById("pointsTrend").textContent = `+${todayEarned} today`;
-      }
+  document.getElementById("pointsTrend").textContent = `+${todayEarned} today`;
+}
+
 
       function calculateDayPoints(date) {
         const global = loadGlobalData();
@@ -1712,23 +1722,21 @@
       }
 
       function changeTreat(id, delta) {
-        const dayData = loadDayData(currentDate);
-        const global = loadGlobalData();
-        const treat = global.treats.find((t) => t.id === id);
+  const dayData = loadDayData(currentDate);
+  const global = loadGlobalData();
+  const treat = global.treats.find((t) => t.id === id);
 
-        let treatData = dayData.treatsUsed.find((t) => t.id === id);
-        if (!treatData) {
-          treatData = { id, count: 0 };
-          dayData.treatsUsed.push(treatData);
-        }
+  let treatData = dayData.treatsUsed.find((t) => t.id === id);
+  if (!treatData) {
+    treatData = { id, count: 0 };
+    dayData.treatsUsed.push(treatData);
+  }
 
-        const allTimePoints = calculateAllTimePoints();
-        if (delta > 0 && allTimePoints.available < treat.cost) return;
+  treatData.count = Math.max(0, treatData.count + delta);
+  saveDayData(currentDate, dayData);
+  render();
+}
 
-        treatData.count = Math.max(0, treatData.count + delta);
-        saveDayData(currentDate, dayData);
-        render();
-      }
 
       function editTreatCount(id) {
         const dayData = loadDayData(currentDate);
