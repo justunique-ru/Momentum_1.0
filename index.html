@@ -486,61 +486,65 @@
         text-overflow: ellipsis;
       }
       .sale-badge {
-  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
-  color: white;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
-  animation: pulse 2s infinite;
-}
+        background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+        color: white;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+        animation: pulse 2s infinite;
+      }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
 
-.original-price {
-  text-decoration: line-through;
-  color: #9ca3af;
-  font-size: 11px;
-}
+      .original-price {
+        text-decoration: line-through;
+        color: #9ca3af;
+        font-size: 11px;
+      }
 
-.sale-price {
-  color: #ef4444;
-  font-weight: 600;
-  font-size: 12px;
-}
+      .sale-price {
+        color: #ef4444;
+        font-weight: 600;
+        font-size: 12px;
+      }
 
-.sale-btn {
-  transition: all 0.2s ease;
-}
+      .sale-btn {
+        transition: all 0.2s ease;
+      }
 
-.sale-btn:hover {
-  background: #fef2f2;
-  color: #ef4444;
-}
+      .sale-btn:hover {
+        background: #fef2f2;
+        color: #ef4444;
+      }
 
-.sale-btn.has-sale {
-  background: #fef2f2;
-  color: #ef4444;
-  border-color: #fecaca;
-}
+      .sale-btn.has-sale {
+        background: #fef2f2;
+        color: #ef4444;
+        border-color: #fecaca;
+      }
 
-.day-checkbox-label {
-  transition: all 0.15s ease;
-}
+      .day-checkbox-label {
+        transition: all 0.15s ease;
+      }
 
-.day-checkbox-label:hover {
-  background: #f3f4f6;
-}
+      .day-checkbox-label:hover {
+        background: #f3f4f6;
+      }
 
-.day-checkbox-label.checked {
-  background: #fef2f2;
-  border-color: #f87171;
-  color: #ef4444;
-}
-
+      .day-checkbox-label.checked {
+        background: #fef2f2;
+        border-color: #f87171;
+        color: #ef4444;
+      }
     </style>
   </head>
   <body class="bg-gray-50">
@@ -1205,24 +1209,23 @@
       }
 
       function getTreatCurrentCost(treat, date) {
-  if (!treat.sale || !treat.sale.days || treat.sale.days.length === 0) {
-    return treat.cost;
-  }
-  const dayOfWeek = date.getDay();
-  if (treat.sale.days.includes(dayOfWeek)) {
-    return treat.sale.price;
-  }
-  return treat.cost;
-}
+        if (!treat.sale || !treat.sale.days || treat.sale.days.length === 0) {
+          return treat.cost;
+        }
+        const dayOfWeek = date.getDay();
+        if (treat.sale.days.includes(dayOfWeek)) {
+          return treat.sale.price;
+        }
+        return treat.cost;
+      }
 
-function isTreatOnSale(treat, date) {
-  if (!treat.sale || !treat.sale.days || treat.sale.days.length === 0) {
-    return false;
-  }
-  const dayOfWeek = date.getDay();
-  return treat.sale.days.includes(dayOfWeek);
-}
-
+      function isTreatOnSale(treat, date) {
+        if (!treat.sale || !treat.sale.days || treat.sale.days.length === 0) {
+          return false;
+        }
+        const dayOfWeek = date.getDay();
+        return treat.sale.days.includes(dayOfWeek);
+      }
 
       // Render functions
       function renderCalendar() {
@@ -1243,7 +1246,7 @@ function isTreatOnSale(treat, date) {
         }
 
         for (let day = 1; day <= lastDay.getDate(); day++) {
-          const date = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), day);
+          const date = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), day, 12, 0, 0);
           const dayKey = getDateKey(date);
           const isSelected = getDateKey(currentDate) === dayKey;
           const isToday = getDateKey(today) === dayKey;
@@ -1251,17 +1254,18 @@ function isTreatOnSale(treat, date) {
           const points = hasData ? calculateDayPoints(date) : 0;
 
           grid.innerHTML += `
-                    <div class="calendar-day h-8 w-8 flex items-center justify-center text-xs rounded-lg relative
-                        ${isSelected ? "selected" : ""} ${isToday && !isSelected ? "today" : ""} ${points > 0 ? "has-points" : ""}"
-                        data-date="${dayKey}">
-                        ${day}
-                    </div>
-                `;
+      <div class="calendar-day h-8 w-8 flex items-center justify-center text-xs rounded-lg relative
+          ${isSelected ? "selected" : ""} ${isToday && !isSelected ? "today" : ""} ${points > 0 ? "has-points" : ""}"
+          data-date="${dayKey}">
+          ${day}
+      </div>
+    `;
         }
 
         grid.querySelectorAll(".calendar-day").forEach((el) => {
           el.addEventListener("click", () => {
-            currentDate = new Date(el.dataset.date);
+            const [year, month, dayNum] = el.dataset.date.split("-").map(Number);
+            currentDate = new Date(year, month - 1, dayNum, 12, 0, 0);
             render();
           });
         });
@@ -1412,34 +1416,34 @@ function isTreatOnSale(treat, date) {
       }
 
       function renderTreats() {
-  const container = document.getElementById("treatsList");
-  const global = loadGlobalData();
-  const dayData = loadDayData(currentDate);
-  const allTimePoints = calculateAllTimePoints();
+        const container = document.getElementById("treatsList");
+        const global = loadGlobalData();
+        const dayData = loadDayData(currentDate);
+        const allTimePoints = calculateAllTimePoints();
 
-  document.getElementById("treatsSpent").textContent = `${allTimePoints.spent} total spent`;
+        document.getElementById("treatsSpent").textContent = `${allTimePoints.spent} total spent`;
 
-  container.innerHTML = global.treats
-    .map((treat) => {
-      const treatData = dayData.treatsUsed.find((t) => t.id === treat.id) || { count: 0 };
-      const isOnSale = isTreatOnSale(treat, currentDate);
-      const currentCost = getTreatCurrentCost(treat, currentDate);
-      
-      let priceDisplay = "";
-      if (isOnSale) {
-        priceDisplay = `
+        container.innerHTML = global.treats
+          .map((treat) => {
+            const treatData = dayData.treatsUsed.find((t) => t.id === treat.id) || { count: 0 };
+            const isOnSale = isTreatOnSale(treat, currentDate);
+            const currentCost = getTreatCurrentCost(treat, currentDate);
+
+            let priceDisplay = "";
+            if (isOnSale) {
+              priceDisplay = `
           <span class="original-price">-${treat.cost}</span>
           <span class="sale-price ml-1">-${currentCost} pts</span>
           <span class="sale-badge ml-1">SALE</span>
         `;
-      } else {
-        priceDisplay = `<span class="text-xs text-rose-400">-${treat.cost} pts</span>`;
-      }
-      
-      const hasSale = treat.sale && treat.sale.days && treat.sale.days.length > 0;
-      
-      return `
-        <div class="treat-item flex items-center gap-3 p-3 rounded-xl border ${isOnSale ? 'border-rose-300 bg-rose-50' : 'border-gray-100'} affordable" 
+            } else {
+              priceDisplay = `<span class="text-xs text-rose-400">-${treat.cost} pts</span>`;
+            }
+
+            const hasSale = treat.sale && treat.sale.days && treat.sale.days.length > 0;
+
+            return `
+        <div class="treat-item flex items-center gap-3 p-3 rounded-xl border ${isOnSale ? "border-rose-300 bg-rose-50" : "border-gray-100"} affordable" 
              data-id="${treat.id}">
             <div class="flex-1">
                 <span class="text-sm font-medium text-gray-800">${treat.name}</span>
@@ -1454,20 +1458,19 @@ function isTreatOnSale(treat, date) {
             </div>
         </div>
       `;
-    })
-    .join("");
+          })
+          .join("");
 
-  container.querySelectorAll(".treat-inc").forEach((el) => {
-    el.addEventListener("click", () => changeTreat(parseInt(el.dataset.id), 1));
-  });
-  container.querySelectorAll(".treat-dec").forEach((el) => {
-    el.addEventListener("click", () => changeTreat(parseInt(el.dataset.id), -1));
-  });
-  container.querySelectorAll(".treat-count").forEach((el) => {
-    el.addEventListener("click", () => editTreatCount(parseInt(el.dataset.id)));
-  });
-}
-
+        container.querySelectorAll(".treat-inc").forEach((el) => {
+          el.addEventListener("click", () => changeTreat(parseInt(el.dataset.id), 1));
+        });
+        container.querySelectorAll(".treat-dec").forEach((el) => {
+          el.addEventListener("click", () => changeTreat(parseInt(el.dataset.id), -1));
+        });
+        container.querySelectorAll(".treat-count").forEach((el) => {
+          el.addEventListener("click", () => editTreatCount(parseInt(el.dataset.id)));
+        });
+      }
 
       function renderStats() {
         const container = document.getElementById("statsChart");
@@ -1592,83 +1595,81 @@ function isTreatOnSale(treat, date) {
       }
 
       function calculateSpentPoints(date) {
-  const global = loadGlobalData();
-  const dayData = loadDayData(date);
-  let spent = 0;
+        const global = loadGlobalData();
+        const dayData = loadDayData(date);
+        let spent = 0;
 
-  dayData.treatsUsed.forEach((t) => {
-    const treat = global.treats.find((tr) => tr.id === t.id);
-    if (treat) {
-      const cost = getTreatCurrentCost(treat, date);
-      spent += t.count * cost;
-    }
-  });
+        dayData.treatsUsed.forEach((t) => {
+          const treat = global.treats.find((tr) => tr.id === t.id);
+          if (treat) {
+            const cost = getTreatCurrentCost(treat, date);
+            spent += t.count * cost;
+          }
+        });
 
-  return spent;
-}
+        return spent;
+      }
 
+      function calculateAllTimePoints() {
+        const global = loadGlobalData();
+        let totalEarned = 0;
+        let totalSpent = 0;
 
-function calculateAllTimePoints() {
-  const global = loadGlobalData();
-  let totalEarned = 0;
-  let totalSpent = 0;
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith("day_")) {
+            const dayData = JSON.parse(localStorage.getItem(key));
+            const dateStr = key.replace("day_", "");
+            const date = new Date(dateStr);
 
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && key.startsWith("day_")) {
-      const dayData = JSON.parse(localStorage.getItem(key));
-      const dateStr = key.replace("day_", "");
-      const date = new Date(dateStr);
+            dayData.habitsCompleted?.forEach((id) => {
+              const habit = global.habits.find((h) => h.id === id);
+              if (habit) totalEarned += habit.points;
+            });
 
-      dayData.habitsCompleted?.forEach((id) => {
-        const habit = global.habits.find((h) => h.id === id);
-        if (habit) totalEarned += habit.points;
-      });
+            dayData.pomosCompleted?.forEach((pomo) => {
+              const cat = global.pomoCategories.find((c) => c.id === pomo.id);
+              if (cat) totalEarned += pomo.completed.length * cat.pointsEach;
+            });
 
-      dayData.pomosCompleted?.forEach((pomo) => {
-        const cat = global.pomoCategories.find((c) => c.id === pomo.id);
-        if (cat) totalEarned += pomo.completed.length * cat.pointsEach;
-      });
+            dayData.tasks?.forEach((task) => {
+              if (task.completed) totalEarned += task.points;
+            });
 
-      dayData.tasks?.forEach((task) => {
-        if (task.completed) totalEarned += task.points;
-      });
-
-      dayData.treatsUsed?.forEach((t) => {
-        const treat = global.treats.find((tr) => tr.id === t.id);
-        if (treat) {
-          const cost = getTreatCurrentCost(treat, date);
-          totalSpent += t.count * cost;
+            dayData.treatsUsed?.forEach((t) => {
+              const treat = global.treats.find((tr) => tr.id === t.id);
+              if (treat) {
+                const cost = getTreatCurrentCost(treat, date);
+                totalSpent += t.count * cost;
+              }
+            });
+          }
         }
-      });
-    }
-  }
 
-  const goals = loadGoals();
-  goals.forEach((goal) => {
-    if (goal.milestones) {
-      goal.milestones.forEach((m) => {
-        if (m.completed) {
-          totalEarned += m.points || 10;
-        }
-        if (m.tasks) {
-          m.tasks.forEach((t) => {
-            if (t.subtasks) {
-              t.subtasks.forEach((st) => {
-                if (st.completed) {
-                  totalEarned += st.points || 2;
-                }
-              });
-            }
-          });
-        }
-      });
-    }
-  });
+        const goals = loadGoals();
+        goals.forEach((goal) => {
+          if (goal.milestones) {
+            goal.milestones.forEach((m) => {
+              if (m.completed) {
+                totalEarned += m.points || 10;
+              }
+              if (m.tasks) {
+                m.tasks.forEach((t) => {
+                  if (t.subtasks) {
+                    t.subtasks.forEach((st) => {
+                      if (st.completed) {
+                        totalEarned += st.points || 2;
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
 
-  return { earned: totalEarned, spent: totalSpent, available: totalEarned - totalSpent };
-}
-
+        return { earned: totalEarned, spent: totalSpent, available: totalEarned - totalSpent };
+      }
 
       function calculateTodayEarned(date) {
         const global = loadGlobalData();
@@ -1853,44 +1854,47 @@ function calculateAllTimePoints() {
 
       // Modal functions
       function openEditModal(type) {
-  editMode = type;
-  const modal = document.getElementById("editModal");
-  const title = document.getElementById("modalTitle");
-  const content = document.getElementById("modalContent");
-  const global = loadGlobalData();
+        editMode = type;
+        const modal = document.getElementById("editModal");
+        const title = document.getElementById("modalTitle");
+        const content = document.getElementById("modalContent");
+        const global = loadGlobalData();
 
-  let items, fields;
-  switch (type) {
-    case "habits":
-      title.textContent = "Edit Habits";
-      items = global.habits;
-      fields = ["name", "points", "color"];
-      break;
-    case "pomodoros":
-      title.textContent = "Edit Focus Categories";
-      items = global.pomoCategories;
-      fields = ["name", "count", "pointsEach", "color"];
-      break;
-    case "treats":
-      title.textContent = "Edit Treats";
-      items = global.treats;
-      fields = ["name", "cost"];
-      break;
-  }
+        let items, fields;
+        switch (type) {
+          case "habits":
+            title.textContent = "Edit Habits";
+            items = global.habits;
+            fields = ["name", "points", "color"];
+            break;
+          case "pomodoros":
+            title.textContent = "Edit Focus Categories";
+            items = global.pomoCategories;
+            fields = ["name", "count", "pointsEach", "color"];
+            break;
+          case "treats":
+            title.textContent = "Edit Treats";
+            items = global.treats;
+            fields = ["name", "cost"];
+            break;
+        }
 
-  content.innerHTML =
-    items
-      .map((item, idx) => {
-        const hasSale = item.sale && item.sale.days && item.sale.days.length > 0;
-        const saleButton = type === "treats" ? `
-          <button class="sale-btn p-1.5 rounded-lg border ${hasSale ? 'has-sale border-rose-200' : 'border-gray-200'} text-xs font-medium" data-idx="${idx}" title="Configure sale">
+        content.innerHTML =
+          items
+            .map((item, idx) => {
+              const hasSale = item.sale && item.sale.days && item.sale.days.length > 0;
+              const saleButton =
+                type === "treats"
+                  ? `
+          <button class="sale-btn p-1.5 rounded-lg border ${hasSale ? "has-sale border-rose-200" : "border-gray-200"} text-xs font-medium" data-idx="${idx}" title="Configure sale">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
             </svg>
           </button>
-        ` : '';
-        
-        return `
+        `
+                  : "";
+
+              return `
           <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl" draggable="true" data-idx="${idx}">
               <div class="flex flex-col gap-0.5">
                   <button class="move-up text-gray-300 hover:text-gray-500 text-xs" data-idx="${idx}">▲</button>
@@ -1918,106 +1922,106 @@ function calculateAllTimePoints() {
               </button>
           </div>
       `;
-      })
-      .join("") +
-    `
+            })
+            .join("") +
+          `
           <button id="addNewItem" class="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-violet-400 hover:text-violet-500 transition font-medium">
               + Add New
           </button>
       `;
 
-  content.querySelectorAll(".move-up").forEach((el) => {
-    el.addEventListener("click", () => moveItem(parseInt(el.dataset.idx), -1));
-  });
-  content.querySelectorAll(".move-down").forEach((el) => {
-    el.addEventListener("click", () => moveItem(parseInt(el.dataset.idx), 1));
-  });
-  content.querySelectorAll(".delete-item").forEach((el) => {
-    el.addEventListener("click", () => deleteItem(parseInt(el.dataset.idx)));
-  });
-  content.querySelectorAll(".sale-btn").forEach((el) => {
-    el.addEventListener("click", () => openSaleModal(parseInt(el.dataset.idx)));
-  });
-  document.getElementById("addNewItem").addEventListener("click", addNewItem);
+        content.querySelectorAll(".move-up").forEach((el) => {
+          el.addEventListener("click", () => moveItem(parseInt(el.dataset.idx), -1));
+        });
+        content.querySelectorAll(".move-down").forEach((el) => {
+          el.addEventListener("click", () => moveItem(parseInt(el.dataset.idx), 1));
+        });
+        content.querySelectorAll(".delete-item").forEach((el) => {
+          el.addEventListener("click", () => deleteItem(parseInt(el.dataset.idx)));
+        });
+        content.querySelectorAll(".sale-btn").forEach((el) => {
+          el.addEventListener("click", () => openSaleModal(parseInt(el.dataset.idx)));
+        });
+        document.getElementById("addNewItem").addEventListener("click", addNewItem);
 
-  modal.classList.remove("hidden");
-  modal.classList.add("flex");
-}
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
 
-let currentSaleIdx = null;
+      let currentSaleIdx = null;
 
-function openSaleModal(idx) {
-  currentSaleIdx = idx;
-  const global = loadGlobalData();
-  const treat = global.treats[idx];
-  
-  const saleModal = document.getElementById("saleModal");
-  if (!saleModal) {
-    createSaleModal();
-  }
-  
-  const salePriceInput = document.getElementById("salePriceInput");
-  const dayCheckboxes = document.querySelectorAll(".sale-day-checkbox");
-  
-  if (treat.sale) {
-    salePriceInput.value = treat.sale.price || "";
-    dayCheckboxes.forEach((cb) => {
-      cb.checked = treat.sale.days && treat.sale.days.includes(parseInt(cb.value));
-      updateDayCheckboxStyle(cb);
-    });
-  } else {
-    salePriceInput.value = "";
-    dayCheckboxes.forEach((cb) => {
-      cb.checked = false;
-      updateDayCheckboxStyle(cb);
-    });
-  }
-  
-  document.getElementById("saleModal").classList.remove("hidden");
-  document.getElementById("saleModal").classList.add("flex");
-}
+      function openSaleModal(idx) {
+        currentSaleIdx = idx;
+        const global = loadGlobalData();
+        const treat = global.treats[idx];
 
-function closeSaleModal() {
-  document.getElementById("saleModal").classList.add("hidden");
-  document.getElementById("saleModal").classList.remove("flex");
-  currentSaleIdx = null;
-}
+        const saleModal = document.getElementById("saleModal");
+        if (!saleModal) {
+          createSaleModal();
+        }
 
-function saveSale() {
-  if (currentSaleIdx === null) return;
-  
-  const global = loadGlobalData();
-  const salePriceInput = document.getElementById("salePriceInput");
-  const dayCheckboxes = document.querySelectorAll(".sale-day-checkbox:checked");
-  
-  const price = parseInt(salePriceInput.value);
-  const days = Array.from(dayCheckboxes).map((cb) => parseInt(cb.value));
-  
-  if (days.length > 0 && price > 0) {
-    global.treats[currentSaleIdx].sale = { price, days };
-  } else {
-    global.treats[currentSaleIdx].sale = null;
-  }
-  
-  saveGlobalData(global);
-  closeSaleModal();
-  openEditModal("treats");
-}
+        const salePriceInput = document.getElementById("salePriceInput");
+        const dayCheckboxes = document.querySelectorAll(".sale-day-checkbox");
 
-function updateDayCheckboxStyle(checkbox) {
-  const label = checkbox.closest(".day-checkbox-label");
-  if (checkbox.checked) {
-    label.classList.add("checked");
-  } else {
-    label.classList.remove("checked");
-  }
-}
+        if (treat.sale) {
+          salePriceInput.value = treat.sale.price || "";
+          dayCheckboxes.forEach((cb) => {
+            cb.checked = treat.sale.days && treat.sale.days.includes(parseInt(cb.value));
+            updateDayCheckboxStyle(cb);
+          });
+        } else {
+          salePriceInput.value = "";
+          dayCheckboxes.forEach((cb) => {
+            cb.checked = false;
+            updateDayCheckboxStyle(cb);
+          });
+        }
 
-function createSaleModal() {
-  const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const dayValues = [1, 2, 3, 4, 5, 6, 0];
-  
-  const modalHtml = `
+        document.getElementById("saleModal").classList.remove("hidden");
+        document.getElementById("saleModal").classList.add("flex");
+      }
+
+      function closeSaleModal() {
+        document.getElementById("saleModal").classList.add("hidden");
+        document.getElementById("saleModal").classList.remove("flex");
+        currentSaleIdx = null;
+      }
+
+      function saveSale() {
+        if (currentSaleIdx === null) return;
+
+        const global = loadGlobalData();
+        const salePriceInput = document.getElementById("salePriceInput");
+        const dayCheckboxes = document.querySelectorAll(".sale-day-checkbox:checked");
+
+        const price = parseInt(salePriceInput.value);
+        const days = Array.from(dayCheckboxes).map((cb) => parseInt(cb.value));
+
+        if (days.length > 0 && price > 0) {
+          global.treats[currentSaleIdx].sale = { price, days };
+        } else {
+          global.treats[currentSaleIdx].sale = null;
+        }
+
+        saveGlobalData(global);
+        closeSaleModal();
+        openEditModal("treats");
+      }
+
+      function updateDayCheckboxStyle(checkbox) {
+        const label = checkbox.closest(".day-checkbox-label");
+        if (checkbox.checked) {
+          label.classList.add("checked");
+        } else {
+          label.classList.remove("checked");
+        }
+      }
+
+      function createSaleModal() {
+        const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        const dayValues = [1, 2, 3, 4, 5, 6, 0];
+
+        const modalHtml = `
     <div id="saleModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-[60]">
       <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
         <div class="flex justify-between items-center mb-5">
@@ -2036,12 +2040,16 @@ function createSaleModal() {
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Sale Days</label>
             <div class="grid grid-cols-7 gap-1">
-              ${dayNames.map((day, idx) => `
+              ${dayNames
+                .map(
+                  (day, idx) => `
                 <label class="day-checkbox-label flex flex-col items-center p-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
                   <input type="checkbox" class="sale-day-checkbox hidden" value="${dayValues[idx]}">
                   <span class="text-xs font-medium text-gray-600">${day}</span>
                 </label>
-              `).join("")}
+              `
+                )
+                .join("")}
             </div>
           </div>
         </div>
@@ -2052,30 +2060,28 @@ function createSaleModal() {
       </div>
     </div>
   `;
-  
-  document.body.insertAdjacentHTML("beforeend", modalHtml);
-  
-  document.getElementById("closeSaleModal").addEventListener("click", closeSaleModal);
-  document.getElementById("saveSaleBtn").addEventListener("click", saveSale);
-  document.getElementById("clearSaleBtn").addEventListener("click", () => {
-    document.getElementById("salePriceInput").value = "";
-    document.querySelectorAll(".sale-day-checkbox").forEach((cb) => {
-      cb.checked = false;
-      updateDayCheckboxStyle(cb);
-    });
-    saveSale();
-  });
-  
-  document.querySelectorAll(".sale-day-checkbox").forEach((cb) => {
-    cb.addEventListener("change", () => updateDayCheckboxStyle(cb));
-  });
-  
-  document.getElementById("saleModal").addEventListener("click", (e) => {
-    if (e.target === document.getElementById("saleModal")) closeSaleModal();
-  });
-}
 
+        document.body.insertAdjacentHTML("beforeend", modalHtml);
 
+        document.getElementById("closeSaleModal").addEventListener("click", closeSaleModal);
+        document.getElementById("saveSaleBtn").addEventListener("click", saveSale);
+        document.getElementById("clearSaleBtn").addEventListener("click", () => {
+          document.getElementById("salePriceInput").value = "";
+          document.querySelectorAll(".sale-day-checkbox").forEach((cb) => {
+            cb.checked = false;
+            updateDayCheckboxStyle(cb);
+          });
+          saveSale();
+        });
+
+        document.querySelectorAll(".sale-day-checkbox").forEach((cb) => {
+          cb.addEventListener("change", () => updateDayCheckboxStyle(cb));
+        });
+
+        document.getElementById("saleModal").addEventListener("click", (e) => {
+          if (e.target === document.getElementById("saleModal")) closeSaleModal();
+        });
+      }
 
       function closeEditModal() {
         document.getElementById("editModal").classList.add("hidden");
@@ -2083,47 +2089,44 @@ function createSaleModal() {
       }
 
       function saveModalChanges() {
-  const content = document.getElementById("modalContent");
-  const global = loadGlobalData();
-  const items = [];
-  const existingItems = editMode === "treats" ? global.treats : 
-                        editMode === "habits" ? global.habits : 
-                        global.pomoCategories;
+        const content = document.getElementById("modalContent");
+        const global = loadGlobalData();
+        const items = [];
+        const existingItems = editMode === "treats" ? global.treats : editMode === "habits" ? global.habits : global.pomoCategories;
 
-  content.querySelectorAll('[draggable="true"]').forEach((row, idx) => {
-    const item = { id: idx + 1 };
-    row.querySelectorAll("input").forEach((input) => {
-      const field = input.dataset.field;
-      if (!field) return;
-      let value = input.value;
-      if (input.type === "number") value = parseInt(value) || 0;
-      item[field] = value;
-    });
-    
-    if (editMode === "treats" && existingItems[idx]) {
-      item.sale = existingItems[idx].sale || null;
-    }
-    
-    items.push(item);
-  });
+        content.querySelectorAll('[draggable="true"]').forEach((row, idx) => {
+          const item = { id: idx + 1 };
+          row.querySelectorAll("input").forEach((input) => {
+            const field = input.dataset.field;
+            if (!field) return;
+            let value = input.value;
+            if (input.type === "number") value = parseInt(value) || 0;
+            item[field] = value;
+          });
 
-  switch (editMode) {
-    case "habits":
-      global.habits = items;
-      break;
-    case "pomodoros":
-      global.pomoCategories = items;
-      break;
-    case "treats":
-      global.treats = items;
-      break;
-  }
+          if (editMode === "treats" && existingItems[idx]) {
+            item.sale = existingItems[idx].sale || null;
+          }
 
-  saveGlobalData(global);
-  closeEditModal();
-  render();
-}
+          items.push(item);
+        });
 
+        switch (editMode) {
+          case "habits":
+            global.habits = items;
+            break;
+          case "pomodoros":
+            global.pomoCategories = items;
+            break;
+          case "treats":
+            global.treats = items;
+            break;
+        }
+
+        saveGlobalData(global);
+        closeEditModal();
+        render();
+      }
 
       function moveItem(idx, direction) {
         const content = document.getElementById("modalContent");
@@ -2152,39 +2155,42 @@ function createSaleModal() {
       }
 
       function addNewItem() {
-  const content = document.getElementById("modalContent");
-  const addBtn = document.getElementById("addNewItem");
+        const content = document.getElementById("modalContent");
+        const addBtn = document.getElementById("addNewItem");
 
-  let newItem, fields;
-  switch (editMode) {
-    case "habits":
-      newItem = { name: "New Habit", points: 1, color: "#7c3aed" };
-      fields = ["name", "points", "color"];
-      break;
-    case "pomodoros":
-      newItem = { name: "New Category", count: 5, pointsEach: 1, color: "#7c3aed" };
-      fields = ["name", "count", "pointsEach", "color"];
-      break;
-    case "treats":
-      newItem = { name: "New Treat", cost: 10, sale: null };
-      fields = ["name", "cost"];
-      break;
-  }
+        let newItem, fields;
+        switch (editMode) {
+          case "habits":
+            newItem = { name: "New Habit", points: 1, color: "#7c3aed" };
+            fields = ["name", "points", "color"];
+            break;
+          case "pomodoros":
+            newItem = { name: "New Category", count: 5, pointsEach: 1, color: "#7c3aed" };
+            fields = ["name", "count", "pointsEach", "color"];
+            break;
+          case "treats":
+            newItem = { name: "New Treat", cost: 10, sale: null };
+            fields = ["name", "cost"];
+            break;
+        }
 
-  const idx = content.querySelectorAll('[draggable="true"]').length;
-  const saleButton = editMode === "treats" ? `
+        const idx = content.querySelectorAll('[draggable="true"]').length;
+        const saleButton =
+          editMode === "treats"
+            ? `
     <button class="sale-btn p-1.5 rounded-lg border border-gray-200 text-xs font-medium" data-idx="${idx}" title="Configure sale">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
       </svg>
     </button>
-  ` : '';
-  
-  const newRow = document.createElement("div");
-  newRow.className = "flex items-center gap-3 p-3 bg-gray-50 rounded-xl";
-  newRow.draggable = true;
-  newRow.dataset.idx = idx;
-  newRow.innerHTML = `
+  `
+            : "";
+
+        const newRow = document.createElement("div");
+        newRow.className = "flex items-center gap-3 p-3 bg-gray-50 rounded-xl";
+        newRow.draggable = true;
+        newRow.dataset.idx = idx;
+        newRow.innerHTML = `
       <div class="flex flex-col gap-0.5">
           <button class="move-up text-gray-300 hover:text-gray-500 text-xs" data-idx="${idx}">▲</button>
           <button class="move-down text-gray-300 hover:text-gray-500 text-xs" data-idx="${idx}">▼</button>
@@ -2211,18 +2217,17 @@ function createSaleModal() {
       </button>
   `;
 
-  content.insertBefore(newRow, addBtn);
+        content.insertBefore(newRow, addBtn);
 
-  newRow.querySelector(".move-up").addEventListener("click", () => moveItem(idx, -1));
-  newRow.querySelector(".move-down").addEventListener("click", () => moveItem(idx, 1));
-  newRow.querySelector(".delete-item").addEventListener("click", () => deleteItem(idx));
-  
-  const saleBtnEl = newRow.querySelector(".sale-btn");
-  if (saleBtnEl) {
-    saleBtnEl.addEventListener("click", () => openSaleModal(idx));
-  }
-}
+        newRow.querySelector(".move-up").addEventListener("click", () => moveItem(idx, -1));
+        newRow.querySelector(".move-down").addEventListener("click", () => moveItem(idx, 1));
+        newRow.querySelector(".delete-item").addEventListener("click", () => deleteItem(idx));
 
+        const saleBtnEl = newRow.querySelector(".sale-btn");
+        if (saleBtnEl) {
+          saleBtnEl.addEventListener("click", () => openSaleModal(idx));
+        }
+      }
 
       function setupDragDrop(container, type) {
         container.querySelectorAll('[draggable="true"]').forEach((el) => {
