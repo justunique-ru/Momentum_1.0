@@ -3700,56 +3700,57 @@
       }
 
       if (confirmAddTask) {
-        confirmAddTask.addEventListener("click", () => {
-          const modal = document.getElementById("addTaskModal");
-          const taskName = document.getElementById("taskNameInput").value;
-          const taskPoints = parseInt(document.getElementById("taskPointsInput").value) || 5;
-          const dateInputValue = document.getElementById("taskDateInput").value;
-          const goalId = parseInt(modal.dataset.goalId);
-          const milestoneId = parseInt(modal.dataset.milestoneId);
-          const goalTaskId = parseInt(modal.dataset.taskId);
-          const subtaskId = modal.dataset.subtaskId ? parseInt(modal.dataset.subtaskId) : null;
-          const type = modal.dataset.type;
+  confirmAddTask.addEventListener("click", () => {
+    const modal = document.getElementById("addTaskModal");
+    const taskName = document.getElementById("taskNameInput").value;
+    const taskPoints = parseInt(document.getElementById("taskPointsInput").value) || 5;
+    const dateInputValue = document.getElementById("taskDateInput").value;
+    const goalId = parseInt(modal.dataset.goalId);
+    const milestoneId = parseInt(modal.dataset.milestoneId);
+    const goalTaskId = parseInt(modal.dataset.taskId);
+    const subtaskId = modal.dataset.subtaskId ? parseInt(modal.dataset.subtaskId) : null;
+    const type = modal.dataset.type;
 
-          if (!taskName) return;
+    if (!taskName) return;
 
-          // Get goal name for the label
-          const goals = loadGoals();
-          const goal = goals.find((g) => g.id === goalId);
-          const goalName = goal ? goal.name : "";
+    const goals = loadGoals();
+    const goal = goals.find((g) => g.id === goalId);
+    const goalName = goal ? goal.name : "";
 
-          const [year, month, day] = dateInputValue.split("-").map(Number);
-          const taskDate = new Date(year, month - 1, day);
-          taskDate.setHours(0, 0, 0, 0);
+    const [year, month, day] = dateInputValue.split("-").map(Number);
+    const taskDate = new Date(year, month - 1, day, 12, 0, 0);
 
-          const dayData = loadDayData(taskDate);
-          const newTask = {
-            name: taskName,
-            points: taskPoints,
-            completed: false,
-            goalId: goalId,
-            milestoneId: milestoneId,
-            goalTaskId: goalTaskId,
-            goalName: goalName,
-          };
+    const dayData = loadDayData(taskDate);
+    const newTask = {
+      name: taskName,
+      points: taskPoints,
+      completed: false,
+      goalId: goalId,
+      milestoneId: milestoneId,
+      goalTaskId: goalTaskId,
+      goalName: goalName,
+    };
 
-          if (type === "subtask" && subtaskId) {
-            newTask.subtaskId = subtaskId;
-          }
+    if (type === "subtask" && subtaskId) {
+      newTask.subtaskId = subtaskId;
+    }
 
-          dayData.tasks.push(newTask);
-          saveDayData(taskDate, dayData);
+    dayData.tasks.push(newTask);
+    saveDayData(taskDate, dayData);
 
-          addTaskModal.classList.add("hidden");
-          addTaskModal.classList.remove("flex");
+    addTaskModal.classList.add("hidden");
+    addTaskModal.classList.remove("flex");
 
-          if (currentPage !== "planner") {
-            switchPage("planner");
-            currentDate = taskDate;
-          }
-          render();
-        });
-      }
+    if (currentPage === "planner" && getDateKey(currentDate) === getDateKey(taskDate)) {
+      render();
+    } else if (currentPage !== "planner") {
+      switchPage("planner");
+      currentDate = taskDate;
+      render();
+    }
+  });
+}
+
 
       if (addTaskModal) {
         addTaskModal.addEventListener("click", (e) => {
