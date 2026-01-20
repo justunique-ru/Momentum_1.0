@@ -1502,16 +1502,11 @@
 
             return `
                     <div class="task-item flex items-center gap-3 p-2.5 rounded-xl group ${task.completed ? "completed" : ""}" data-idx="${idx}">
-                        <input type="checkbox" class="w-4 h-4 accent-violet-600 rounded" ${task.completed ? "checked" : ""} data-idx="${idx}">
-                        <span class="flex-1 text-sm text-gray-700">${task.name}</span>
+                        <input type="checkbox" class="task-checkbox w-4 h-4 accent-violet-600 rounded" ${task.completed ? "checked" : ""} data-idx="${idx}">
+                        <span class="task-name flex-1 text-sm text-gray-700 cursor-pointer hover:bg-gray-100 px-1 py-0.5 rounded" data-idx="${idx}">${task.name}</span>
                         ${goalLabel}
-                        <span class="text-xs font-medium text-gray-400">${task.points}</span>
+                        <span class="task-points text-xs font-medium text-gray-400 cursor-pointer hover:bg-gray-100 px-1 py-0.5 rounded" data-idx="${idx}">${task.points}</span>
                         <div class="task-actions flex gap-0.5">
-                            <button class="edit-task btn-icon p-1.5 rounded-lg" data-idx="${idx}" title="Edit">
-                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                                </svg>
-                            </button>
                             <button class="postpone-task btn-icon p-1.5 rounded-lg" data-idx="${idx}" title="Move to tomorrow">
                                 <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
@@ -1529,12 +1524,24 @@
           .join("");
       }
 
-      container.querySelectorAll('input[type="checkbox"]').forEach((el) => {
+      container.querySelectorAll('.task-checkbox').forEach((el) => {
         el.addEventListener("change", () => toggleTask(parseInt(el.dataset.idx)));
       });
-      container.querySelectorAll(".edit-task").forEach((el) => {
-        el.addEventListener("click", () => editTask(parseInt(el.dataset.idx)));
+      
+      container.querySelectorAll(".task-name").forEach((el) => {
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          startTaskNameEdit(parseInt(el.dataset.idx), el);
+        });
       });
+      
+      container.querySelectorAll(".task-points").forEach((el) => {
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          startTaskPointsEdit(parseInt(el.dataset.idx), el);
+        });
+      });
+      
       container.querySelectorAll(".postpone-task").forEach((el) => {
         el.addEventListener("click", () => postponeTask(parseInt(el.dataset.idx)));
       });
@@ -1545,6 +1552,81 @@
       const totalTaskPoints = dayData.tasks.filter((t) => t.completed).reduce((sum, t) => sum + t.points, 0);
       document.getElementById("taskPoints").textContent = `${totalTaskPoints} pts`;
     }
+
+    function startTaskNameEdit(idx, element) {
+      const dayData = loadDayData(currentDate);
+      const task = dayData.tasks[idx];
+      const currentText = task.name;
+      
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "flex-1 text-sm text-gray-700 px-2 py-1 border-2 border-violet-500 rounded outline-none bg-white";
+      input.value = currentText;
+      
+      element.replaceWith(input);
+      input.focus();
+      input.select();
+      
+      const saveEdit = () => {
+        const newValue = input.value.trim();
+        if (newValue && newValue !== currentText) {
+          const dayData = loadDayData(currentDate);
+          dayData.tasks[idx].name = newValue;
+          saveDayData(currentDate, dayData);
+        }
+        renderTasks();
+      };
+      
+      input.addEventListener("blur", saveEdit);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          input.blur();
+        }
+        if (e.key === "Escape") {
+          renderTasks();
+        }
+      });
+    }
+
+    function startTaskPointsEdit(idx, element) {
+      const dayData = loadDayData(currentDate);
+      const task = dayData.tasks[idx];
+      const currentPoints = task.points;
+      
+      const input = document.createElement("input");
+      input.type = "number";
+      input.className = "w-12 text-xs font-medium text-gray-700 px-2 py-1 border-2 border-violet-500 rounded outline-none bg-white text-center";
+      input.value = currentPoints;
+      input.min = "0";
+      
+      element.replaceWith(input);
+      input.focus();
+      input.select();
+      
+      const saveEdit = () => {
+        const newValue = parseInt(input.value) || 0;
+        if (newValue !== currentPoints) {
+          const dayData = loadDayData(currentDate);
+          dayData.tasks[idx].points = newValue;
+          saveDayData(currentDate, dayData);
+        }
+        renderTasks();
+        renderPoints();
+      };
+      
+      input.addEventListener("blur", saveEdit);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          input.blur();
+        }
+        if (e.key === "Escape") {
+          renderTasks();
+        }
+      });
+    }
+
 
     function renderTreats() {
       const container = document.getElementById("treatsList");
@@ -1913,20 +1995,6 @@
       });
       saveDayData(currentDate, dayData);
       input.value = "";
-      render();
-    }
-
-    function editTask(idx) {
-      const dayData = loadDayData(currentDate);
-      const task = dayData.tasks[idx];
-      const newName = prompt("Task name:", task.name);
-      if (newName === null) return;
-      const newPoints = prompt("Points:", task.points);
-      if (newPoints === null) return;
-
-      task.name = newName || task.name;
-      task.points = parseInt(newPoints) || task.points;
-      saveDayData(currentDate, dayData);
       render();
     }
 
