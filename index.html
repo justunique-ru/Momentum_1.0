@@ -1527,21 +1527,21 @@
       container.querySelectorAll('.task-checkbox').forEach((el) => {
         el.addEventListener("change", () => toggleTask(parseInt(el.dataset.idx)));
       });
-      
+
       container.querySelectorAll(".task-name").forEach((el) => {
         el.addEventListener("click", (e) => {
           e.stopPropagation();
           startTaskNameEdit(parseInt(el.dataset.idx), el);
         });
       });
-      
+
       container.querySelectorAll(".task-points").forEach((el) => {
         el.addEventListener("click", (e) => {
           e.stopPropagation();
           startTaskPointsEdit(parseInt(el.dataset.idx), el);
         });
       });
-      
+
       container.querySelectorAll(".postpone-task").forEach((el) => {
         el.addEventListener("click", () => postponeTask(parseInt(el.dataset.idx)));
       });
@@ -1557,16 +1557,16 @@
       const dayData = loadDayData(currentDate);
       const task = dayData.tasks[idx];
       const currentText = task.name;
-      
+
       const input = document.createElement("input");
       input.type = "text";
       input.className = "flex-1 text-sm text-gray-700 px-2 py-1 border-2 border-violet-500 rounded outline-none bg-white";
       input.value = currentText;
-      
+
       element.replaceWith(input);
       input.focus();
       input.select();
-      
+
       const saveEdit = () => {
         const newValue = input.value.trim();
         if (newValue && newValue !== currentText) {
@@ -1576,7 +1576,7 @@
         }
         renderTasks();
       };
-      
+
       input.addEventListener("blur", saveEdit);
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
@@ -1593,17 +1593,17 @@
       const dayData = loadDayData(currentDate);
       const task = dayData.tasks[idx];
       const currentPoints = task.points;
-      
+
       const input = document.createElement("input");
       input.type = "number";
       input.className = "w-12 text-xs font-medium text-gray-700 px-2 py-1 border-2 border-violet-500 rounded outline-none bg-white text-center";
       input.value = currentPoints;
       input.min = "0";
-      
+
       element.replaceWith(input);
       input.focus();
       input.select();
-      
+
       const saveEdit = () => {
         const newValue = parseInt(input.value) || 0;
         if (newValue !== currentPoints) {
@@ -1614,7 +1614,7 @@
         renderTasks();
         renderPoints();
       };
-      
+
       input.addEventListener("blur", saveEdit);
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
@@ -2600,13 +2600,17 @@
 
       container.innerHTML = categories
         .map(
-          (category) => `
+          (category) => {
+            const completedCount = category.wishes ? category.wishes.filter(w => w.completed).length : 0;
+            const totalCount = category.wishes ? category.wishes.length : 0;
+
+            return `
       <div class="wish-category card overflow-hidden" data-category-id="${category.id}">
         <div class="wish-category-header p-4 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div>
               <h3 class="font-bold text-gray-900">${category.name}</h3>
-              <span class="text-xs text-gray-500">${category.wishes ? category.wishes.length : 0} wishes</span>
+              <span class="text-xs text-gray-500">${completedCount}/${totalCount} completed</span>
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -2626,20 +2630,23 @@
         <div class="p-4 pt-2">
           <div class="space-y-2 mb-4">
             ${category.wishes && category.wishes.length > 0
-              ? category.wishes
-                .map(
-                  (wish) => `
-                <div class="wish-item flex items-center gap-3 p-3 bg-gray-50 rounded-lg group" data-wish-id="${wish.id}">
+                ? category.wishes
+                  .map(
+                    (wish) => `
+                <div class="wish-item flex items-center gap-3 p-3 bg-gray-50 rounded-lg group ${wish.completed ? 'opacity-60' : ''}" data-wish-id="${wish.id}">
+                  <input type="checkbox" class="wish-checkbox w-4 h-4 accent-rose-500 rounded flex-shrink-0" 
+                         ${wish.completed ? 'checked' : ''} 
+                         data-category-id="${category.id}" data-wish-id="${wish.id}">
                   <div class="flex-1 min-w-0">
-                    <h4 class="font-medium text-gray-900 text-sm truncate">${wish.title}</h4>
+                    <h4 class="font-medium text-gray-900 text-sm truncate ${wish.completed ? 'line-through text-gray-500' : ''}">${wish.title}</h4>
                     ${wish.link
-                      ? `
+                        ? `
                         <a href="${wish.link}" target="_blank" rel="noopener noreferrer" class="wish-link text-xs text-gray-500 hover:text-violet-600 flex items-center gap-1 truncate">
                           <span class="truncate">${wish.link}</span>
                         </a>
                     `
-                      : ""
-                    }
+                        : ""
+                      }
                   </div>
                   <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button class="edit-wish btn-icon p-1.5 rounded-lg text-gray-400 hover:text-violet-600" 
@@ -2657,10 +2664,10 @@
                   </div>
                 </div>
             `
-                )
-                .join("")
-              : '<p class="text-xs text-gray-400 italic py-2">No wishes in this category yet</p>'
-            }
+                  )
+                  .join("")
+                : '<p class="text-xs text-gray-400 italic py-2">No wishes in this category yet</p>'
+              }
           </div>
           
           <div class="wish-form-container" data-category-id="${category.id}"></div>
@@ -2674,7 +2681,7 @@
           </button>
         </div>
       </div>
-    `
+    `}
         )
         .join("");
 
@@ -2911,6 +2918,19 @@
       renderWishlist();
     }
 
+    function toggleWish(categoryId, wishId) {
+      const categories = loadWishlistCategories();
+      const category = categories.find((c) => c.id === categoryId);
+      if (!category || !category.wishes) return;
+
+      const wish = category.wishes.find((w) => w.id === wishId);
+      if (!wish) return;
+
+      wish.completed = !wish.completed;
+      saveWishlistCategories(categories);
+      renderWishlist();
+    }
+
     let wishlistEventDelegationAttached = false;
 
     function attachWishlistEventListeners() {
@@ -2927,6 +2947,14 @@
       if (!container) return;
 
       container.addEventListener("click", (e) => {
+
+        // Toggle Wish Checkbox
+        if (e.target.matches(".wish-checkbox")) {
+          const cb = e.target;
+          toggleWish(parseInt(cb.dataset.categoryId), parseInt(cb.dataset.wishId));
+          return;
+        }
+
         // Edit Category
         if (e.target.closest(".edit-category")) {
           const btn = e.target.closest(".edit-category");
