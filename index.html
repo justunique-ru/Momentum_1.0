@@ -2638,23 +2638,21 @@
                          ${wish.completed ? 'checked' : ''} 
                          data-category-id="${category.id}" data-wish-id="${wish.id}">
                   <div class="flex-1 min-w-0">
-                    <h4 class="font-medium text-gray-900 text-sm truncate ${wish.completed ? 'line-through text-gray-500' : ''}">${wish.title}</h4>
-                    ${wish.link
-                        ? `
-                        <a href="${wish.link}" target="_blank" rel="noopener noreferrer" class="wish-link text-xs text-gray-500 hover:text-violet-600 flex items-center gap-1 truncate">
-                          <span class="truncate">${wish.link}</span>
-                        </a>
-                    `
-                        : ""
+                    <h4 class="wish-title font-medium text-gray-900 text-sm truncate cursor-pointer hover:bg-gray-100 px-1 py-0.5 rounded -mx-1 ${wish.completed ? 'line-through text-gray-500' : ''}" 
+                        data-category-id="${category.id}" data-wish-id="${wish.id}">${wish.title}</h4>
+                    <div class="wish-link-container">
+                      ${wish.link
+                        ? `<a href="${wish.link}" target="_blank" rel="noopener noreferrer" class="wish-link text-xs text-gray-500 hover:text-violet-600 flex items-center gap-1 truncate">
+                            <span class="truncate">${wish.link}</span>
+                          </a>`
+                        : `<span class="wish-link-placeholder text-xs text-gray-400 cursor-pointer hover:text-violet-500 px-1 py-0.5 rounded -mx-1 hover:bg-gray-100" 
+                                data-category-id="${category.id}" data-wish-id="${wish.id}">+ Add link</span>`
                       }
+                      ${wish.link ? `<span class="wish-link-edit text-xs text-gray-400 cursor-pointer hover:text-violet-500 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" 
+                                          data-category-id="${category.id}" data-wish-id="${wish.id}">(edit)</span>` : ''}
+                    </div>
                   </div>
                   <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button class="edit-wish btn-icon p-1.5 rounded-lg text-gray-400 hover:text-violet-600" 
-                            data-category-id="${category.id}" data-wish-id="${wish.id}">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                      </svg>
-                    </button>
                     <button class="delete-wish btn-icon p-1.5 rounded-lg text-gray-400 hover:text-rose-600" 
                             data-category-id="${category.id}" data-wish-id="${wish.id}">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2885,37 +2883,93 @@
     }
 
     function editWish(categoryId, wishId) {
+      // This function is now replaced by inline editing
+      // Keeping for backwards compatibility
+    }
+
+    function startWishTitleEdit(categoryId, wishId, element) {
       const categories = loadWishlistCategories();
       const category = categories.find((c) => c.id === categoryId);
       if (!category || !category.wishes) return;
-
       const wish = category.wishes.find((w) => w.id === wishId);
       if (!wish) return;
 
-      const newTitle = prompt("Wish title:", wish.title);
-      if (newTitle === null) return;
-      if (!newTitle.trim()) {
-        alert("Title is required");
-        return;
-      }
+      const currentText = wish.title;
 
-      const newLink = prompt("Link (optional):", wish.link);
-      if (newLink === null) return;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "font-medium text-sm text-gray-900 px-2 py-1 border-2 border-rose-400 rounded outline-none bg-white w-full";
+      input.value = currentText;
 
-      wish.title = newTitle.trim();
-      wish.link = newLink.trim();
-      saveWishlistCategories(categories);
-      renderWishlist();
+      element.replaceWith(input);
+      input.focus();
+      input.select();
+
+      const saveEdit = () => {
+        const newValue = input.value.trim();
+        if (newValue && newValue !== currentText) {
+          const categories = loadWishlistCategories();
+          const category = categories.find((c) => c.id === categoryId);
+          const wish = category.wishes.find((w) => w.id === wishId);
+          wish.title = newValue;
+          saveWishlistCategories(categories);
+        }
+        renderWishlist();
+      };
+
+      input.addEventListener("blur", saveEdit);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          input.blur();
+        }
+        if (e.key === "Escape") {
+          renderWishlist();
+        }
+      });
     }
 
-    function deleteWish(categoryId, wishId) {
+    function startWishLinkEdit(categoryId, wishId, element) {
       const categories = loadWishlistCategories();
       const category = categories.find((c) => c.id === categoryId);
       if (!category || !category.wishes) return;
+      const wish = category.wishes.find((w) => w.id === wishId);
+      if (!wish) return;
 
-      category.wishes = category.wishes.filter((w) => w.id !== wishId);
-      saveWishlistCategories(categories);
-      renderWishlist();
+      const currentLink = wish.link || "";
+      const container = element.closest(".wish-link-container");
+
+      const input = document.createElement("input");
+      input.type = "url";
+      input.className = "text-xs text-gray-700 px-2 py-1 border-2 border-rose-400 rounded outline-none bg-white w-full";
+      input.value = currentLink;
+      input.placeholder = "https://...";
+
+      container.innerHTML = "";
+      container.appendChild(input);
+      input.focus();
+      input.select();
+
+      const saveEdit = () => {
+        const newValue = input.value.trim();
+        const categories = loadWishlistCategories();
+        const category = categories.find((c) => c.id === categoryId);
+        const wish = category.wishes.find((w) => w.id === wishId);
+        wish.link = newValue;
+        saveWishlistCategories(categories);
+        renderWishlist();
+      };
+
+      input.addEventListener("blur", saveEdit);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          input.blur();
+        }
+        if (e.key === "Escape") {
+          renderWishlist();
+        }
+      });
     }
 
     function toggleWish(categoryId, wishId) {
@@ -2927,6 +2981,16 @@
       if (!wish) return;
 
       wish.completed = !wish.completed;
+      saveWishlistCategories(categories);
+      renderWishlist();
+    }
+
+    function deleteWish(categoryId, wishId) {
+      const categories = loadWishlistCategories();
+      const category = categories.find((c) => c.id === categoryId);
+      if (!category || !category.wishes) return;
+
+      category.wishes = category.wishes.filter((w) => w.id !== wishId);
       saveWishlistCategories(categories);
       renderWishlist();
     }
@@ -2947,11 +3011,28 @@
       if (!container) return;
 
       container.addEventListener("click", (e) => {
-
         // Toggle Wish Checkbox
         if (e.target.matches(".wish-checkbox")) {
           const cb = e.target;
           toggleWish(parseInt(cb.dataset.categoryId), parseInt(cb.dataset.wishId));
+          return;
+        }
+
+        // Edit Wish Title (inline)
+        if (e.target.closest(".wish-title")) {
+          const el = e.target.closest(".wish-title");
+          e.preventDefault();
+          e.stopPropagation();
+          startWishTitleEdit(parseInt(el.dataset.categoryId), parseInt(el.dataset.wishId), el);
+          return;
+        }
+
+        // Edit Wish Link (inline) - placeholder or edit button
+        if (e.target.closest(".wish-link-placeholder") || e.target.closest(".wish-link-edit")) {
+          const el = e.target.closest(".wish-link-placeholder") || e.target.closest(".wish-link-edit");
+          e.preventDefault();
+          e.stopPropagation();
+          startWishLinkEdit(parseInt(el.dataset.categoryId), parseInt(el.dataset.wishId), el);
           return;
         }
 
@@ -2976,13 +3057,6 @@
           return;
         }
 
-        // Edit Wish
-        if (e.target.closest(".edit-wish")) {
-          const btn = e.target.closest(".edit-wish");
-          editWish(parseInt(btn.dataset.categoryId), parseInt(btn.dataset.wishId));
-          return;
-        }
-
         // Delete Wish
         if (e.target.closest(".delete-wish")) {
           const btn = e.target.closest(".delete-wish");
@@ -2990,6 +3064,7 @@
           return;
         }
       });
+
 
       wishlistEventDelegationAttached = true;
     }
