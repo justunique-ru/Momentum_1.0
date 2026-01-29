@@ -1067,23 +1067,31 @@
             <!-- Right Column - Transactions List -->
             <div class="col-span-8">
               <div class="card p-5">
-                <!-- Month Navigation -->
+                <!-- Month Navigation and Filter -->
                 <div class="flex justify-between items-center mb-4">
                   <h3 class="font-semibold text-gray-900 text-sm">Transactions</h3>
-                  <div class="flex items-center gap-2 bg-gray-100 rounded-full px-2 py-1">
-                    <button id="prevMonthMoney" class="nav-btn p-1.5 rounded-full">
-                      <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-                    <span id="moneyMonth" class="text-sm font-medium text-gray-700 min-w-32 text-center"></span>
-                    <button id="nextMonthMoney" class="nav-btn p-1.5 rounded-full">
-                      <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
+                  <div class="flex items-center gap-3">
+                    <!-- Category Filter -->
+                    <select id="categoryFilter" class="px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:bg-white">
+                      <option value="">All categories</option>
+                    </select>
+                    <!-- Month Navigation -->
+                    <div class="flex items-center gap-2 bg-gray-100 rounded-full px-2 py-1">
+                      <button id="prevMonthMoney" class="nav-btn p-1.5 rounded-full">
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <span id="moneyMonth" class="text-sm font-medium text-gray-700 min-w-32 text-center"></span>
+                      <button id="nextMonthMoney" class="nav-btn p-1.5 rounded-full">
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
+
 
                 <!-- Transactions List -->
                 <div id="transactionsList" class="space-y-1"></div>
@@ -4098,6 +4106,8 @@
     // Money Management
     let moneyViewDate = getTodayGMT3();
 
+    let selectedCategoryFilter = "";
+
     // Default categories
     const defaultMoneyCategories = {
       income: [
@@ -4214,16 +4224,39 @@
       return transactions
         .filter((t) => {
           const tDate = new Date(t.date);
-          return tDate.getFullYear() === viewYear && tDate.getMonth() === viewMonth;
+          const matchesMonth = tDate.getFullYear() === viewYear && tDate.getMonth() === viewMonth;
+          const matchesCategory = selectedCategoryFilter === "" || t.category === selectedCategoryFilter;
+          return matchesMonth && matchesCategory;
         })
         .sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
+
     function renderMoney() {
       const stats = calculateMoneyStats();
 
-      // Render category dropdown
+      // Render category dropdowns
       renderCategoryDropdown();
+      renderCategoryFilterDropdown();
+
+
+      function renderCategoryFilterDropdown() {
+        const select = document.getElementById("categoryFilter");
+        if (!select) return;
+
+        const categories = loadMoneyCategories();
+
+        select.innerHTML = `
+          <option value="">All categories</option>
+          <optgroup label="Income">
+            ${categories.income.map((c) => `<option value="${c.id}" ${selectedCategoryFilter === c.id ? "selected" : ""}>${c.name}</option>`).join("")}
+          </optgroup>
+          <optgroup label="Expenses">
+            ${categories.expenses.map((c) => `<option value="${c.id}" ${selectedCategoryFilter === c.id ? "selected" : ""}>${c.name}</option>`).join("")}
+          </optgroup>
+        `;
+      }
+
 
       // Set default date to today
       setDefaultTransactionDate();
@@ -4316,6 +4349,10 @@
           deleteTransaction(id);
         });
       });
+
+      // Attach category filter listener
+      attachCategoryFilterListener();
+
     }
 
     function addTransaction(title, amount, category, date) {
@@ -4494,6 +4531,16 @@
 
     const prevMonthMoney = document.getElementById("prevMonthMoney");
     const nextMonthMoney = document.getElementById("nextMonthMoney");
+
+    // Category filter event listener
+    const categoryFilter = document.getElementById("categoryFilter");
+    if (categoryFilter) {
+      categoryFilter.addEventListener("change", (e) => {
+        selectedCategoryFilter = e.target.value;
+        renderMoney();
+      });
+    }
+
 
     if (prevMonthMoney) {
       prevMonthMoney.addEventListener("click", () => {
