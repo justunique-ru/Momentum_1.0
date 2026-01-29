@@ -1095,6 +1095,15 @@
 
                 <!-- Transactions List -->
                 <div id="transactionsList" class="space-y-1"></div>
+
+                <!-- Transactions Summary -->
+                <div id="transactionsSummary" class="mt-4 pt-4 border-t border-gray-200">
+                  <div class="flex justify-between items-center">
+                    <span id="summaryLabel" class="text-sm font-medium text-gray-600">Monthly Total:</span>
+                    <span id="summaryAmount" class="text-lg font-bold text-gray-900">0 ₽</span>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -4231,6 +4240,72 @@
         .sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
+    function calculateFilteredTotal() {
+      const transactions = getMonthTransactions();
+
+      let total = 0;
+      let incomeTotal = 0;
+      let expenseTotal = 0;
+
+      transactions.forEach((t) => {
+        total += t.amount;
+        if (t.amount >= 0) {
+          incomeTotal += t.amount;
+        } else {
+          expenseTotal += Math.abs(t.amount);
+        }
+      });
+
+      return { total, incomeTotal, expenseTotal };
+    }
+
+    function renderTransactionsSummary() {
+      const summaryLabel = document.getElementById("summaryLabel");
+      const summaryAmount = document.getElementById("summaryAmount");
+
+      if (!summaryLabel || !summaryAmount) return;
+
+      const { total, incomeTotal, expenseTotal } = calculateFilteredTotal();
+      const categories = loadMoneyCategories();
+
+      // Determine label based on filter
+      if (selectedCategoryFilter === "") {
+        summaryLabel.textContent = "Monthly Total:";
+      } else {
+        const allCategories = [...categories.income, ...categories.expenses];
+        const selectedCat = allCategories.find((c) => c.id === selectedCategoryFilter);
+        const categoryName = selectedCat ? selectedCat.name : selectedCategoryFilter;
+        summaryLabel.textContent = `${categoryName} Total:`;
+      }
+
+      // Format and display amount
+      const isExpenseCategory = categories.expenses.some((c) => c.id === selectedCategoryFilter);
+      const isIncomeCategory = categories.income.some((c) => c.id === selectedCategoryFilter);
+
+      let displayAmount;
+      let colorClass;
+
+      if (selectedCategoryFilter === "") {
+        // No filter - show net total
+        displayAmount = total;
+        colorClass = total >= 0 ? "text-emerald-600" : "text-rose-600";
+      } else if (isIncomeCategory) {
+        // Income category filter
+        displayAmount = incomeTotal;
+        colorClass = "text-emerald-600";
+      } else if (isExpenseCategory) {
+        // Expense category filter - show as positive number but in red
+        displayAmount = -expenseTotal;
+        colorClass = "text-rose-600";
+      } else {
+        displayAmount = total;
+        colorClass = total >= 0 ? "text-emerald-600" : "text-rose-600";
+      }
+
+      summaryAmount.textContent = formatMoney(displayAmount);
+      summaryAmount.className = `text-lg font-bold ${colorClass}`;
+    }
+
 
     function renderMoney() {
       const stats = calculateMoneyStats();
@@ -4349,6 +4424,10 @@
           deleteTransaction(id);
         });
       });
+
+      // Render transactions summary
+      renderTransactionsSummary();
+
 
       // Attach category filter listener
       attachCategoryFilterListener();
