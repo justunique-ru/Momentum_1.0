@@ -5182,16 +5182,85 @@
           }
         }
 
-        // Backspace on empty block to delete
-        if (e.key === "Backspace") {
+        // Backspace/Delete on empty block or list item to delete
+        if (e.key === "Backspace" || e.key === "Delete") {
           const block = e.target.closest(".note-block");
           if (!block) return;
 
           const blockType = block.dataset.blockType;
+          const noteId = parseInt(block.dataset.noteId);
+          const blockId = parseInt(block.dataset.blockId);
 
+          // Handle empty list item deletion
+          if (blockType === "list" && e.target.matches(".list-item-text") && e.target.textContent === "") {
+            const itemIdx = parseInt(e.target.dataset.itemIdx);
+            const notes = loadNotes();
+            const note = notes.find((n) => n.id === noteId);
+            const blockData = note.blocks.find((b) => b.id === blockId);
+
+            if (blockData && blockData.items && blockData.items.length > 1) {
+              e.preventDefault();
+              blockData.items.splice(itemIdx, 1);
+              saveNotes(notes);
+              renderNotes();
+
+              // Focus previous or next item and place cursor at end
+              setTimeout(() => {
+                const focusIdx = e.key === "Backspace" ? Math.max(0, itemIdx - 1) : Math.min(itemIdx, blockData.items.length - 1);
+                const targetItem = document.querySelector(`[data-block-id="${blockId}"] .list-item[data-item-idx="${focusIdx}"] .list-item-text`);
+                if (targetItem) {
+                  targetItem.focus();
+                  // Place cursor at end of text
+                  const range = document.createRange();
+                  const selection = window.getSelection();
+                  range.selectNodeContents(targetItem);
+                  range.collapse(false); // false = collapse to end
+                  selection.removeAllRanges();
+                  selection.addRange(range);
+                }
+              }, 50);
+
+            } else if (blockData && blockData.items && blockData.items.length === 1) {
+              // Last item - convert to text block or delete block
+              e.preventDefault();
+              const notes2 = loadNotes();
+              const note2 = notes2.find((n) => n.id === noteId);
+
+              if (note2.blocks.length > 1) {
+                // Delete the entire block
+                const blockIdx = note2.blocks.findIndex((b) => b.id === blockId);
+                note2.blocks.splice(blockIdx, 1);
+                saveNotes(notes2);
+                renderNotes();
+
+                // Focus previous block
+                if (blockIdx > 0) {
+                  const prevBlock = note2.blocks[blockIdx - 1];
+                  setTimeout(() => {
+                    const prevContent = document.querySelector(`[data-block-id="${prevBlock.id}"] .note-block-content, [data-block-id="${prevBlock.id}"] .list-item-text:last-child`);
+                    if (prevContent) prevContent.focus();
+                  }, 50);
+                }
+              } else {
+                // Convert to empty text block
+                const blockData2 = note2.blocks.find((b) => b.id === blockId);
+                blockData2.type = "text";
+                blockData2.content = "";
+                delete blockData2.items;
+                saveNotes(notes2);
+                renderNotes();
+
+                setTimeout(() => {
+                  const textContent = document.querySelector(`[data-block-id="${blockId}"] .note-block-content`);
+                  if (textContent) textContent.focus();
+                }, 50);
+              }
+            }
+            return;
+          }
+
+          // Handle empty text/title block deletion
           if (e.target.matches(".note-block-content") && e.target.textContent === "") {
-            const noteId = parseInt(block.dataset.noteId);
-            const blockId = parseInt(block.dataset.blockId);
             const notes = loadNotes();
             const note = notes.find((n) => n.id === noteId);
 
@@ -5213,6 +5282,7 @@
             }
           }
         }
+
       });
 
       notesEventDelegationAttached = true;
