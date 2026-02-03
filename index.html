@@ -4056,6 +4056,7 @@
         const taskName = document.getElementById("taskNameInput").value;
         const taskPoints = parseInt(document.getElementById("taskPointsInput").value) || 5;
         const dateInputValue = document.getElementById("taskDateInput").value;
+
         const goalId = parseInt(modal.dataset.goalId);
         const milestoneId = parseInt(modal.dataset.milestoneId);
         const goalTaskId = parseInt(modal.dataset.taskId);
@@ -4072,6 +4073,7 @@
         const taskDate = new Date(year, month - 1, day, 12, 0, 0);
 
         const dayData = loadDayData(taskDate);
+
         const newTask = {
           name: taskName,
           points: taskPoints,
@@ -4089,18 +4091,149 @@
         dayData.tasks.push(newTask);
         saveDayData(taskDate, dayData);
 
-        addTaskModal.classList.add("hidden");
-        addTaskModal.classList.remove("flex");
+        // Store taskDate for "Go to Planner" button
+        modal.dataset.addedTaskDate = dateInputValue;
 
-        if (currentPage === "planner" && getDateKey(currentDate) === getDateKey(taskDate)) {
-          render();
-        } else if (currentPage !== "planner") {
-          switchPage("planner");
-          currentDate = taskDate;
-          render();
-        }
+        // Show success message
+        showTaskAddedSuccess();
       });
     }
+
+    function showTaskAddedSuccess() {
+      const modal = document.getElementById("addTaskModal");
+      const modalContent = modal.querySelector(".bg-white");
+
+      // Store original content
+      if (!modal.dataset.originalContent) {
+        modal.dataset.originalContent = modalContent.innerHTML;
+      }
+
+      const taskDate = modal.dataset.addedTaskDate;
+      const [year, month, day] = taskDate.split("-").map(Number);
+      const dateObj = new Date(year, month - 1, day);
+      const formattedDate = dateObj.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+
+      modalContent.innerHTML = `
+    <div class="flex justify-end">
+      <button id="closeSuccessModal" class="btn-icon p-2 rounded-lg text-gray-400 hover:text-gray-600">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <div class="text-center py-6">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 flex items-center justify-center">
+        <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Task added to planner!</h3>
+      <p class="text-gray-500 text-sm mb-6">Added for ${formattedDate}</p>
+      <button id="goToPlannerBtn" class="w-full py-3 accent-gradient text-white rounded-xl font-medium hover:opacity-90 transition">
+        Go to Planner
+      </button>
+    </div>
+  `;
+
+      // Attach event listeners
+      document.getElementById("closeSuccessModal").addEventListener("click", () => {
+        closeTaskAddedModal();
+      });
+
+      document.getElementById("goToPlannerBtn").addEventListener("click", () => {
+        const taskDate = modal.dataset.addedTaskDate;
+        const [year, month, day] = taskDate.split("-").map(Number);
+        currentDate = new Date(year, month - 1, day, 12, 0, 0);
+
+        closeTaskAddedModal();
+        switchPage("planner");
+        render();
+      });
+    }
+
+    function closeTaskAddedModal() {
+      const modal = document.getElementById("addTaskModal");
+      const modalContent = modal.querySelector(".bg-white");
+
+      // Restore original content
+      if (modal.dataset.originalContent) {
+        modalContent.innerHTML = modal.dataset.originalContent;
+        delete modal.dataset.originalContent;
+
+        // Re-attach original event listeners
+        reattachAddTaskModalListeners();
+      }
+
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function reattachAddTaskModalListeners() {
+      const closeAddTaskModalBtn = document.getElementById("closeAddTaskModal");
+      const cancelAddTaskBtn = document.getElementById("cancelAddTask");
+      const confirmAddTaskBtn = document.getElementById("confirmAddTask");
+
+      if (closeAddTaskModalBtn) {
+        closeAddTaskModalBtn.addEventListener("click", () => {
+          document.getElementById("addTaskModal").classList.add("hidden");
+          document.getElementById("addTaskModal").classList.remove("flex");
+        });
+      }
+
+      if (cancelAddTaskBtn) {
+        cancelAddTaskBtn.addEventListener("click", () => {
+          document.getElementById("addTaskModal").classList.add("hidden");
+          document.getElementById("addTaskModal").classList.remove("flex");
+        });
+      }
+
+      if (confirmAddTaskBtn) {
+        confirmAddTaskBtn.addEventListener("click", () => {
+          const modal = document.getElementById("addTaskModal");
+          const taskName = document.getElementById("taskNameInput").value;
+          const taskPoints = parseInt(document.getElementById("taskPointsInput").value) || 5;
+          const dateInputValue = document.getElementById("taskDateInput").value;
+
+          const goalId = parseInt(modal.dataset.goalId);
+          const milestoneId = parseInt(modal.dataset.milestoneId);
+          const goalTaskId = parseInt(modal.dataset.taskId);
+          const subtaskId = modal.dataset.subtaskId ? parseInt(modal.dataset.subtaskId) : null;
+          const type = modal.dataset.type;
+
+          if (!taskName) return;
+
+          const goals = loadGoals();
+          const goal = goals.find((g) => g.id === goalId);
+          const goalName = goal ? goal.name : "";
+
+          const [year, month, day] = dateInputValue.split("-").map(Number);
+          const taskDate = new Date(year, month - 1, day, 12, 0, 0);
+
+          const dayData = loadDayData(taskDate);
+
+          const newTask = {
+            name: taskName,
+            points: taskPoints,
+            completed: false,
+            goalId: goalId,
+            milestoneId: milestoneId,
+            goalTaskId: goalTaskId,
+            goalName: goalName,
+          };
+
+          if (type === "subtask" && subtaskId) {
+            newTask.subtaskId = subtaskId;
+          }
+
+          dayData.tasks.push(newTask);
+          saveDayData(taskDate, dayData);
+
+          modal.dataset.addedTaskDate = dateInputValue;
+          showTaskAddedSuccess();
+        });
+      }
+    }
+
 
 
     if (addTaskModal) {
