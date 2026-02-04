@@ -676,6 +676,69 @@
       color: #10b981;
       font-weight: 700;
     }
+
+    /* Text formatting toolbar */
+    .text-format-toolbar {
+      position: fixed;
+      display: none;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      transform: translateX(-50%);
+    }
+
+    .text-format-toolbar.visible {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .color-swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      border: 2px solid #e5e7eb;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .color-swatch:hover {
+      transform: scale(1.15);
+      border-color: #7c3aed;
+    }
+
+    .color-add-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      border: 2px dashed #d1d5db;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .color-add-btn:hover {
+      transform: scale(1.15);
+      border-color: #7c3aed;
+      color: #7c3aed;
+    }
+
+    .color-picker-input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
   </style>
 </head>
 
@@ -4918,7 +4981,174 @@
     }
 
     // Notes Management
+    let currentSelection = null;
+
+    function loadRecentColors() {
+      const saved = localStorage.getItem("recentTextColors");
+      return saved ? JSON.parse(saved) : ["#7c3aed", "#ef4444", "#10b981"];
+    }
+
+    function saveRecentColors(colors) {
+      localStorage.setItem("recentTextColors", JSON.stringify(colors));
+    }
+
+    function addRecentColor(color) {
+      let colors = loadRecentColors();
+      colors = colors.filter(c => c.toLowerCase() !== color.toLowerCase());
+      colors.unshift(color);
+      colors = colors.slice(0, 3);
+      saveRecentColors(colors);
+      updateColorSwatches();
+    }
+
+    function updateColorSwatches() {
+      const colors = loadRecentColors();
+      const swatches = document.querySelectorAll(".color-swatch");
+
+      swatches.forEach((swatch, idx) => {
+        if (colors[idx]) {
+          swatch.style.backgroundColor = colors[idx];
+          swatch.style.display = "block";
+          swatch.dataset.color = colors[idx];
+        } else {
+          swatch.style.display = "none";
+        }
+      });
+    }
+
+    function initTextFormatToolbar() {
+      const toolbar = document.getElementById("textFormatToolbar");
+      const colorPicker = document.getElementById("textColorPicker");
+      const addBtn = toolbar.querySelector(".color-add-btn");
+
+      if (!toolbar || !colorPicker) return;
+
+      updateColorSwatches();
+
+      toolbar.querySelectorAll(".color-swatch").forEach(swatch => {
+        swatch.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const color = swatch.dataset.color;
+          if (color) {
+            applyTextColor(color);
+          }
+        });
+      });
+
+      addBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        colorPicker.click();
+      });
+
+      colorPicker.addEventListener("input", (e) => {
+        const color = e.target.value;
+        addRecentColor(color);
+        applyTextColor(color);
+      });
+
+      toolbar.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+      });
+    }
+
+    function handleSelectionChange() {
+      const toolbar = document.getElementById("textFormatToolbar");
+      if (!toolbar) return;
+
+      const selection = window.getSelection();
+
+      if (currentPage !== "notes") {
+        toolbar.classList.remove("visible");
+        return;
+      }
+
+      if (!selection.rangeCount || selection.isCollapsed) {
+        toolbar.classList.remove("visible");
+        currentSelection = null;
+        return;
+      }
+
+      const range = selection.getRangeAt(0);
+      const selectedText = selection.toString().trim();
+
+      const container = range.commonAncestorContainer;
+      const noteBlock = container.nodeType === 3
+        ? container.parentElement?.closest(".note-block-content, .list-item-text")
+        : container.closest?.(".note-block-content, .list-item-text");
+
+      if (!noteBlock || selectedText.length === 0) {
+        toolbar.classList.remove("visible");
+        currentSelection = null;
+        return;
+      }
+
+      currentSelection = {
+        range: range.cloneRange(),
+        text: selectedText
+      };
+
+      const rect = range.getBoundingClientRect();
+
+      // Позиционируем над выделением (50px выше верхней границы выделения)
+      toolbar.style.left = `${rect.left + rect.width / 2}px`;
+      toolbar.style.top = `${rect.top + window.scrollY - 50}px`;
+      toolbar.classList.add("visible");
+    }
+
+
+    function applyTextColor(color) {
+      if (!currentSelection) return;
+
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(currentSelection.range);
+
+      const span = document.createElement("span");
+      span.style.color = color;
+
+      try {
+        const range = selection.getRangeAt(0);
+        const contents = range.extractContents();
+
+        const tempDiv = document.createElement("div");
+        tempDiv.appendChild(contents);
+
+        tempDiv.querySelectorAll("span[style*='color']").forEach(existingSpan => {
+          existingSpan.style.color = color;
+        });
+
+        if (tempDiv.querySelectorAll("span[style*='color']").length === 0) {
+          span.innerHTML = tempDiv.innerHTML;
+          range.insertNode(span);
+        } else {
+          while (tempDiv.firstChild) {
+            range.insertNode(tempDiv.lastChild);
+          }
+        }
+
+        const noteBlock = range.commonAncestorContainer.nodeType === 3
+          ? range.commonAncestorContainer.parentElement?.closest(".note-block-content, .list-item-text")
+          : range.commonAncestorContainer.closest?.(".note-block-content, .list-item-text");
+
+        if (noteBlock) {
+          noteBlock.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+
+      } catch (e) {
+        console.error("Error applying color:", e);
+      }
+
+      const toolbar = document.getElementById("textFormatToolbar");
+      if (toolbar) {
+        toolbar.classList.remove("visible");
+      }
+      currentSelection = null;
+    }
+
     function loadNotes() {
+
       const saved = localStorage.getItem("notes");
       return saved ? JSON.parse(saved) : [];
     }
@@ -5170,8 +5400,16 @@
     }
 
     let notesEventDelegationAttached = false;
+    let textFormatToolbarInitialized = false;
 
     function attachNotesEventListeners() {
+      // Initialize text format toolbar once
+      if (!textFormatToolbarInitialized) {
+        initTextFormatToolbar();
+        document.addEventListener("selectionchange", handleSelectionChange);
+        textFormatToolbarInitialized = true;
+      }
+
       // Add Note button
       const addNoteBtn = document.getElementById("addNoteBtn");
       if (addNoteBtn && !addNoteBtn.dataset.attached) {
@@ -5183,6 +5421,9 @@
 
       const container = document.getElementById("notesList");
       if (!container) return;
+
+      // Initialize text format toolbar
+      initTextFormatToolbar();
 
       // Delete note
       container.addEventListener("click", (e) => {
@@ -5243,7 +5484,7 @@
 
       // Click outside to deselect
       document.addEventListener("click", (e) => {
-        if (!e.target.closest(".note-block") && !e.target.closest(".block-toolbar")) {
+        if (!e.target.closest(".note-block") && !e.target.closest(".block-toolbar") && !e.target.closest(".text-format-toolbar")) {
           selectBlock(null);
         }
       });
@@ -5262,11 +5503,11 @@
           const noteId = parseInt(block.dataset.noteId);
           const blockId = parseInt(block.dataset.blockId);
           const itemIdx = parseInt(e.target.dataset.itemIdx);
-          updateListItem(noteId, blockId, itemIdx, e.target.textContent);
+          updateListItem(noteId, blockId, itemIdx, e.target.innerHTML);
         }
       });
 
-      // Paste handling - strip formatting
+      // Paste handling - preserve formatting for highlighted text
       container.addEventListener("paste", (e) => {
         if (e.target.matches(".note-block-content") || e.target.matches(".list-item-text")) {
           e.preventDefault();
@@ -5296,6 +5537,8 @@
         }
       });
 
+      // Selection change handling for format toolbar
+      document.addEventListener("selectionchange", handleSelectionChange);
 
       // Keydown handling for Enter
       container.addEventListener("keydown", (e) => {
@@ -5378,7 +5621,7 @@
                   const range = document.createRange();
                   const selection = window.getSelection();
                   range.selectNodeContents(targetItem);
-                  range.collapse(false); // false = collapse to end
+                  range.collapse(false);
                   selection.removeAllRanges();
                   selection.addRange(range);
                 }
@@ -5451,6 +5694,152 @@
 
       notesEventDelegationAttached = true;
     }
+
+    // Recent colors management
+    function loadRecentColors() {
+      const saved = localStorage.getItem("recentTextColors");
+      return saved ? JSON.parse(saved) : ["#7c3aed", "#ef4444", "#10b981"];
+    }
+
+    function saveRecentColors(colors) {
+      localStorage.setItem("recentTextColors", JSON.stringify(colors));
+    }
+
+    function addRecentColor(color) {
+      let colors = loadRecentColors();
+
+      // Remove if already exists
+      colors = colors.filter(c => c.toLowerCase() !== color.toLowerCase());
+
+      // Add to beginning
+      colors.unshift(color);
+
+      // Keep only 3
+      colors = colors.slice(0, 3);
+
+      saveRecentColors(colors);
+      updateColorSwatches();
+    }
+
+    function updateColorSwatches() {
+      const colors = loadRecentColors();
+      const swatches = document.querySelectorAll(".color-swatch");
+
+      swatches.forEach((swatch, idx) => {
+        if (colors[idx]) {
+          swatch.style.backgroundColor = colors[idx];
+          swatch.style.display = "block";
+          swatch.dataset.color = colors[idx];
+        } else {
+          swatch.style.display = "none";
+        }
+      });
+    }
+
+    function initTextFormatToolbar() {
+      const toolbar = document.getElementById("textFormatToolbar");
+      const colorPicker = document.getElementById("textColorPicker");
+      const addBtn = toolbar.querySelector(".color-add-btn");
+
+      if (!toolbar || !colorPicker) return;
+
+      // Initialize swatches
+      updateColorSwatches();
+
+      // Click on swatch applies that color
+      toolbar.querySelectorAll(".color-swatch").forEach(swatch => {
+        swatch.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const color = swatch.dataset.color;
+          if (color) {
+            applyTextColor(color);
+          }
+        });
+      });
+
+      // Click on add button opens color picker
+      addBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        colorPicker.click();
+      });
+
+      // Color picker change
+      colorPicker.addEventListener("change", (e) => {
+        const color = e.target.value;
+        addRecentColor(color);
+        applyTextColor(color);
+      });
+
+      // Prevent toolbar click from clearing selection
+      toolbar.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+      });
+    }
+
+    function applyTextColor(color) {
+      if (!currentSelection) return;
+
+      const selection = window.getSelection();
+
+      // Restore the selection
+      selection.removeAllRanges();
+      selection.addRange(currentSelection.range);
+
+      // Create a span with text color
+      const span = document.createElement("span");
+      span.style.color = color;
+
+      try {
+        // Get the range
+        const range = selection.getRangeAt(0);
+
+        // Extract contents and wrap in span
+        const contents = range.extractContents();
+
+        // Create temp container
+        const tempDiv = document.createElement("div");
+        tempDiv.appendChild(contents);
+
+        // Update existing colored spans with new color
+        tempDiv.querySelectorAll("span[style*='color']").forEach(existingSpan => {
+          existingSpan.style.color = color;
+        });
+
+        // If there are no colored spans, wrap all content
+        if (tempDiv.querySelectorAll("span[style*='color']").length === 0) {
+          span.innerHTML = tempDiv.innerHTML;
+          range.insertNode(span);
+        } else {
+          // Re-insert the modified content
+          while (tempDiv.firstChild) {
+            range.insertNode(tempDiv.lastChild);
+          }
+        }
+
+        // Trigger input event to save
+        const noteBlock = range.commonAncestorContainer.nodeType === 3
+          ? range.commonAncestorContainer.parentElement?.closest(".note-block-content, .list-item-text")
+          : range.commonAncestorContainer.closest?.(".note-block-content, .list-item-text");
+
+        if (noteBlock) {
+          noteBlock.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+
+      } catch (e) {
+        console.error("Error applying color:", e);
+      }
+
+      // Hide toolbar
+      const toolbar = document.getElementById("textFormatToolbar");
+      if (toolbar) {
+        toolbar.classList.remove("visible");
+      }
+      currentSelection = null;
+    }
+
+
 
     // Goals Drag and Drop Functions
     let draggedGoalElement = null;
@@ -5744,6 +6133,18 @@
       attachGoalsEventListeners();
     }
   </script>
+
+  <!-- Text Format Toolbar -->
+  <div id="textFormatToolbar" class="text-format-toolbar">
+    <div class="color-swatch" data-color-idx="0" title="Recent color"></div>
+    <div class="color-swatch" data-color-idx="1" title="Recent color"></div>
+    <div class="color-swatch" data-color-idx="2" title="Recent color"></div>
+    <button class="color-add-btn" title="Choose color">+</button>
+    <input type="color" id="textColorPicker" class="color-picker-input" value="#7c3aed">
+  </div>
+
+
+
 </body>
 
 </html>
