@@ -5986,47 +5986,7 @@
       notesEventDelegationAttached = true;
     }
 
-    function initTextFormatToolbar() {
-      const toolbar = document.getElementById("textFormatToolbar");
-      const colorPicker = document.getElementById("textColorPicker");
-      const addBtn = toolbar.querySelector(".color-add-btn");
 
-      if (!toolbar || !colorPicker) return;
-
-      // Initialize swatches
-      updateColorSwatches();
-
-      // Click on swatch applies that color
-      toolbar.querySelectorAll(".color-swatch").forEach(swatch => {
-        swatch.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          const color = swatch.dataset.color;
-          if (color) {
-            applyTextColor(color);
-          }
-        });
-      });
-
-      // Click on add button opens color picker
-      addBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        colorPicker.click();
-      });
-
-      // Color picker change
-      colorPicker.addEventListener("change", (e) => {
-        const color = e.target.value;
-        addRecentColor(color);
-        applyTextColor(color);
-      });
-
-      // Prevent toolbar click from clearing selection
-      toolbar.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-      });
-    }
 
     function applyTextColor(color) {
       if (!currentSelection) return;
