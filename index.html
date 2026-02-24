@@ -5988,69 +5988,6 @@
 
 
 
-    function applyTextColor(color) {
-      if (!currentSelection) return;
-
-      const selection = window.getSelection();
-
-      // Restore the selection
-      selection.removeAllRanges();
-      selection.addRange(currentSelection.range);
-
-      // Create a span with text color
-      const span = document.createElement("span");
-      span.style.color = color;
-
-      try {
-        // Get the range
-        const range = selection.getRangeAt(0);
-
-        // Extract contents and wrap in span
-        const contents = range.extractContents();
-
-        // Create temp container
-        const tempDiv = document.createElement("div");
-        tempDiv.appendChild(contents);
-
-        // Update existing colored spans with new color
-        tempDiv.querySelectorAll("span[style*='color']").forEach(existingSpan => {
-          existingSpan.style.color = color;
-        });
-
-        // If there are no colored spans, wrap all content
-        if (tempDiv.querySelectorAll("span[style*='color']").length === 0) {
-          span.innerHTML = tempDiv.innerHTML;
-          range.insertNode(span);
-        } else {
-          // Re-insert the modified content
-          while (tempDiv.firstChild) {
-            range.insertNode(tempDiv.lastChild);
-          }
-        }
-
-        // Trigger input event to save
-        const noteBlock = range.commonAncestorContainer.nodeType === 3
-          ? range.commonAncestorContainer.parentElement?.closest(".note-block-content, .list-item-text")
-          : range.commonAncestorContainer.closest?.(".note-block-content, .list-item-text");
-
-        if (noteBlock) {
-          noteBlock.dispatchEvent(new Event("input", { bubbles: true }));
-        }
-
-      } catch (e) {
-        console.error("Error applying color:", e);
-      }
-
-      // Hide toolbar
-      const toolbar = document.getElementById("textFormatToolbar");
-      if (toolbar) {
-        toolbar.classList.remove("visible");
-      }
-      currentSelection = null;
-    }
-
-
-
     // Goals Drag and Drop Functions
     let draggedGoalElement = null;
     let draggedType = null;
