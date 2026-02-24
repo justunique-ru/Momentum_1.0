@@ -5986,17 +5986,6 @@
       notesEventDelegationAttached = true;
     }
 
-      swatches.forEach((swatch, idx) => {
-        if (colors[idx]) {
-          swatch.style.backgroundColor = colors[idx];
-          swatch.style.display = "block";
-          swatch.dataset.color = colors[idx];
-        } else {
-          swatch.style.display = "none";
-        }
-      });
-    }
-
     function initTextFormatToolbar() {
       const toolbar = document.getElementById("textFormatToolbar");
       const colorPicker = document.getElementById("textColorPicker");
