@@ -5986,44 +5986,6 @@
       notesEventDelegationAttached = true;
     }
 
-    // Recent colors management
-    function loadRecentColors() {
-      if (currentUser && recentColorsCache) {
-        return recentColorsCache;
-      }
-      return ["#7c3aed", "#ef4444", "#10b981"];
-    }
-
-    function saveRecentColors(colors) {
-      if (!currentUser) return;
-      recentColorsCache = colors;
-      setDoc(
-        doc(db, "recentColors", currentUser.uid),
-        { colors },
-        { merge: true }
-      ).catch(console.error);
-    }
-
-    function addRecentColor(color) {
-      let colors = loadRecentColors();
-
-      // Remove if already exists
-      colors = colors.filter(c => c.toLowerCase() !== color.toLowerCase());
-
-      // Add to beginning
-      colors.unshift(color);
-
-      // Keep only 3
-      colors = colors.slice(0, 3);
-
-      saveRecentColors(colors);
-      updateColorSwatches();
-    }
-
-    function updateColorSwatches() {
-      const colors = loadRecentColors();
-      const swatches = document.querySelectorAll(".color-swatch");
-
       swatches.forEach((swatch, idx) => {
         if (colors[idx]) {
           swatch.style.backgroundColor = colors[idx];
