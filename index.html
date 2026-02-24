@@ -746,7 +746,7 @@
   <div class="flex min-h-screen">
     <!-- Sidebar Menu -->
     <aside class="w-64 bg-white border-r border-gray-200 flex flex-col p-6 sidebar-menu">
-      <div class="flex items-center gap-3 mb-8">
+      <div class="flex items-center gap-3 mb-4">
         <div class="w-10 h-10 accent-gradient rounded-2xl flex items-center justify-center shadow-lg shadow-violet-500/30">
           <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none">
             <path d="M4 18V6l8 6-8 6z" fill="currentColor" opacity="0.6" />
@@ -754,6 +754,11 @@
           </svg>
         </div>
         <h1 class="text-xl font-bold text-gray-900">Momentum</h1>
+      </div>
+      <div class="mb-6 text-sm text-gray-700">
+        <div id="user-info" class="mb-2">Вы не авторизованы</div>
+        <button class="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-sm mb-1 hover:bg-gray-50" onclick="loginWithGoogle()">Войти через Google</button>
+        <button class="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-sm hover:bg-gray-50" onclick="logout()">Выйти</button>
       </div>
       <nav class="flex-1 space-y-1">
         <button data-page="planner" class="menu-item active w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700">
@@ -1333,7 +1338,216 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged,
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc,
+      collection,
+      getDocs,
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0MdvdOuHVaYUd38FxPJ6yG4W9aSQPwhU",
+      authDomain: "momentum-frontend-4d144.firebaseapp.com",
+      projectId: "momentum-frontend-4d144",
+      storageBucket: "momentum-frontend-4d144.firebasestorage.app",
+      messagingSenderId: "929664395924",
+      appId: "1:929664395924:web:5cf8deab615ad35262a281",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    const db = getFirestore(app);
+
+    let currentUser = null;
+
+    // Кэши данных пользователя (хранение на клиенте, но источник — Firestore)
+    let globalDataCache = null;
+    const dayDataCache = {};
+    let wishlistCategoriesCache = null;
+    let goalsCache = null;
+    let moneyCategoriesCache = null;
+    let transactionsCache = null;
+    let notesCache = null;
+    let recentColorsCache = null;
+
+    function updateUserInfoUI(user) {
+      const el = document.getElementById("user-info");
+      if (!el) return;
+      if (user) {
+        el.textContent = `Вы вошли как: ${user.displayName || user.email}`;
+      } else {
+        el.textContent = "Вы не авторизованы";
+      }
+    }
+
+    async function loginWithGoogle() {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        currentUser = user;
+
+        await setDoc(
+          doc(db, "users", user.uid),
+          {
+            email: user.email,
+            name: user.displayName || "",
+            photoURL: user.photoURL || "",
+          },
+          { merge: true }
+        );
+      } catch (error) {
+        console.error(error);
+        alert("Ошибка входа через Google");
+      }
+    }
+
+    async function logout() {
+      try {
+        await signOut(auth);
+        currentUser = null;
+        // Локальные кэши очищаем, т.к. они относятся к пользователю
+        globalDataCache = null;
+        Object.keys(dayDataCache).forEach((k) => delete dayDataCache[k]);
+        wishlistCategoriesCache = null;
+        goalsCache = null;
+        moneyCategoriesCache = null;
+        transactionsCache = null;
+        notesCache = null;
+        recentColorsCache = null;
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    window.loginWithGoogle = loginWithGoogle;
+    window.logout = logout;
+
+    async function ensureGlobalDataLoaded() {
+      if (!currentUser || globalDataCache) return;
+      const ref = doc(db, "globalData", currentUser.uid);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        globalDataCache = snap.data();
+      }
+    }
+
+    async function preloadAllDays() {
+      if (!currentUser) return;
+      const snap = await getDocs(collection(db, "days"));
+      snap.forEach((docSnap) => {
+        const id = docSnap.id;
+        const prefix = currentUser.uid + "_";
+        if (id.startsWith(prefix)) {
+          const key = id.substring(prefix.length);
+          dayDataCache[key] = docSnap.data();
+        }
+      });
+    }
+
+    async function ensureWishlistLoaded() {
+      if (!currentUser || wishlistCategoriesCache) return;
+      const ref = doc(db, "wishlistCategories", currentUser.uid);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        wishlistCategoriesCache = snap.data().categories || [];
+      } else {
+        wishlistCategoriesCache = [];
+      }
+    }
+
+    async function ensureGoalsLoaded() {
+      if (!currentUser || goalsCache) return;
+      const ref = doc(db, "goals", currentUser.uid);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        goalsCache = snap.data().goals || [];
+      } else {
+        goalsCache = [];
+      }
+    }
+
+    async function ensureMoneyLoaded() {
+      if (!currentUser || moneyCategoriesCache || transactionsCache) return;
+      const ref = doc(db, "money", currentUser.uid);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const data = snap.data();
+        moneyCategoriesCache = data.categories || null;
+        transactionsCache = data.transactions || [];
+      } else {
+        moneyCategoriesCache = null;
+        transactionsCache = [];
+      }
+    }
+
+    async function ensureNotesLoaded() {
+      if (!currentUser || notesCache) return;
+      const ref = doc(db, "notes", currentUser.uid);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        notesCache = snap.data().notes || [];
+      } else {
+        notesCache = [];
+      }
+    }
+
+    async function ensureRecentColorsLoaded() {
+      if (!currentUser || recentColorsCache) return;
+      const ref = doc(db, "recentColors", currentUser.uid);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        recentColorsCache = snap.data().colors || ["#7c3aed", "#ef4444", "#10b981"];
+      } else {
+        recentColorsCache = ["#7c3aed", "#ef4444", "#10b981"];
+      }
+    }
+
+    async function preloadUserData() {
+      await Promise.all([
+        ensureGlobalDataLoaded(),
+        preloadAllDays(),
+        ensureWishlistLoaded(),
+        ensureGoalsLoaded(),
+        ensureMoneyLoaded(),
+        ensureNotesLoaded(),
+        ensureRecentColorsLoaded(),
+      ]);
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      updateUserInfoUI(user);
+
+      if (user) {
+        await preloadUserData();
+        if (typeof render === "function") {
+          render();
+        }
+        if (typeof attachGoalsEventListeners === "function" && document.getElementById("goalsList")) {
+          attachGoalsEventListeners();
+        }
+      } else {
+        if (typeof render === "function") {
+          render();
+        }
+        if (typeof attachGoalsEventListeners === "function" && document.getElementById("goalsList")) {
+          attachGoalsEventListeners();
+        }
+      }
+    });
+
     // State Management
     function getTodayGMT3() {
       const now = new Date();
@@ -1373,23 +1587,28 @@
     }
 
     function loadGlobalData() {
+      if (currentUser && globalDataCache) {
+        return globalDataCache;
+      }
       return {
-        habits: JSON.parse(localStorage.getItem("habits")) || [...defaultHabits],
-        pomoCategories: JSON.parse(localStorage.getItem("pomoCategories")) || [...defaultPomoCategories],
-        treats: JSON.parse(localStorage.getItem("treats")) || [...defaultTreats],
+        habits: [...defaultHabits],
+        pomoCategories: [...defaultPomoCategories],
+        treats: [...defaultTreats],
       };
     }
 
     function saveGlobalData(data) {
-      localStorage.setItem("habits", JSON.stringify(data.habits));
-      localStorage.setItem("pomoCategories", JSON.stringify(data.pomoCategories));
-      localStorage.setItem("treats", JSON.stringify(data.treats));
+      if (currentUser) {
+        globalDataCache = data;
+        setDoc(doc(db, "globalData", currentUser.uid), data).catch(console.error);
+      }
     }
 
     function loadDayData(date) {
       const key = getDateKey(date);
-      const saved = localStorage.getItem(`day_${key}`);
-      if (saved) return JSON.parse(saved);
+      if (currentUser && dayDataCache[key]) {
+        return dayDataCache[key];
+      }
 
       const global = loadGlobalData();
       return {
@@ -1402,7 +1621,15 @@
 
     function saveDayData(date, data) {
       const key = getDateKey(date);
-      localStorage.setItem(`day_${key}`, JSON.stringify(data));
+      if (currentUser) {
+        dayDataCache[key] = data;
+        const payload = {
+          ...data,
+          userId: currentUser.uid,
+          dateKey: key,
+        };
+        setDoc(doc(db, "days", `${currentUser.uid}_${key}`), payload).catch(console.error);
+      }
     }
 
     function formatDate(date) {
@@ -1461,7 +1688,7 @@
         const dayKey = getDateKey(date);
         const isSelected = getDateKey(currentDate) === dayKey;
         const isToday = getDateKey(today) === dayKey;
-        const hasData = localStorage.getItem(`day_${dayKey}`);
+        const hasData = currentUser && dayDataCache[dayKey];
         const points = hasData ? calculateDayPoints(date) : 0;
 
         grid.innerHTML += `
@@ -1909,36 +2136,32 @@
       let totalEarned = 0;
       let totalSpent = 0;
 
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith("day_")) {
-          const dayData = JSON.parse(localStorage.getItem(key));
-          const dateStr = key.replace("day_", "");
-          const date = new Date(dateStr);
+      const allDays = currentUser ? Object.entries(dayDataCache) : [];
+      allDays.forEach(([key, dayData]) => {
+        const date = new Date(key);
 
-          dayData.habitsCompleted?.forEach((id) => {
-            const habit = global.habits.find((h) => h.id === id);
-            if (habit) totalEarned += habit.points;
-          });
+        dayData.habitsCompleted?.forEach((id) => {
+          const habit = global.habits.find((h) => h.id === id);
+          if (habit) totalEarned += habit.points;
+        });
 
-          dayData.pomosCompleted?.forEach((pomo) => {
-            const cat = global.pomoCategories.find((c) => c.id === pomo.id);
-            if (cat) totalEarned += pomo.completed.length * cat.pointsEach;
-          });
+        dayData.pomosCompleted?.forEach((pomo) => {
+          const cat = global.pomoCategories.find((c) => c.id === pomo.id);
+          if (cat) totalEarned += pomo.completed.length * cat.pointsEach;
+        });
 
-          dayData.tasks?.forEach((task) => {
-            if (task.completed) totalEarned += task.points;
-          });
+        dayData.tasks?.forEach((task) => {
+          if (task.completed) totalEarned += task.points;
+        });
 
-          dayData.treatsUsed?.forEach((t) => {
-            const treat = global.treats.find((tr) => tr.id === t.id);
-            if (treat) {
-              const cost = getTreatCurrentCost(treat, date);
-              totalSpent += t.count * cost;
-            }
-          });
-        }
-      }
+        dayData.treatsUsed?.forEach((t) => {
+          const treat = global.treats.find((tr) => tr.id === t.id);
+          if (treat) {
+            const cost = getTreatCurrentCost(treat, date);
+            totalSpent += t.count * cost;
+          }
+        });
+      });
 
       const goals = loadGoals();
       goals.forEach((goal) => {
@@ -2655,12 +2878,20 @@
 
     // Wishlist Management with Categories
     function loadWishlistCategories() {
-      const saved = localStorage.getItem("wishlistCategories");
-      return saved ? JSON.parse(saved) : [];
+      if (currentUser && wishlistCategoriesCache) {
+        return wishlistCategoriesCache;
+      }
+      return [];
     }
 
     function saveWishlistCategories(categories) {
-      localStorage.setItem("wishlistCategories", JSON.stringify(categories));
+      if (!currentUser) return;
+      wishlistCategoriesCache = categories;
+      setDoc(
+        doc(db, "wishlistCategories", currentUser.uid),
+        { categories },
+        { merge: true }
+      ).catch(console.error);
     }
 
     let openWishForm = null;
@@ -3151,44 +3382,57 @@
 
     // Goals Management
     function loadGoals() {
-      const saved = localStorage.getItem("goals");
-      return saved ? JSON.parse(saved) : [];
+      if (currentUser && goalsCache) {
+        return goalsCache;
+      }
+      return [];
     }
 
     function saveGoals(goals) {
-      localStorage.setItem("goals", JSON.stringify(goals));
+      if (!currentUser) return;
+      goalsCache = goals;
+      setDoc(
+        doc(db, "goals", currentUser.uid),
+        { goals },
+        { merge: true }
+      ).catch(console.error);
     }
 
     function syncGoalItemToPlanner(goalId, milestoneId, goalTaskId, subtaskId, completed) {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith("day_")) {
-          const dayData = JSON.parse(localStorage.getItem(key));
-          let updated = false;
+      if (!currentUser) return;
 
-          if (dayData.tasks) {
-            dayData.tasks.forEach((task) => {
-              if (subtaskId) {
-                // Sync subtask
-                if (task.goalId === goalId && task.milestoneId === milestoneId && task.goalTaskId === goalTaskId && task.subtaskId === subtaskId) {
-                  task.completed = completed;
-                  updated = true;
-                }
-              } else {
-                // Sync task
-                if (task.goalId === goalId && task.milestoneId === milestoneId && task.goalTaskId === goalTaskId && !task.subtaskId) {
-                  task.completed = completed;
-                  updated = true;
-                }
+      Object.keys(dayDataCache).forEach((key) => {
+        const dayData = dayDataCache[key];
+        let updated = false;
+
+        if (dayData.tasks) {
+          dayData.tasks.forEach((task) => {
+            if (subtaskId) {
+              // Sync subtask
+              if (task.goalId === goalId && task.milestoneId === milestoneId && task.goalTaskId === goalTaskId && task.subtaskId === subtaskId) {
+                task.completed = completed;
+                updated = true;
               }
-            });
-          }
-
-          if (updated) {
-            localStorage.setItem(key, JSON.stringify(dayData));
-          }
+            } else {
+              // Sync task
+              if (task.goalId === goalId && task.milestoneId === milestoneId && task.goalTaskId === goalTaskId && !task.subtaskId) {
+                task.completed = completed;
+                updated = true;
+              }
+            }
+          });
         }
-      }
+
+        if (updated) {
+          dayDataCache[key] = dayData;
+          const payload = {
+            ...dayData,
+            userId: currentUser.uid,
+            dateKey: key,
+          };
+          setDoc(doc(db, "days", `${currentUser.uid}_${key}`), payload).catch(console.error);
+        }
+      });
     }
 
     let openMilestoneForm = null;
@@ -4338,21 +4582,37 @@
     };
 
     function loadMoneyCategories() {
-      const saved = localStorage.getItem("moneyCategories");
-      return saved ? JSON.parse(saved) : { ...defaultMoneyCategories };
+      if (currentUser && moneyCategoriesCache) {
+        return moneyCategoriesCache;
+      }
+      return { ...defaultMoneyCategories };
     }
 
     function saveMoneyCategories(categories) {
-      localStorage.setItem("moneyCategories", JSON.stringify(categories));
+      if (!currentUser) return;
+      moneyCategoriesCache = categories;
+      const data = {
+        categories,
+        transactions: transactionsCache || [],
+      };
+      setDoc(doc(db, "money", currentUser.uid), data, { merge: true }).catch(console.error);
     }
 
     function loadTransactions() {
-      const saved = localStorage.getItem("transactions");
-      return saved ? JSON.parse(saved) : [];
+      if (currentUser && transactionsCache) {
+        return transactionsCache;
+      }
+      return [];
     }
 
     function saveTransactions(transactions) {
-      localStorage.setItem("transactions", JSON.stringify(transactions));
+      if (!currentUser) return;
+      transactionsCache = transactions;
+      const data = {
+        categories: moneyCategoriesCache || { ...defaultMoneyCategories },
+        transactions,
+      };
+      setDoc(doc(db, "money", currentUser.uid), data, { merge: true }).catch(console.error);
     }
 
     function getCategoryInfo(categoryId) {
@@ -4984,12 +5244,20 @@
     let currentSelection = null;
 
     function loadRecentColors() {
-      const saved = localStorage.getItem("recentTextColors");
-      return saved ? JSON.parse(saved) : ["#7c3aed", "#ef4444", "#10b981"];
+      if (currentUser && recentColorsCache) {
+        return recentColorsCache;
+      }
+      return ["#7c3aed", "#ef4444", "#10b981"];
     }
 
     function saveRecentColors(colors) {
-      localStorage.setItem("recentTextColors", JSON.stringify(colors));
+      if (!currentUser) return;
+      recentColorsCache = colors;
+      setDoc(
+        doc(db, "recentColors", currentUser.uid),
+        { colors },
+        { merge: true }
+      ).catch(console.error);
     }
 
     function addRecentColor(color) {
@@ -5148,13 +5416,20 @@
     }
 
     function loadNotes() {
-
-      const saved = localStorage.getItem("notes");
-      return saved ? JSON.parse(saved) : [];
+      if (currentUser && notesCache) {
+        return notesCache;
+      }
+      return [];
     }
 
     function saveNotes(notes) {
-      localStorage.setItem("notes", JSON.stringify(notes));
+      if (!currentUser) return;
+      notesCache = notes;
+      setDoc(
+        doc(db, "notes", currentUser.uid),
+        { notes },
+        { merge: true }
+      ).catch(console.error);
     }
 
     let selectedBlockId = null;
@@ -5697,12 +5972,20 @@
 
     // Recent colors management
     function loadRecentColors() {
-      const saved = localStorage.getItem("recentTextColors");
-      return saved ? JSON.parse(saved) : ["#7c3aed", "#ef4444", "#10b981"];
+      if (currentUser && recentColorsCache) {
+        return recentColorsCache;
+      }
+      return ["#7c3aed", "#ef4444", "#10b981"];
     }
 
     function saveRecentColors(colors) {
-      localStorage.setItem("recentTextColors", JSON.stringify(colors));
+      if (!currentUser) return;
+      recentColorsCache = colors;
+      setDoc(
+        doc(db, "recentColors", currentUser.uid),
+        { colors },
+        { merge: true }
+      ).catch(console.error);
     }
 
     function addRecentColor(color) {
