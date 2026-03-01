@@ -289,6 +289,12 @@
       animation: slideDown 0.2s ease;
     }
 
+    aside {
+      position: sticky;
+      height: 100vh;
+      top: 0;
+    }
+
     @keyframes slideDown {
       from {
         opacity: 0;
@@ -755,11 +761,7 @@
         </div>
         <h1 class="text-xl font-bold text-gray-900">Momentum</h1>
       </div>
-      <div class="mb-6 text-sm text-gray-700">
-        <div id="user-info" class="mb-2">Вы не авторизованы</div>
-        <button id="googleLoginBtn" class="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-sm mb-1 hover:bg-gray-50">Войти через Google</button>
-        <button id="googleLogoutBtn" class="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-sm hover:bg-gray-50">Выйти</button>
-      </div>
+
       <nav class="flex-1 space-y-1">
         <button data-page="planner" class="menu-item active w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -792,6 +794,12 @@
           Notes
         </button>
       </nav>
+
+      <div class="mb-2 text-sm text-gray-700">
+        <div id="user-info" class="mb-2">Вы не авторизованы</div>
+        <button id="googleLoginBtn" class="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-sm mb-1 hover:bg-gray-50">Войти через Google</button>
+        <button id="googleLogoutBtn" class="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-sm hover:bg-gray-50">Выйти</button>
+      </div>
     </aside>
 
     <!-- Main Content -->
