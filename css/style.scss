@@ -1,95 +1,291 @@
+// ===========================================
+// Variables
+// ===========================================
+
+// Colors
+$color-primary: #7c3aed;
+$color-primary-dark: #6d28d9;
+$color-primary-light: #a855f7;
+$color-primary-bg: #faf5ff;
+$color-primary-border: #c4b5fd;
+
+$color-background: #f8f9fb;
+$color-white: white;
+$color-border: #e8eaed;
+$color-border-light: #e5e7eb;
+
+$color-text-dark: #1f2937;
+$color-text-light: #9ca3af;
+$color-text-muted: #d1d5db;
+
+$color-hover-bg: #f3f4f6;
+$color-hover-bg-light: #f9fafb;
+
+$color-green: #10b981;
+$color-green-light: #34d399;
+$color-green-bg: #ecfdf5;
+$color-green-bg-light: #d1fae5;
+
+$color-teal: #14b8a6;
+
+$color-orange: #f59e0b;
+$color-orange-light: #fbbf24;
+$color-orange-bg: #fffbeb;
+
+$color-red: #ef4444;
+$color-red-light: #f97316;
+$color-red-dark: #f87171;
+$color-red-bg: #fef2f2;
+$color-red-border: #fecaca;
+
+$color-pink-bg: #fdf2f8;
+$color-pink-bg-light: #fce7f3;
+
+$color-purple-bg: #f5f3ff;
+$color-purple-bg-light: #ede9fe;
+
+// Transitions
+$transition-fast: 0.15s ease;
+$transition-normal: 0.2s ease;
+$transition-slow: 0.5s ease;
+$transition-sidebar: 0.3s ease;
+$transition-bar: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+// Border Radius
+$radius-xs: 3px;
+$radius-sm: 4px;
+$radius-md: 6px;
+$radius-lg: 8px;
+$radius-xl: 10px;
+$radius-2xl: 16px;
+
+// Shadows
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.04);
+$shadow-xl: 0 4px 20px rgba(0, 0, 0, 0.2);
+$shadow-focus: 0 0 0 3px rgba(124, 58, 237, 0.1);
+
+// ===========================================
+// Mixins
+// ===========================================
+
+@mixin transition($property: all, $duration: $transition-normal) {
+  transition: $property $duration;
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin gradient($start, $end, $angle: 135deg) {
+  background: linear-gradient($angle, $start 0%, $end 100%);
+}
+
+@mixin hover-lift {
+  &:hover {
+    box-shadow: $shadow-md;
+  }
+}
+
+@mixin draggable {
+  cursor: grab;
+  
+  &:active {
+    cursor: grabbing;
+  }
+  
+  &.dragging {
+    opacity: 0.5;
+  }
+  
+  &.drag-over {
+    border: 2px dashed $color-primary !important;
+    background: $color-primary-bg !important;
+  }
+}
+
+// ===========================================
+// Base Styles
+// ===========================================
+
 * {
-    font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
 }
 
 body {
-    background: #f8f9fb;
-    min-height: 100vh;
-    margin: 0;
+  background: $color-background;
+  min-height: 100vh;
+  margin: 0;
 }
+
+button {
+  cursor: pointer;
+}
+
+// ===========================================
+// Scrollbar
+// ===========================================
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  
+  &-track {
+    background: transparent;
+  }
+  
+  &-thumb {
+    background: $color-text-muted;
+    border-radius: $radius-xs;
+    
+    &:hover {
+      background: $color-text-light;
+    }
+  }
+}
+
+// ===========================================
+// Form Elements
+// ===========================================
+
+input,
+textarea {
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+    box-shadow: $shadow-focus;
+  }
+}
+
+// ===========================================
+// Card Component
+// ===========================================
 
 .card {
-    background: white;
-    border-radius: 16px;
-    border: 1px solid #e8eaed;
-    transition: all 0.2s ease;
+  background: $color-white;
+  border-radius: $radius-2xl;
+  border: 1px solid $color-border;
+  @include transition;
+  
+  &:hover {
+    box-shadow: $shadow-lg;
+  }
 }
 
-.card:hover {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-}
+// ===========================================
+// Task Styles
+// ===========================================
 
 .completed {
-    text-decoration: line-through;
-    opacity: 0.4;
+  text-decoration: line-through;
+  opacity: 0.4;
 }
 
 .check-circle {
-    transition: all 0.5s ease;
-    cursor: pointer;
-}
-
-.check-circle:hover {
+  @include transition(all, $transition-slow);
+  cursor: pointer;
+  
+  &:hover {
     transform: scale(1.1);
+  }
 }
 
-.pomo-dot {
-    transition: all 0.5s ease;
-    cursor: pointer;
-    font-size: 0;
-}
-
-.pomo-dot:hover {
-    transform: scale(1.15);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.task-item:hover .task-actions {
+.task-item {
+  &:hover .task-actions {
     opacity: 1;
+  }
 }
 
 .task-actions {
-    opacity: 0;
-    transition: opacity 0.15s ease;
+  opacity: 0;
+  @include transition(opacity, $transition-fast);
 }
+
+.task-expandable {
+  border-left: 2px solid $color-border-light;
+  
+  &:hover {
+    border-left-color: $color-primary-border;
+  }
+}
+
+// Goal label for tasks
+.goal-label {
+  color: $color-primary;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ===========================================
+// Pomodoro Styles
+// ===========================================
+
+.pomo-dot {
+  @include transition(all, $transition-slow);
+  cursor: pointer;
+  font-size: 0;
+  
+  &:hover {
+    transform: scale(1.15);
+    box-shadow: $shadow-sm;
+  }
+}
+
+// ===========================================
+// Treats/Rewards Styles
+// ===========================================
 
 .treat-item {
-    transition: all 0.5s ease;
-    cursor: pointer;
-}
-
-.treat-item.affordable:hover {
+  @include transition(all, $transition-slow);
+  cursor: pointer;
+  
+  &.affordable:hover {
     background: #f0f9ff;
-    border-color: #7c3aed;
-}
-
-.treat-item.unaffordable {
+    border-color: $color-primary;
+  }
+  
+  &.unaffordable {
     opacity: 0.35;
     cursor: not-allowed;
+  }
 }
+
+// ===========================================
+// Calendar Styles
+// ===========================================
 
 .calendar-day {
-    transition: all 0.5s ease;
-    cursor: pointer;
-}
-
-.calendar-day:hover {
-    background: #f3f4f6;
-}
-
-.calendar-day.selected {
-    background: #7c3aed;
-    color: white;
+  @include transition(all, $transition-slow);
+  cursor: pointer;
+  
+  &:hover {
+    background: $color-hover-bg;
+  }
+  
+  &.selected {
+    background: $color-primary;
+    color: $color-white;
     font-weight: 600;
-}
-
-.calendar-day.today:not(.selected) {
-    border: 2px solid #7c3aed;
-    color: #7c3aed;
+    
+    &.has-points::after {
+      background: $color-white;
+    }
+  }
+  
+  &.today:not(.selected) {
+    border: 2px solid $color-primary;
+    color: $color-primary;
     font-weight: 600;
-}
-
-.calendar-day.has-points::after {
+  }
+  
+  &.has-points::after {
     content: "";
     position: absolute;
     bottom: 4px;
@@ -97,639 +293,643 @@ body {
     transform: translateX(-50%);
     width: 4px;
     height: 4px;
-    background: #7c3aed;
+    background: $color-primary;
     border-radius: 50%;
+  }
 }
 
-.calendar-day.selected.has-points::after {
-    background: white;
-}
+// ===========================================
+// Statistics
+// ===========================================
 
 .stat-bar {
-    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 4px 4px 0 0;
+  transition: height $transition-bar;
+  border-radius: $radius-sm $radius-sm 0 0;
 }
 
-button {
-    cursor: pointer;
-}
+// ===========================================
+// Buttons
+// ===========================================
 
 .btn-icon {
-    transition: all 0.5s ease;
-}
-
-.btn-icon:hover {
-    background: #f3f4f6;
-}
-
-input:focus,
-textarea:focus {
-    outline: none;
-    border-color: #7c3aed;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-}
-
-.modal-overlay {
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(8px);
-}
-
-.tooltip {
-    position: fixed;
-    background: #1f2937;
-    color: white;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 13px;
-    z-index: 1000;
-    pointer-events: none;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-}
-
-.item-row {
-    transition: background 0.15s ease;
-    border-radius: 10px;
-}
-
-.item-row:hover {
-    background: #f9fafb;
-}
-
-[draggable="true"] {
-    cursor: grab;
-}
-
-[draggable="true"]:active {
-    cursor: grabbing;
-}
-
-.drag-over {
-    border: 2px dashed #7c3aed !important;
-    background: #faf5ff !important;
-}
-
-.dragging {
-    opacity: 0.5;
-}
-
-.accent-gradient {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
-}
-
-.points-ring {
-    background: conic-gradient(#7c3aed var(--progress), #e5e7eb var(--progress));
+  @include transition(all, $transition-slow);
+  
+  &:hover {
+    background: $color-hover-bg;
+  }
 }
 
 .nav-btn {
-    transition: all 0.5s ease;
-}
-
-.nav-btn:hover {
-    background: #f3f4f6;
+  @include transition(all, $transition-slow);
+  
+  &:hover {
+    background: $color-hover-bg;
+  }
 }
 
 .add-btn {
-    transition: all 0.5s ease;
-    cursor: pointer;
+  @include transition(all, $transition-slow);
+  cursor: pointer;
+  
+  &:hover {
+    background: $color-primary;
+    color: $color-white;
+    border: 2px solid $color-primary;
+  }
 }
 
-.add-btn:hover {
-    background: #7c3aed;
-    color: white;
-    border: 2px solid #7c3aed;
+.toolbar-btn {
+  @include transition(all, $transition-fast);
+  
+  &:hover {
+    background: $color-border-light;
+  }
+  
+  &.active {
+    background: $color-primary;
+    color: $color-white;
+  }
 }
 
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+// ===========================================
+// Modal
+// ===========================================
+
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
 }
 
-::-webkit-scrollbar-track {
-    background: transparent;
+// ===========================================
+// Tooltip
+// ===========================================
+
+.tooltip {
+  position: fixed;
+  background: $color-text-dark;
+  color: $color-white;
+  padding: 10px 14px;
+  border-radius: $radius-xl;
+  font-size: 13px;
+  z-index: 1000;
+  pointer-events: none;
+  box-shadow: $shadow-xl;
 }
 
-::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 3px;
+// ===========================================
+// Item Rows
+// ===========================================
+
+.item-row {
+  @include transition(background, $transition-fast);
+  border-radius: $radius-xl;
+  
+  &:hover {
+    background: $color-hover-bg-light;
+  }
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
+// ===========================================
+// Drag and Drop
+// ===========================================
+
+[draggable="true"] {
+  cursor: grab;
+  
+  &:active {
+    cursor: grabbing;
+  }
 }
 
-.sidebar-menu {
-    transition: all 0.3s ease;
+.drag-over {
+  border: 2px dashed $color-primary !important;
+  background: $color-primary-bg !important;
 }
 
-.menu-item {
-    transition: all 0.2s ease;
+.dragging {
+  opacity: 0.5;
 }
 
-.menu-item:hover {
-    background: #f3f4f6;
+.drag-handle {
+  cursor: grab;
+  opacity: 0;
+  @include transition(opacity, $transition-fast);
+  
+  &:hover {
+    opacity: 1 !important;
+  }
 }
 
-.menu-item.active {
-    background: #7c3aed;
-    color: white;
-}
+// ===========================================
+// Gradients
+// ===========================================
 
-.menu-item.active:hover {
-    background: #6d28d9;
-}
-
-.page {
-    display: none;
-}
-
-.page.active {
-    display: block;
-}
-
-.goal-card {
-    transition: all 0.2s ease;
-}
-
-.goal-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.milestone-block {
-    transition: all 0.2s ease;
-}
-
-.milestone-block:hover {
-    border-color: #c4b5fd;
-}
-
-.milestone-item,
-.goal-task-item,
-.subtask-item {
-    transition: all 0.15s ease;
-}
-
-.milestone-item:hover,
-.goal-task-item:hover,
-.subtask-item:hover {
-    background: #f9fafb;
-}
-
-.inline-add-form {
-    animation: slideDown 0.2s ease;
-}
-
-aside {
-    position: sticky;
-    height: 100vh;
-    top: 0;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.milestone-points-badge {
-    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-}
-
-.milestone-header {
-    background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
-}
-
-.milestone-header.completed {
-    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-}
-
-.task-expandable {
-    border-left: 2px solid #e5e7eb;
-}
-
-.task-expandable:hover {
-    border-left-color: #c4b5fd;
-}
-
-.subtask-item {
-    margin-left: 1.5rem;
-}
-
-.subtask-points-badge {
-    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-}
-
-/* Inline editable styles */
-.editable-text {
-    cursor: pointer;
-    transition: all 0.15s ease;
-    border-radius: 4px;
-    padding: 2px 4px;
-    margin: -2px -4px;
-}
-
-.editable-text:hover {
-    background: #f3f4f6;
-}
-
-.inline-edit-input {
-    background: white;
-    border: 2px solid #7c3aed;
-    border-radius: 6px;
-    padding: 4px 8px;
-    font-size: inherit;
-    font-weight: inherit;
-    width: 100%;
-}
-
-.wish-item {
-    transition: all 0.2s ease;
-}
-
-.wish-item:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.wish-link {
-    transition: all 0.2s ease;
-}
-
-.wish-link:hover {
-    color: #7c3aed;
-}
-
-.wish-category {
-    transition: all 0.2s ease;
-}
-
-.wish-category:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.wish-category-header {
-    background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
-}
-
-.wish-form-inline {
-    animation: slideDown 0.2s ease;
-}
-
-.transaction-item {
-    transition: all 0.2s ease;
-}
-
-.transaction-item:hover {
-    background: #f9fafb;
-}
-
-.category-item {
-    transition: all 0.15s ease;
-}
-
-.category-item:hover {
-    background: #f9fafb;
+.accent-gradient {
+  @include gradient($color-primary, $color-primary-light);
 }
 
 .money-gradient {
-    background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  @include gradient($color-green, $color-teal);
 }
 
-/* Notes styles */
+.points-ring {
+  background: conic-gradient($color-primary var(--progress), $color-border-light var(--progress));
+}
+
+// ===========================================
+// Sidebar & Navigation
+// ===========================================
+
+aside {
+  position: sticky;
+  height: 100vh;
+  top: 0;
+}
+
+.sidebar-menu {
+  @include transition(all, $transition-sidebar);
+}
+
+.menu-item {
+  @include transition;
+  
+  &:hover {
+    background: $color-hover-bg;
+  }
+  
+  &.active {
+    background: $color-primary;
+    color: $color-white;
+    
+    &:hover {
+      background: $color-primary-dark;
+    }
+  }
+}
+
+// ===========================================
+// Pages
+// ===========================================
+
+.page {
+  display: none;
+  
+  &.active {
+    display: block;
+  }
+}
+
+// ===========================================
+// Goals
+// ===========================================
+
+.goal-card {
+  @include transition;
+  @include hover-lift;
+  
+  &[draggable="true"] {
+    @include draggable;
+    
+    &.dragging {
+      transform: scale(0.98);
+    }
+  }
+  
+  &:hover .drag-handle {
+    opacity: 0.5;
+  }
+}
+
+// ===========================================
+// Milestones
+// ===========================================
+
+.milestone-block {
+  @include transition;
+  
+  &:hover {
+    border-color: $color-primary-border;
+  }
+  
+  &[draggable="true"] {
+    @include draggable;
+  }
+  
+  &:hover .drag-handle {
+    opacity: 0.5;
+  }
+}
+
+.milestone-header {
+  @include gradient($color-purple-bg, $color-purple-bg-light);
+  
+  &.completed {
+    @include gradient($color-green-bg, $color-green-bg-light);
+  }
+}
+
+.milestone-points-badge {
+  @include gradient($color-green, $color-green-light);
+}
+
+// ===========================================
+// Goal Tasks
+// ===========================================
+
+.goal-task-item {
+  @include transition(all, $transition-fast);
+  
+  &:hover {
+    background: $color-hover-bg-light;
+  }
+  
+  &[draggable="true"] {
+    @include draggable;
+  }
+  
+  &:hover .drag-handle {
+    opacity: 0.5;
+  }
+}
+
+// ===========================================
+// Subtasks
+// ===========================================
+
+.subtask-item {
+  @include transition(all, $transition-fast);
+  margin-left: 1.5rem;
+  
+  &:hover {
+    background: $color-hover-bg-light;
+  }
+  
+  &[draggable="true"] {
+    cursor: grab;
+    
+    &:active {
+      cursor: grabbing;
+    }
+    
+    &.dragging {
+      opacity: 0.5;
+    }
+    
+    &.drag-over {
+      border: 2px dashed $color-orange !important;
+      background: $color-orange-bg !important;
+    }
+  }
+  
+  &:hover .drag-handle {
+    opacity: 0.5;
+  }
+}
+
+.subtask-points-badge {
+  @include gradient($color-orange, $color-orange-light);
+}
+
+// ===========================================
+// Milestone Item (generic)
+// ===========================================
+
+.milestone-item {
+  @include transition(all, $transition-fast);
+  
+  &:hover {
+    background: $color-hover-bg-light;
+  }
+}
+
+// ===========================================
+// Inline Forms
+// ===========================================
+
+.inline-add-form {
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ===========================================
+// Editable Text
+// ===========================================
+
+.editable-text {
+  cursor: pointer;
+  @include transition(all, $transition-fast);
+  border-radius: $radius-sm;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  
+  &:hover {
+    background: $color-hover-bg;
+  }
+}
+
+.inline-edit-input {
+  background: $color-white;
+  border: 2px solid $color-primary;
+  border-radius: $radius-md;
+  padding: 4px 8px;
+  font-size: inherit;
+  font-weight: inherit;
+  width: 100%;
+}
+
+// ===========================================
+// Wishlist
+// ===========================================
+
+.wish-item {
+  @include transition;
+  @include hover-lift;
+}
+
+.wish-link {
+  @include transition;
+  
+  &:hover {
+    color: $color-primary;
+  }
+}
+
+.wish-category {
+  @include transition;
+  @include hover-lift;
+}
+
+.wish-category-header {
+  @include gradient($color-pink-bg, $color-pink-bg-light);
+}
+
+.wish-form-inline {
+  animation: slideDown 0.2s ease;
+}
+
+// ===========================================
+// Transactions
+// ===========================================
+
+.transaction-item {
+  @include transition;
+  
+  &:hover {
+    background: $color-hover-bg-light;
+  }
+}
+
+// ===========================================
+// Categories
+// ===========================================
+
+.category-item {
+  @include transition(all, $transition-fast);
+  
+  &:hover {
+    background: $color-hover-bg-light;
+  }
+}
+
+// ===========================================
+// Notes
+// ===========================================
+
 .note-card {
-    transition: all 0.2s ease;
-}
-
-.note-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  @include transition;
+  @include hover-lift;
 }
 
 .note-block {
-    position: relative;
-    transition: all 0.15s ease;
-}
-
-.note-block:hover {
-    background: #f9fafb;
-}
-
-.note-block.selected {
-    background: #f3f4f6;
+  position: relative;
+  margin-left: 40px;
+  @include transition(all, $transition-fast);
+  
+  &:hover {
+    background: $color-hover-bg-light;
+  }
+  
+  &.selected {
+    background: $color-hover-bg;
+    
+    .block-toolbar {
+      display: flex;
+    }
+    
+    .block-copy-btn {
+      display: flex;
+    }
+  }
 }
 
 .note-block-content {
-    min-height: 1.5em;
-    outline: none;
-}
-
-.note-block-content:empty:before {
+  min-height: 1.5em;
+  outline: none;
+  
+  &:empty:before {
     content: attr(data-placeholder);
-    color: #9ca3af;
-}
-
-.note-block-content:focus {
+    color: $color-text-light;
+  }
+  
+  &:focus {
     outline: none;
-}
-
-.block-toolbar {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    display: none;
-    z-index: 10;
-}
-
-.note-block.selected .block-toolbar {
-    display: flex;
-}
-
-.block-copy-btn {
-    position: absolute;
-    top: 50%;
-    left: -36px;
-    transform: translateY(-50%);
-    display: none;
-    z-index: 10;
-}
-
-.note-block.selected .block-copy-btn {
-    display: flex;
-}
-
-.note-block {
-    position: relative;
-    margin-left: 40px;
+  }
 }
 
 .note-block-title .note-block-content {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #111827;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $color-text-dark;
 }
 
-.note-block-list .list-item {
+.note-block-list {
+  .list-item {
     display: flex;
     align-items: flex-start;
     gap: 8px;
     padding: 4px 0;
-}
-
-.note-block-list .list-item input[type="checkbox"] {
-    margin-top: 4px;
-}
-
-.note-block-list .list-item-text {
+    
+    input[type="checkbox"] {
+      margin-top: 4px;
+    }
+  }
+  
+  .list-item-text {
     flex: 1;
     outline: none;
     min-height: 1.5em;
+    
+    &:empty:before {
+      content: "List item...";
+      color: $color-text-light;
+    }
+  }
 }
 
-.note-block-list .list-item-text:empty:before {
-    content: "List item...";
-    color: #9ca3af;
+.block-toolbar {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: none;
+  z-index: 10;
 }
 
-.toolbar-btn {
-    transition: all 0.15s ease;
+.block-copy-btn {
+  position: absolute;
+  top: 50%;
+  left: -36px;
+  transform: translateY(-50%);
+  display: none;
+  z-index: 10;
 }
 
-.toolbar-btn:hover {
-    background: #e5e7eb;
-}
-
-.toolbar-btn.active {
-    background: #7c3aed;
-    color: white;
-}
-
-/* Drag and drop for Goals */
-.goal-card[draggable="true"] {
-    cursor: grab;
-}
-
-.goal-card[draggable="true"]:active {
-    cursor: grabbing;
-}
-
-.goal-card.dragging {
-    opacity: 0.5;
-    transform: scale(0.98);
-}
-
-.goal-card.drag-over {
-    border: 2px dashed #7c3aed;
-    background: #faf5ff;
-}
-
-.milestone-block[draggable="true"] {
-    cursor: grab;
-}
-
-.milestone-block[draggable="true"]:active {
-    cursor: grabbing;
-}
-
-.milestone-block.dragging {
-    opacity: 0.5;
-}
-
-.milestone-block.drag-over {
-    border: 2px dashed #7c3aed !important;
-    background: #faf5ff !important;
-}
-
-.goal-task-item[draggable="true"] {
-    cursor: grab;
-}
-
-.goal-task-item[draggable="true"]:active {
-    cursor: grabbing;
-}
-
-.goal-task-item.dragging {
-    opacity: 0.5;
-}
-
-.goal-task-item.drag-over {
-    border: 2px dashed #7c3aed !important;
-    background: #faf5ff !important;
-}
-
-.subtask-item[draggable="true"] {
-    cursor: grab;
-}
-
-.subtask-item[draggable="true"]:active {
-    cursor: grabbing;
-}
-
-.subtask-item.dragging {
-    opacity: 0.5;
-}
-
-.subtask-item.drag-over {
-    border: 2px dashed #f59e0b !important;
-    background: #fffbeb !important;
-}
-
-.drag-handle {
-    cursor: grab;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-}
-
-.goal-card:hover .drag-handle,
-.milestone-block:hover .drag-handle,
-.goal-task-item:hover .drag-handle,
-.subtask-item:hover .drag-handle {
-    opacity: 0.5;
-}
-
-.drag-handle:hover {
-    opacity: 1 !important;
-}
-
-/* Goal label for tasks */
-.goal-label {
-    color: #7c3aed;
-    font-size: 11px;
-    font-weight: 500;
-    white-space: nowrap;
-    max-width: 120px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+// ===========================================
+// Sales & Discounts
+// ===========================================
 
 .sale-badge {
-    background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
-    color: white;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 4px;
-    animation: pulse 2s infinite;
+  @include gradient($color-red, $color-red-light);
+  color: $color-white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: $radius-sm;
+  animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.7;
-    }
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .original-price {
-    text-decoration: line-through;
-    color: #9ca3af;
-    font-size: 11px;
+  text-decoration: line-through;
+  color: $color-text-light;
+  font-size: 11px;
 }
 
 .sale-price {
-    color: #ef4444;
-    font-weight: 600;
-    font-size: 12px;
+  color: $color-red;
+  font-weight: 600;
+  font-size: 12px;
+  
+  &.free {
+    color: $color-green;
+    font-weight: 700;
+  }
 }
 
 .sale-btn {
-    transition: all 0.2s ease;
+  @include transition;
+  
+  &:hover {
+    background: $color-red-bg;
+    color: $color-red;
+  }
+  
+  &.has-sale {
+    background: $color-red-bg;
+    color: $color-red;
+    border-color: $color-red-border;
+  }
 }
 
-.sale-btn:hover {
-    background: #fef2f2;
-    color: #ef4444;
-}
-
-.sale-btn.has-sale {
-    background: #fef2f2;
-    color: #ef4444;
-    border-color: #fecaca;
-}
+// ===========================================
+// Day Checkbox (recurring)
+// ===========================================
 
 .day-checkbox-label {
-    transition: all 0.15s ease;
+  @include transition(all, $transition-fast);
+  
+  &:hover {
+    background: $color-hover-bg;
+  }
+  
+  &.checked {
+    background: $color-red-bg;
+    border-color: $color-red-dark;
+    color: $color-red;
+  }
 }
 
-.day-checkbox-label:hover {
-    background: #f3f4f6;
-}
+// ===========================================
+// Text Format Toolbar
+// ===========================================
 
-.day-checkbox-label.checked {
-    background: #fef2f2;
-    border-color: #f87171;
-    color: #ef4444;
-}
-
-.sale-price.free {
-    color: #10b981;
-    font-weight: 700;
-}
-
-/* Text formatting toolbar */
 .text-format-toolbar {
-    position: fixed;
-    display: none;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    transform: translateX(-50%);
-}
-
-.text-format-toolbar.visible {
+  position: fixed;
+  display: none;
+  background: $color-white;
+  border: 1px solid $color-border-light;
+  border-radius: $radius-lg;
+  padding: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  transform: translateX(-50%);
+  
+  &.visible {
     display: flex;
     align-items: center;
     gap: 6px;
+  }
 }
+
+// ===========================================
+// Color Swatches
+// ===========================================
 
 .color-swatch {
-    width: 22px;
-    height: 22px;
-    border-radius: 4px;
-    border: 2px solid #e5e7eb;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.color-swatch:hover {
+  width: 22px;
+  height: 22px;
+  border-radius: $radius-sm;
+  border: 2px solid $color-border-light;
+  cursor: pointer;
+  @include transition(all, $transition-fast);
+  
+  &:hover {
     transform: scale(1.15);
-    border-color: #7c3aed;
+    border-color: $color-primary;
+  }
 }
 
 .color-add-btn {
-    width: 22px;
-    height: 22px;
-    border-radius: 4px;
-    border: 2px dashed #d1d5db;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #9ca3af;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.color-add-btn:hover {
+  width: 22px;
+  height: 22px;
+  border-radius: $radius-sm;
+  border: 2px dashed $color-text-muted;
+  cursor: pointer;
+  @include transition(all, $transition-fast);
+  background: $color-white;
+  @include flex-center;
+  color: $color-text-light;
+  font-size: 14px;
+  font-weight: 500;
+  
+  &:hover {
     transform: scale(1.15);
-    border-color: #7c3aed;
-    color: #7c3aed;
+    border-color: $color-primary;
+    color: $color-primary;
+  }
 }
 
 .color-picker-input {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-    pointer-events: none;
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
 }
