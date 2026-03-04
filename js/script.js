@@ -83,6 +83,23 @@ window.logout = logout;
 // Привязываем обработчики к кнопкам авторизации в сайдбаре
 const googleLoginBtn = document.getElementById("googleLoginBtn");
 const googleLogoutBtn = document.getElementById("googleLogoutBtn");
+const mobileUserBtn = document.getElementById("mobileUserBtn");
+const authModal = document.getElementById("authModal");
+const closeAuthModalBtn = document.getElementById("closeAuthModal");
+const authGoogleBtn = document.getElementById("authGoogleBtn");
+
+function openAuthModal() {
+  if (!authModal) return;
+  authModal.classList.remove("hidden");
+  authModal.classList.add("flex");
+}
+
+function closeAuthModal() {
+  if (!authModal) return;
+  authModal.classList.add("hidden");
+  authModal.classList.remove("flex");
+}
+
 if (googleLoginBtn) {
   googleLoginBtn.addEventListener("click", (e) => {
     e.preventDefault();
@@ -93,6 +110,35 @@ if (googleLogoutBtn) {
   googleLogoutBtn.addEventListener("click", (e) => {
     e.preventDefault();
     logout();
+  });
+}
+
+if (mobileUserBtn && authModal) {
+  mobileUserBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    openAuthModal();
+  });
+}
+
+if (closeAuthModalBtn) {
+  closeAuthModalBtn.addEventListener("click", () => {
+    closeAuthModal();
+  });
+}
+
+if (authModal) {
+  authModal.addEventListener("click", (e) => {
+    if (e.target === authModal) {
+      closeAuthModal();
+    }
+  });
+}
+
+if (authGoogleBtn) {
+  authGoogleBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
+    await loginWithGoogle();
+    closeAuthModal();
   });
 }
 
