@@ -2,6 +2,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
+// Режим локальной отладки:
+// - включается автоматически на localhost/127.0.0.1
+// - все данные сохраняются в localStorage, без авторизации Firebase
+const DEBUG_LOCAL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+
 const firebaseConfig = {
   apiKey: "AIzaSyB0MdvdOuHVaYUd38FxPJ6yG4W9aSQPwhU",
   authDomain: "momentum-frontend-4d144.firebaseapp.com",
@@ -18,7 +23,7 @@ const db = getFirestore(app);
 
 let currentUser = null;
 
-// Кэши данных пользователя (хранение на клиенте, но источник — Firestore)
+// Кэши данных пользователя (источник — Firestore или localStorage в DEBUG_LOCAL)
 let globalDataCache = null;
 const dayDataCache = {};
 let wishlistCategoriesCache = null;
@@ -27,6 +32,26 @@ let moneyCategoriesCache = null;
 let transactionsCache = null;
 let notesCache = null;
 let recentColorsCache = null;
+
+// Утилиты для работы с localStorage в режиме отладки
+function loadFromLocalStorage(key, fallback) {
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw);
+  } catch (e) {
+    console.error("Failed to load from localStorage", key, e);
+    return fallback;
+  }
+}
+
+function saveToLocalStorage(key, value) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.error("Failed to save to localStorage", key, e);
+  }
+}
 
 function updateUserInfoUI(user) {
   const el = document.getElementById("user-info");
@@ -143,7 +168,18 @@ if (authGoogleBtn) {
 }
 
 async function ensureGlobalDataLoaded() {
-  if (!currentUser || globalDataCache) return;
+  if (globalDataCache) return;
+
+  if (DEBUG_LOCAL) {
+    globalDataCache = loadFromLocalStorage("momentum_globalData", {
+      habits: [...defaultHabits],
+      pomoCategories: [...defaultPomoCategories],
+      treats: [...defaultTreats],
+    });
+    return;
+  }
+
+  if (!currentUser) return;
   const ref = doc(db, "globalData", currentUser.uid);
   const snap = await getDoc(ref);
   if (snap.exists()) {
@@ -152,6 +188,20 @@ async function ensureGlobalDataLoaded() {
 }
 
 async function preloadAllDays() {
+  if (DEBUG_LOCAL) {
+    const prefix = "momentum_day_";
+    Object.keys(window.localStorage)
+      .filter((k) => k.startsWith(prefix))
+      .forEach((k) => {
+        const key = k.substring(prefix.length);
+        const data = loadFromLocalStorage(k, null);
+        if (data) {
+          dayDataCache[key] = data;
+        }
+      });
+    return;
+  }
+
   if (!currentUser) return;
   const snap = await getDocs(collection(db, "days"));
   snap.forEach((docSnap) => {
@@ -165,7 +215,14 @@ async function preloadAllDays() {
 }
 
 async function ensureWishlistLoaded() {
-  if (!currentUser || wishlistCategoriesCache) return;
+  if (wishlistCategoriesCache) return;
+
+  if (DEBUG_LOCAL) {
+    wishlistCategoriesCache = loadFromLocalStorage("momentum_wishlistCategories", []);
+    return;
+  }
+
+  if (!currentUser) return;
   const ref = doc(db, "wishlistCategories", currentUser.uid);
   const snap = await getDoc(ref);
   if (snap.exists()) {
@@ -176,7 +233,14 @@ async function ensureWishlistLoaded() {
 }
 
 async function ensureGoalsLoaded() {
-  if (!currentUser || goalsCache) return;
+  if (goalsCache) return;
+
+  if (DEBUG_LOCAL) {
+    goalsCache = loadFromLocalStorage("momentum_goals", []);
+    return;
+  }
+
+  if (!currentUser) return;
   const ref = doc(db, "goals", currentUser.uid);
   const snap = await getDoc(ref);
   if (snap.exists()) {
@@ -187,7 +251,21 @@ async function ensureGoalsLoaded() {
 }
 
 async function ensureMoneyLoaded() {
-  if (!currentUser || moneyCategoriesCache || transactionsCache) return;
+  if (moneyCategoriesCache && transactionsCache) return;
+
+  if (DEBUG_LOCAL) {
+    const data = loadFromLocalStorage("momentum_money", null);
+    if (data) {
+      moneyCategoriesCache = data.categories || null;
+      transactionsCache = data.transactions || [];
+    } else {
+      moneyCategoriesCache = null;
+      transactionsCache = [];
+    }
+    return;
+  }
+
+  if (!currentUser) return;
   const ref = doc(db, "money", currentUser.uid);
   const snap = await getDoc(ref);
   if (snap.exists()) {
@@ -201,7 +279,14 @@ async function ensureMoneyLoaded() {
 }
 
 async function ensureNotesLoaded() {
-  if (!currentUser || notesCache) return;
+  if (notesCache) return;
+
+  if (DEBUG_LOCAL) {
+    notesCache = loadFromLocalStorage("momentum_notes", []);
+    return;
+  }
+
+  if (!currentUser) return;
   const ref = doc(db, "notes", currentUser.uid);
   const snap = await getDoc(ref);
   if (snap.exists()) {
@@ -212,7 +297,14 @@ async function ensureNotesLoaded() {
 }
 
 async function ensureRecentColorsLoaded() {
-  if (!currentUser || recentColorsCache) return;
+  if (recentColorsCache) return;
+
+  if (DEBUG_LOCAL) {
+    recentColorsCache = loadFromLocalStorage("momentum_recentColors", ["#7c3aed", "#ef4444", "#10b981"]);
+    return;
+  }
+
+  if (!currentUser) return;
   const ref = doc(db, "recentColors", currentUser.uid);
   const snap = await getDoc(ref);
   if (snap.exists()) {
@@ -288,26 +380,44 @@ function getDateKey(date) {
 }
 
 function loadGlobalData() {
-  if (currentUser && globalDataCache) {
+  if (globalDataCache) {
     return globalDataCache;
   }
-  return {
+
+  const base = {
     habits: [...defaultHabits],
     pomoCategories: [...defaultPomoCategories],
     treats: [...defaultTreats],
   };
+
+  if (DEBUG_LOCAL) {
+    globalDataCache = loadFromLocalStorage("momentum_globalData", base);
+    return globalDataCache;
+  }
+
+  if (currentUser && globalDataCache) {
+    return globalDataCache;
+  }
+
+  return base;
 }
 
 function saveGlobalData(data) {
+  globalDataCache = data;
+
+  if (DEBUG_LOCAL) {
+    saveToLocalStorage("momentum_globalData", data);
+    return;
+  }
+
   if (currentUser) {
-    globalDataCache = data;
     setDoc(doc(db, "globalData", currentUser.uid), data).catch(console.error);
   }
 }
 
 function loadDayData(date) {
   const key = getDateKey(date);
-  if (currentUser && dayDataCache[key]) {
+  if (dayDataCache[key]) {
     // Ensure new fields exist on old data
     if (!dayDataCache[key].streakRewards) {
       dayDataCache[key].streakRewards = [];
@@ -327,8 +437,14 @@ function loadDayData(date) {
 
 function saveDayData(date, data) {
   const key = getDateKey(date);
+  dayDataCache[key] = data;
+
+  if (DEBUG_LOCAL) {
+    saveToLocalStorage(`momentum_day_${key}`, data);
+    return;
+  }
+
   if (currentUser) {
-    dayDataCache[key] = data;
     const payload = {
       ...data,
       userId: currentUser.uid,
@@ -1797,15 +1913,31 @@ document.querySelectorAll("[data-page]").forEach((btn) => {
 
 // Wishlist Management with Categories
 function loadWishlistCategories() {
+  if (wishlistCategoriesCache) {
+    return wishlistCategoriesCache;
+  }
+
+  if (DEBUG_LOCAL) {
+    wishlistCategoriesCache = loadFromLocalStorage("momentum_wishlistCategories", []);
+    return wishlistCategoriesCache;
+  }
+
   if (currentUser && wishlistCategoriesCache) {
     return wishlistCategoriesCache;
   }
+
   return [];
 }
 
 function saveWishlistCategories(categories) {
-  if (!currentUser) return;
   wishlistCategoriesCache = categories;
+
+  if (DEBUG_LOCAL) {
+    saveToLocalStorage("momentum_wishlistCategories", categories);
+    return;
+  }
+
+  if (!currentUser) return;
   setDoc(doc(db, "wishlistCategories", currentUser.uid), { categories }, { merge: true }).catch(console.error);
 }
 
@@ -2299,21 +2431,35 @@ function attachWishlistEventListeners() {
 
 // Goals Management
 function loadGoals() {
+  if (goalsCache) {
+    return goalsCache;
+  }
+
+  if (DEBUG_LOCAL) {
+    goalsCache = loadFromLocalStorage("momentum_goals", []);
+    return goalsCache;
+  }
+
   if (currentUser && goalsCache) {
     return goalsCache;
   }
+
   return [];
 }
 
 function saveGoals(goals) {
-  if (!currentUser) return;
   goalsCache = goals;
+
+  if (DEBUG_LOCAL) {
+    saveToLocalStorage("momentum_goals", goals);
+    return;
+  }
+
+  if (!currentUser) return;
   setDoc(doc(db, "goals", currentUser.uid), { goals }, { merge: true }).catch(console.error);
 }
 
 function syncGoalItemToPlanner(goalId, milestoneId, goalTaskId, subtaskId, completed) {
-  if (!currentUser) return;
-
   Object.keys(dayDataCache).forEach((key) => {
     const dayData = dayDataCache[key];
     let updated = false;
@@ -2337,13 +2483,7 @@ function syncGoalItemToPlanner(goalId, milestoneId, goalTaskId, subtaskId, compl
     }
 
     if (updated) {
-      dayDataCache[key] = dayData;
-      const payload = {
-        ...dayData,
-        userId: currentUser.uid,
-        dateKey: key,
-      };
-      setDoc(doc(db, "days", `${currentUser.uid}_${key}`), payload).catch(console.error);
+      saveDayData(new Date(key), dayData);
     }
   });
 }
@@ -3497,36 +3637,80 @@ const defaultMoneyCategories = {
 };
 
 function loadMoneyCategories() {
+  if (moneyCategoriesCache) {
+    return moneyCategoriesCache;
+  }
+
+  if (DEBUG_LOCAL) {
+    const data = loadFromLocalStorage("momentum_money", null);
+    if (data && data.categories) {
+      moneyCategoriesCache = data.categories;
+      transactionsCache = data.transactions || [];
+      return moneyCategoriesCache;
+    }
+    moneyCategoriesCache = { ...defaultMoneyCategories };
+    return moneyCategoriesCache;
+  }
+
   if (currentUser && moneyCategoriesCache) {
     return moneyCategoriesCache;
   }
+
   return { ...defaultMoneyCategories };
 }
 
 function saveMoneyCategories(categories) {
-  if (!currentUser) return;
   moneyCategoriesCache = categories;
   const data = {
     categories,
     transactions: transactionsCache || [],
   };
+
+  if (DEBUG_LOCAL) {
+    saveToLocalStorage("momentum_money", data);
+    return;
+  }
+
+  if (!currentUser) return;
   setDoc(doc(db, "money", currentUser.uid), data, { merge: true }).catch(console.error);
 }
 
 function loadTransactions() {
+  if (transactionsCache) {
+    return transactionsCache;
+  }
+
+  if (DEBUG_LOCAL) {
+    const data = loadFromLocalStorage("momentum_money", null);
+    if (data && data.transactions) {
+      transactionsCache = data.transactions;
+      moneyCategoriesCache = data.categories || { ...defaultMoneyCategories };
+      return transactionsCache;
+    }
+    transactionsCache = [];
+    return transactionsCache;
+  }
+
   if (currentUser && transactionsCache) {
     return transactionsCache;
   }
+
   return [];
 }
 
 function saveTransactions(transactions) {
-  if (!currentUser) return;
   transactionsCache = transactions;
   const data = {
     categories: moneyCategoriesCache || { ...defaultMoneyCategories },
     transactions,
   };
+
+  if (DEBUG_LOCAL) {
+    saveToLocalStorage("momentum_money", data);
+    return;
+  }
+
+  if (!currentUser) return;
   setDoc(doc(db, "money", currentUser.uid), data, { merge: true }).catch(console.error);
 }
 
@@ -4153,15 +4337,31 @@ if (categoriesModal) {
 let currentSelection = null;
 
 function loadRecentColors() {
+  if (recentColorsCache) {
+    return recentColorsCache;
+  }
+
+  if (DEBUG_LOCAL) {
+    recentColorsCache = loadFromLocalStorage("momentum_recentColors", ["#7c3aed", "#ef4444", "#10b981"]);
+    return recentColorsCache;
+  }
+
   if (currentUser && recentColorsCache) {
     return recentColorsCache;
   }
+
   return ["#7c3aed", "#ef4444", "#10b981"];
 }
 
 function saveRecentColors(colors) {
-  if (!currentUser) return;
   recentColorsCache = colors;
+
+  if (DEBUG_LOCAL) {
+    saveToLocalStorage("momentum_recentColors", colors);
+    return;
+  }
+
+  if (!currentUser) return;
   setDoc(doc(db, "recentColors", currentUser.uid), { colors }, { merge: true }).catch(console.error);
 }
 
@@ -4315,15 +4515,31 @@ function applyTextColor(color) {
 }
 
 function loadNotes() {
+  if (notesCache) {
+    return notesCache;
+  }
+
+  if (DEBUG_LOCAL) {
+    notesCache = loadFromLocalStorage("momentum_notes", []);
+    return notesCache;
+  }
+
   if (currentUser && notesCache) {
     return notesCache;
   }
+
   return [];
 }
 
 function saveNotes(notes) {
-  if (!currentUser) return;
   notesCache = notes;
+
+  if (DEBUG_LOCAL) {
+    saveToLocalStorage("momentum_notes", notes);
+    return;
+  }
+
+  if (!currentUser) return;
   setDoc(doc(db, "notes", currentUser.uid), { notes }, { merge: true }).catch(console.error);
 }
 
