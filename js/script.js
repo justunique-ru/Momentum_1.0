@@ -258,14 +258,15 @@ function getTodayGMT3() {
 
 let currentDate = getTodayGMT3();
 let calendarDate = getTodayGMT3();
+let habitsStatsViewDate = getTodayGMT3();
 let editMode = null;
 
 // Default data
 const defaultHabits = [
-  { id: 1, name: "Morning meditation", points: 10, color: "#10b981" },
-  { id: 2, name: "Exercise", points: 15, color: "#f59e0b" },
-  { id: 3, name: "Read 30 mins", points: 10, color: "#3b82f6" },
-  { id: 4, name: "Drink 8 glasses water", points: 5, color: "#06b6d4" },
+  { id: 1, name: "Morning meditation", points: 10, color: "#10b981", streakRewardDays: 10, streakRewardPoints: 20 },
+  { id: 2, name: "Exercise", points: 15, color: "#f59e0b", streakRewardDays: 10, streakRewardPoints: 20 },
+  { id: 3, name: "Read 30 mins", points: 10, color: "#3b82f6", streakRewardDays: 10, streakRewardPoints: 20 },
+  { id: 4, name: "Drink 8 glasses water", points: 5, color: "#06b6d4", streakRewardDays: 10, streakRewardPoints: 20 },
 ];
 
 const defaultPomoCategories = [
@@ -307,6 +308,10 @@ function saveGlobalData(data) {
 function loadDayData(date) {
   const key = getDateKey(date);
   if (currentUser && dayDataCache[key]) {
+    // Ensure new fields exist on old data
+    if (!dayDataCache[key].streakRewards) {
+      dayDataCache[key].streakRewards = [];
+    }
     return dayDataCache[key];
   }
 
@@ -316,6 +321,7 @@ function loadDayData(date) {
     pomosCompleted: global.pomoCategories.map((c) => ({ id: c.id, completed: [] })),
     tasks: [],
     treatsUsed: global.treats.map((t) => ({ id: t.id, count: 0 })),
+    streakRewards: [],
   };
 }
 
@@ -766,6 +772,185 @@ function renderStats() {
   });
 }
 
+function handleHabitStreakReward(habitId, date) {
+  const global = loadGlobalData();
+  const habit = global.habits.find((h) => h.id === habitId);
+  if (!habit || !habit.streakRewardDays || !habit.streakRewardPoints) return;
+
+  // Calculate streak length ending at `date`
+  let streak = 0;
+  const checkDate = new Date(date);
+
+  while (true) {
+    const d = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate() - streak, 12, 0, 0);
+    const dayData = loadDayData(d);
+    if (dayData.habitsCompleted.includes(habitId)) {
+      streak += 1;
+    } else {
+      break;
+    }
+  }
+
+  // Give reward only when hitting exact multiple of configured streak length
+  if (streak > 0 && streak % habit.streakRewardDays === 0) {
+    const dayData = loadDayData(date);
+    if (!dayData.streakRewards) {
+      dayData.streakRewards = [];
+    }
+
+    // Avoid double reward for same day and habit
+    const alreadyGiven = dayData.streakRewards.some((r) => r.habitId === habitId && r.streakLength === streak);
+    if (alreadyGiven) return;
+
+    dayData.streakRewards.push({
+      habitId,
+      streakLength: streak,
+      points: habit.streakRewardPoints,
+    });
+    saveDayData(date, dayData);
+
+    // Show congratulation popup
+    alert(`Congratulations! You have a ${streak}-day streak for "${habit.name}"! +${habit.streakRewardPoints} pts added.`);
+  }
+}
+
+function toggleHabitForDate(id, date) {
+  const dayData = loadDayData(date);
+  const idx = dayData.habitsCompleted.indexOf(id);
+  if (idx >= 0) {
+    dayData.habitsCompleted.splice(idx, 1);
+  } else {
+    dayData.habitsCompleted.push(id);
+    handleHabitStreakReward(id, date);
+  }
+  saveDayData(date, dayData);
+
+  // Обновляем месячную статистику
+  renderHabitsMonthlyStats();
+
+  // Если меняется текущий день планера — обновим и его
+  if (getDateKey(date) === getDateKey(currentDate)) {
+    render();
+  }
+}
+
+function renderHabitsMonthlyStats() {
+  const monthLabelEl = document.getElementById("habitsMonthLabel");
+  const monthSubtitleEl = document.getElementById("habitsMonthSubtitle");
+  const listEl = document.getElementById("habitsStatsList");
+  const summaryEl = document.getElementById("habitsStatsSummary");
+
+  if (!monthLabelEl || !listEl || !summaryEl) return;
+
+  const year = habitsStatsViewDate.getFullYear();
+  const month = habitsStatsViewDate.getMonth();
+
+  const firstDay = new Date(year, month, 1, 12, 0, 0);
+  const lastDay = new Date(year, month + 1, 0, 12, 0, 0);
+  const daysInMonth = lastDay.getDate();
+
+  monthLabelEl.textContent = habitsStatsViewDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  if (monthSubtitleEl) {
+    monthSubtitleEl.textContent = `Total days in month: ${daysInMonth}`;
+  }
+
+  const global = loadGlobalData();
+
+  const statsByHabit = global.habits.map((habit) => ({
+    habit,
+    daysCompleted: 0,
+    maxStreak: 0,
+    currentStreak: 0,
+  }));
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day, 12, 0, 0);
+    const dayData = loadDayData(date);
+
+    statsByHabit.forEach((stat) => {
+      if (dayData.habitsCompleted.includes(stat.habit.id)) {
+        stat.daysCompleted += 1;
+        stat.currentStreak += 1;
+        if (stat.currentStreak > stat.maxStreak) {
+          stat.maxStreak = stat.currentStreak;
+        }
+      } else {
+        stat.currentStreak = 0;
+      }
+    });
+  }
+
+  const totalCompletions = statsByHabit.reduce((sum, s) => sum + s.daysCompleted, 0);
+  const activeHabits = statsByHabit.filter((s) => s.daysCompleted > 0).length;
+
+  summaryEl.innerHTML = `
+    <span><span class="font-semibold text-gray-900">${totalCompletions}</span> completions this month</span>
+    <span><span class="font-semibold text-gray-900">${activeHabits}</span> active habits</span>
+  `;
+
+  if (statsByHabit.length === 0) {
+    listEl.innerHTML = `
+      <div class="text-center py-10 text-gray-400 text-sm">
+        No habits yet. Add them on the planner page.
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = statsByHabit
+    .map((stat) => {
+      const completionRate = daysInMonth > 0 ? Math.round((stat.daysCompleted / daysInMonth) * 100) : 0;
+      const dayDots = [];
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day, 12, 0, 0);
+        const dayData = loadDayData(date);
+        const isCompleted = dayData.habitsCompleted.includes(stat.habit.id);
+        const dateKey = getDateKey(date);
+
+        const bgColor = isCompleted ? stat.habit.color : "#e5e7eb";
+        const borderColor = isCompleted ? stat.habit.color : "#d1d5db";
+
+        dayDots.push(`
+          <button
+            class="habit-day-dot w-5 h-5 rounded-full flex-shrink-0 border transition-colors"
+            style="background: ${bgColor}; border-color: ${borderColor};"
+            data-habit="${stat.habit.id}"
+            data-date="${dateKey}"
+            data-completed="${isCompleted ? "1" : "0"}"
+            title="${day}.${month + 1}"
+          ></button>
+        `);
+      }
+
+      return `
+        <div class="grid grid-cols-5 items-center gap-4 p-3 rounded-xl bg-gray-50">
+          <div class="col-span-1 min-w-0">
+            <span class="text-sm font-medium text-gray-900 truncate">${stat.habit.name}</span>
+          </div>
+          <div class="col-span-3 flex items-center gap-1 habit-days-row px-1">
+            ${dayDots.join("")}
+          </div>
+          <div class="col-span-1 text-xs text-gray-500 text-right leading-tight">
+            ${stat.daysCompleted}/${daysInMonth} days<br>
+            max streak ${stat.maxStreak} days
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  // Навешиваем обработчики на кружки дней
+  listEl.querySelectorAll(".habit-day-dot").forEach((el) => {
+    el.addEventListener("click", () => {
+      const habitId = parseInt(el.dataset.habit, 10);
+      const [y, m, d] = el.dataset.date.split("-").map(Number);
+      const date = new Date(y, m - 1, d, 12, 0, 0);
+      toggleHabitForDate(habitId, date);
+    });
+  });
+}
+
 function renderPoints() {
   const allTimePoints = calculateAllTimePoints();
   const todayEarned = calculateTodayEarned(currentDate);
@@ -807,6 +992,11 @@ function calculateDayPoints(date) {
 
   dayData.tasks.forEach((task) => {
     if (task.completed) points += task.points;
+  });
+
+  // Streak rewards for this day
+  (dayData.streakRewards || []).forEach((reward) => {
+    points += reward.points;
   });
 
   points -= calculateSpentPoints(date);
@@ -851,6 +1041,10 @@ function calculateAllTimePoints() {
 
     dayData.tasks?.forEach((task) => {
       if (task.completed) totalEarned += task.points;
+    });
+
+    (dayData.streakRewards || [])?.forEach((reward) => {
+      totalEarned += reward.points;
     });
 
     dayData.treatsUsed?.forEach((t) => {
@@ -906,6 +1100,10 @@ function calculateTodayEarned(date) {
     if (task.completed) points += task.points;
   });
 
+  (dayData.streakRewards || []).forEach((reward) => {
+    points += reward.points;
+  });
+
   return points;
 }
 
@@ -917,6 +1115,7 @@ function toggleHabit(id) {
     dayData.habitsCompleted.splice(idx, 1);
   } else {
     dayData.habitsCompleted.push(id);
+    handleHabitStreakReward(id, currentDate);
   }
   saveDayData(currentDate, dayData);
   render();
@@ -1067,7 +1266,7 @@ function openEditModal(type) {
     case "habits":
       title.textContent = "Edit Habits";
       items = global.habits;
-      fields = ["name", "points", "color"];
+      fields = ["name", "points", "color", "streakRewardDays", "streakRewardPoints"];
       break;
     case "pomodoros":
       title.textContent = "Edit Focus Categories";
@@ -1111,7 +1310,8 @@ function openEditModal(type) {
                       if (f === "emoji") {
                         return `<input type="text" class="w-12 px-2 py-1.5 border border-gray-200 rounded-lg text-center text-lg" data-field="${f}" value="${item[f]}">`;
                       }
-                      return `<input type="${f === "points" || f === "cost" || f === "count" || f === "pointsEach" ? "number" : "text"}" 
+                      const isNumberField = ["points", "cost", "count", "pointsEach", "streakRewardDays", "streakRewardPoints"].includes(f);
+                      return `<input type="${isNumberField ? "number" : "text"}" 
                           class="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm" data-field="${f}" value="${item[f]}" placeholder="${f}">`;
                     })
                     .join("")}
@@ -1364,8 +1564,8 @@ function addNewItem() {
   let newItem, fields;
   switch (editMode) {
     case "habits":
-      newItem = { name: "New Habit", points: 1, color: "#7c3aed" };
-      fields = ["name", "points", "color"];
+      newItem = { name: "New Habit", points: 1, color: "#7c3aed", streakRewardDays: 10, streakRewardPoints: 20 };
+      fields = ["name", "points", "color", "streakRewardDays", "streakRewardPoints"];
       break;
     case "pomodoros":
       newItem = { name: "New Category", count: 5, pointsEach: 1, color: "#7c3aed" };
@@ -1545,6 +1745,24 @@ document.getElementById("editModal").addEventListener("click", (e) => {
   if (e.target === document.getElementById("editModal")) closeEditModal();
 });
 
+// Habits month navigation (Habits page)
+const prevHabitsMonth = document.getElementById("prevHabitsMonth");
+const nextHabitsMonth = document.getElementById("nextHabitsMonth");
+
+if (prevHabitsMonth) {
+  prevHabitsMonth.addEventListener("click", () => {
+    habitsStatsViewDate.setMonth(habitsStatsViewDate.getMonth() - 1);
+    renderHabitsMonthlyStats();
+  });
+}
+
+if (nextHabitsMonth) {
+  nextHabitsMonth.addEventListener("click", () => {
+    habitsStatsViewDate.setMonth(habitsStatsViewDate.getMonth() + 1);
+    renderHabitsMonthlyStats();
+  });
+}
+
 // Page Navigation
 let currentPage = "planner";
 
@@ -1560,6 +1778,8 @@ function switchPage(page) {
     renderGoals();
   } else if (page === "planner") {
     render();
+  } else if (page === "habits") {
+    renderHabitsMonthlyStats();
   } else if (page === "wishlist") {
     renderWishlist();
     attachWishlistEventListeners();
