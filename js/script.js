@@ -381,6 +381,15 @@ function getDateKey(date) {
 
 function loadGlobalData() {
   if (globalDataCache) {
+    // Backfill default fields for habits (for old data from Firestore/local)
+    globalDataCache.habits = (globalDataCache.habits || []).map((h, idx) => ({
+      id: h.id ?? idx + 1,
+      name: h.name,
+      points: h.points ?? 10,
+      color: h.color ?? "#7c3aed",
+      streakRewardDays: h.streakRewardDays ?? 10,
+      streakRewardPoints: h.streakRewardPoints ?? 20,
+    }));
     return globalDataCache;
   }
 
