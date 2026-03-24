@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 // Режим локальной отладки:
 // - включается автоматически на localhost/127.0.0.1
@@ -203,7 +203,8 @@ async function preloadAllDays() {
   }
 
   if (!currentUser) return;
-  const snap = await getDocs(collection(db, "days"));
+  const daysQuery = query(collection(db, "days"), where("userId", "==", currentUser.uid));
+  const snap = await getDocs(daysQuery);
   snap.forEach((docSnap) => {
     const id = docSnap.id;
     const prefix = currentUser.uid + "_";
